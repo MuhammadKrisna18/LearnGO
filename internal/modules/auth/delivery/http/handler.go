@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"modular-monolith/internal/middleware"
 	"modular-monolith/internal/modules/auth/domain"
+	"modular-monolith/internal/shared/apperrors"
 	"modular-monolith/internal/shared/response"
 )
 
@@ -36,19 +37,19 @@ func (h *AuthHandler) RegisterRoutes(router fiber.Router, jwtSecret string) {
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req domain.LoginRequest
 	if err := c.BodyParser(&req); err != nil {
-		return response.Error(c, fiber.StatusBadRequest, "invalid request body", err.Error())
+		return apperrors.NewBadRequest("invalid request body", err.Error())
 	}
 
 	if req.Email == "" || req.Password == "" {
-		return response.Error(c, fiber.StatusBadRequest, "email and password are required", nil)
+		return apperrors.NewBadRequest("email and password are required")
 	}
 
 	res, err := h.service.Login(c.UserContext(), req)
 	if err != nil {
 		if err.Error() == "invalid email or password" {
-			return response.Error(c, fiber.StatusUnauthorized, err.Error(), nil)
+			return apperrors.NewUnauthorized(err.Error())
 		}
-		return response.Error(c, fiber.StatusInternalServerError, "login failed", err.Error())
+		return apperrors.NewInternal("login failed", err.Error())
 	}
 
 	return response.Success(c, fiber.StatusOK, "login successful", res)
@@ -69,12 +70,12 @@ func (h *AuthHandler) Me(c *fiber.Ctx) error {
 	// Extract userID from Locals (injected by JWT middleware)
 	userID, ok := c.Locals("userID").(string)
 	if !ok || userID == "" {
-		return response.Error(c, fiber.StatusUnauthorized, "unauthorized", nil)
+		return apperrors.NewUnauthorized("unauthorized")
 	}
 
 	profile, err := h.service.GetProfile(c.UserContext(), userID)
 	if err != nil {
-		return response.Error(c, fiber.StatusInternalServerError, "failed to get profile", err.Error())
+		return apperrors.NewInternal("failed to get profile", err.Error())
 	}
 
 	return response.Success(c, fiber.StatusOK, "success", profile)

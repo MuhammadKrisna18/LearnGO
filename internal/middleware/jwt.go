@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-	"modular-monolith/internal/shared/response"
+	"modular-monolith/internal/shared/apperrors"
 )
 
 func Protected(secret string) fiber.Handler {
@@ -13,7 +13,7 @@ func Protected(secret string) fiber.Handler {
 		authHeader := c.Get("Authorization")
 
 		if authHeader == "" {
-			return response.Error(c, fiber.StatusUnauthorized, "missing jwt", nil)
+			return apperrors.NewUnauthorized("missing jwt")
 		}
 
 		tokenString := authHeader
@@ -25,18 +25,18 @@ func Protected(secret string) fiber.Handler {
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fiber.ErrUnauthorized
+				return nil, apperrors.NewUnauthorized("invalid signing method")
 			}
 			return []byte(secret), nil
 		})
 
 		if err != nil || !token.Valid {
-			return response.Error(c, fiber.StatusUnauthorized, "invalid or expired jwt", err.Error())
+			return apperrors.NewUnauthorized("invalid or expired jwt", err.Error())
 		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
-			return response.Error(c, fiber.StatusUnauthorized, "invalid jwt claims", nil)
+			return apperrors.NewUnauthorized("invalid jwt claims")
 		}
 
 		c.Locals("userID", claims["id"])

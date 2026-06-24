@@ -19,6 +19,7 @@ import (
 	"modular-monolith/config"
 	_ "modular-monolith/docs"
 	"modular-monolith/internal/modules/auth"
+	"modular-monolith/internal/shared/apperrors"
 	"modular-monolith/internal/shared/cache"
 	"modular-monolith/internal/shared/database"
 	"modular-monolith/internal/shared/response"
@@ -119,9 +120,16 @@ func (a *App) Start() error {
 }
 
 func globalErrorHandler(c *fiber.Ctx, err error) error {
-	code := fiber.StatusInternalServerError
-	if e, ok := err.(*fiber.Error); ok {
-		code = e.Code
+	// Check if it's our custom AppError
+	if e, ok := err.(*apperrors.AppError); ok {
+		return response.Error(c, e.Code, e.Message, e.Details)
 	}
-	return response.Error(c, code, "an unexpected error occurred", err.Error())
+
+	// Check if it's a Fiber Error (e.g. 404 Route Not Found, 405 Method Not Allowed)
+	if e, ok := err.(*fiber.Error); ok {
+		return response.Error(c, e.Code, e.Message, nil)
+	}
+
+	// Default to 500 Internal Server Error
+	return response.Error(c, fiber.StatusInternalServerError, "An unexpected error occurred", err.Error())
 }
