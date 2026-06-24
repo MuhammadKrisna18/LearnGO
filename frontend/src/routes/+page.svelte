@@ -1,2 +1,16 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script>
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+
+	onMount(() => {
+		goto('/login');
+	});
+</script>
+
+<svelte:head>
+	<title>Redirecting...</title>
+</svelte:head>
+
+<div style="display: flex; justify-content: center; align-items: center; height: 100vh; color: white;">
+	<p>Redirecting to login...</p>
+</div>
