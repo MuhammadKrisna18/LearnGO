@@ -36,3 +36,11 @@ bin/
 # OS specific
 .DS_Store
 Thumbs.db
+
+# Frontend (Node.js & SvelteKit)
+node_modules/
+.svelte-kit/
+build/
+.output/
+.vercel/
+.netlify/
