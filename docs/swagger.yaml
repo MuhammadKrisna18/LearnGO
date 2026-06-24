@@ -17,6 +17,19 @@ definitions:
       token:
         type: string
     type: object
+  modular-monolith_internal_modules_auth_domain.UserProfileResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      role:
+        type: string
+    type: object
   modular-monolith_internal_shared_response.APIResponse:
     properties:
       data: {}
@@ -70,6 +83,36 @@ paths:
           schema:
             $ref: '#/definitions/modular-monolith_internal_shared_response.APIResponse'
       summary: User Login
+      tags:
+      - Auth
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Returns the profile of the user based on the provided JWT token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/modular-monolith_internal_shared_response.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/modular-monolith_internal_modules_auth_domain.UserProfileResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/modular-monolith_internal_shared_response.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/modular-monolith_internal_shared_response.APIResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get User Profile
       tags:
       - Auth
 securityDefinitions:

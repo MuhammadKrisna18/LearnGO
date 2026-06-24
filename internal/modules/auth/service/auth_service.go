@@ -54,3 +54,18 @@ func (s *authService) Login(ctx context.Context, req domain.LoginRequest) (*doma
 		Role:  user.Role,
 	}, nil
 }
+
+func (s *authService) GetProfile(ctx context.Context, id string) (*domain.UserProfileResponse, error) {
+	user, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &domain.UserProfileResponse{
+		ID:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		Role:      user.Role,
+		CreatedAt: user.CreatedAt,
+	}, nil
+}

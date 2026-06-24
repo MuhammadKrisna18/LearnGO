@@ -11,6 +11,7 @@ import (
 
 type Module struct {
 	Handler *http.AuthHandler
+	cfg     *config.Config
 }
 
 func NewAuthModule(db *gorm.DB, cfg *config.Config) *Module {
@@ -20,9 +21,10 @@ func NewAuthModule(db *gorm.DB, cfg *config.Config) *Module {
 
 	return &Module{
 		Handler: handler,
+		cfg:     cfg,
 	}
 }
 
 func (m *Module) RegisterRoutes(router fiber.Router) {
-	m.Handler.RegisterRoutes(router)
+	m.Handler.RegisterRoutes(router, m.cfg.JWTSecret)
 }

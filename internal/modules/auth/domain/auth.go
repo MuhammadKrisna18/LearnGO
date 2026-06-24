@@ -25,11 +25,21 @@ type LoginResponse struct {
 	Role  string `json:"role"`
 }
 
+type UserProfileResponse struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	Role      string    `json:"role"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type AuthRepository interface {
 	GetByEmail(ctx context.Context, email string) (*User, error)
+	GetByID(ctx context.Context, id string) (*User, error)
 	Create(ctx context.Context, user *User) error
 }
 
 type AuthService interface {
 	Login(ctx context.Context, req LoginRequest) (*LoginResponse, error)
+	GetProfile(ctx context.Context, id string) (*UserProfileResponse, error)
 }
