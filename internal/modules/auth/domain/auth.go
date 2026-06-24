@@ -1,0 +1,35 @@
+package domain
+
+import (
+	"context"
+	"time"
+)
+
+type User struct {
+	ID        string    `json:"id" gorm:"primaryKey;type:varchar(255)"`
+	Name      string    `json:"name" gorm:"type:varchar(255);not null"`
+	Email     string    `json:"email" gorm:"type:varchar(255);uniqueIndex;not null"`
+	Password  string    `json:"-" gorm:"type:varchar(255);not null"`
+	Role      string    `json:"role" gorm:"type:varchar(50);not null;default:'user'"`
+	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime"`
+}
+
+type LoginRequest struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
+}
+
+type LoginResponse struct {
+	Token string `json:"token"`
+	Role  string `json:"role"`
+}
+
+type AuthRepository interface {
+	GetByEmail(ctx context.Context, email string) (*User, error)
+	Create(ctx context.Context, user *User) error
+}
+
+type AuthService interface {
+	Login(ctx context.Context, req LoginRequest) (*LoginResponse, error)
+}

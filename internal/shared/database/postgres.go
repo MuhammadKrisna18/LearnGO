@@ -5,9 +5,11 @@ import (
 	"log"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"modular-monolith/config"
+	"modular-monolith/internal/modules/auth/domain"
 )
 
 func NewPostgresConnection(cfg *config.Config) (*gorm.DB, error) {
@@ -25,7 +27,6 @@ func NewPostgresConnection(cfg *config.Config) (*gorm.DB, error) {
 		return nil, fmt.Errorf("unable to connect to database: %w", err)
 	}
 
-	// Get generic database object sql.DB to use its functions
 	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, fmt.Errorf("unable to get underlying db: %w", err)
@@ -37,5 +38,35 @@ func NewPostgresConnection(cfg *config.Config) (*gorm.DB, error) {
 
 	log.Println("Successfully connected to PostgreSQL database via GORM")
 
+	// AutoMigrate the Auth domain
+	log.Println("Running AutoMigrate...")
+	if err := db.AutoMigrate(&domain.User{}); err != nil {
+		log.Printf("AutoMigrate failed: %v", err)
+	}
+
+	// Seeder for Admin
+	seedAdmin(db)
+
 	return db, nil
+}
+
+func seedAdmin(db *gorm.DB) {
+	adminEmail := "adminGO@golang.id"
+	var count int64
+	db.Model(&domain.User{}).Where("email = ?", adminEmail).Count(&count)
+	if count == 0 {
+		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte("adminGO"), bcrypt.DefaultCost)
+		adminUser := domain.User{
+			ID:       "admin-id-seeder-12345",
+			Name:     "Super Admin",
+			Email:    adminEmail,
+			Password: string(hashedPassword),
+			Role:     "admin",
+		}
+		if err := db.Create(&adminUser).Error; err != nil {
+			log.Printf("Failed to seed admin user: %v", err)
+		} else {
+			log.Println("Successfully seeded admin user: adminGO@golang.id")
+		}
+	}
 }

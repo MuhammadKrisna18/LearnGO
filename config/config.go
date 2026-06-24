@@ -23,6 +23,8 @@ type Config struct {
 	RedisPort     int
 	RedisPassword string
 	RedisDB       int
+
+	JWTSecret string
 }
 
 func LoadConfig() *Config {
@@ -44,6 +46,7 @@ func LoadConfig() *Config {
 		RedisPort:     getEnvAsInt("REDIS_PORT", 6379),
 		RedisPassword: getEnv("REDIS_PASSWORD", ""),
 		RedisDB:       getEnvAsInt("REDIS_DB", 0),
+		JWTSecret:     getEnv("JWT_SECRET", "supersecret-jwt-key"),
 	}
 }
 

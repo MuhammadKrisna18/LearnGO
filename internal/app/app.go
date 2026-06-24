@@ -10,11 +10,15 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/redis/go-redis/v9"
+	"github.com/gofiber/swagger"
 	"gorm.io/gorm"
 	"modular-monolith/config"
+	_ "modular-monolith/docs"
+	"modular-monolith/internal/modules/auth"
 	"modular-monolith/internal/shared/cache"
 	"modular-monolith/internal/shared/database"
 	"modular-monolith/internal/shared/response"
@@ -52,6 +56,7 @@ func (a *App) Start() error {
 	})
 
 	a.fiber.Use(recover.New())
+	a.fiber.Use(cors.New())
 	a.fiber.Use(logger.New(logger.Config{
 		Format: "[${time}] ${status} - ${latency} ${method} ${path}\n",
 	}))
@@ -64,7 +69,11 @@ func (a *App) Start() error {
 		})
 	})
 
+	a.fiber.Get("/swagger/*", swagger.HandlerDefault)
 
+	api := a.fiber.Group("/api/v1")
+	authModule := auth.NewAuthModule(a.db, a.cfg)
+	authModule.RegisterRoutes(api)
 
 	serverErrors := make(chan error, 1)
 	go func() {
