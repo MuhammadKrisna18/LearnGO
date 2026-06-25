@@ -1,12 +1,17 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import AdminSplash from '$lib/components/splash/AdminSplash.svelte';
+	import DefaultSplash from '$lib/components/splash/DefaultSplash.svelte';
 
-	let email = '';
-	let password = '';
-	let loading = false;
-	let error = '';
+	let email = $state('');
+	let password = $state('');
+	let loading = $state(false);
+	let error = $state('');
+	let showSplash = $state(false);
+	let userRole = $state('');
 
-	async function handleLogin() {
+	async function handleLogin(e: Event) {
+		if (e) e.preventDefault();
 		error = '';
 		loading = true;
 
@@ -28,8 +33,13 @@
 				localStorage.setItem('token', data.data.token);
 				localStorage.setItem('role', data.data.role);
 				
-				// Redirect to dashboard
-				goto('/dashboard');
+				userRole = data.data.role || '';
+				showSplash = true;
+				
+				// Redirect to dashboard after 3 seconds
+				setTimeout(() => {
+					goto('/dashboard');
+				}, 3000);
 			} else {
 				error = 'Invalid response from server.';
 			}
@@ -46,7 +56,16 @@
 </svelte:head>
 
 <main class="login-container">
-	<div class="glass-panel login-card animate-fade-in">
+	{#if showSplash}
+		<div class="glass-panel splash-card animate-fade-in">
+			{#if userRole.toLowerCase() === 'admin'}
+				<AdminSplash />
+			{:else}
+				<DefaultSplash />
+			{/if}
+		</div>
+	{:else}
+		<div class="glass-panel login-card animate-fade-in">
 		<div class="login-header">
 			<div class="logo">
 				<span class="logo-icon">✦</span>
@@ -55,7 +74,7 @@
 			<p>Please enter your details to sign in.</p>
 		</div>
 
-		<form on:submit|preventDefault={handleLogin}>
+		<form onsubmit={handleLogin}>
 			<div class="form-group">
 				<label class="form-label" for="email">Email</label>
 				<input
@@ -96,7 +115,8 @@
 				{/if}
 			</button>
 		</form>
-	</div>
+		</div>
+	{/if}
 </main>
 
 <style>
@@ -174,5 +194,13 @@
 
 	@keyframes spin {
 		to { transform: rotate(360deg); }
+	}
+
+	.splash-card {
+		width: 100%;
+		max-width: 420px;
+		padding: 40px;
+		border-radius: var(--radius-lg);
+		text-align: center;
 	}
 </style>
