@@ -23,6 +23,7 @@ import (
 	"modular-monolith/internal/shared/cache"
 	"modular-monolith/internal/shared/database"
 	"modular-monolith/internal/shared/response"
+	"modular-monolith/internal/middleware"
 )
 
 type App struct {
@@ -58,6 +59,10 @@ func (a *App) Start() error {
 
 	a.fiber.Use(recover.New())
 	a.fiber.Use(cors.New())
+	
+	// Add custom performance logger
+	a.fiber.Use(middleware.PerformanceLogger())
+	
 	a.fiber.Use(logger.New(logger.Config{
 		Format: "[${time}] ${status} - ${latency} ${method} ${path}\n",
 	}))

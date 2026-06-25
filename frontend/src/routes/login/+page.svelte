@@ -14,6 +14,10 @@
 		if (e) e.preventDefault();
 		error = '';
 		loading = true;
+		
+		// Mulai menghitung waktu performa login
+		console.time('⚡ API_Login_Execution_Time');
+		const loginStartTime = performance.now();
 
 		try {
 			const res = await fetch('http://localhost:8080/api/v1/auth/login', {
@@ -25,6 +29,11 @@
 			});
 
 			const data = await res.json();
+			
+			// Hentikan perhitungan waktu dan log ke console
+			const loginEndTime = performance.now();
+			console.timeEnd('⚡ API_Login_Execution_Time');
+			console.log(`⏱️ Waktu asli backend untuk login: ${(loginEndTime - loginStartTime).toFixed(2)} ms`);
 
 			if (!res.ok) {
 				error = data.message || 'Login failed. Please try again.';
