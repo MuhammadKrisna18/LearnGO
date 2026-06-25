@@ -38,13 +38,11 @@ func NewPostgresConnection(cfg *config.Config) (*gorm.DB, error) {
 
 	log.Println("Successfully connected to PostgreSQL database via GORM")
 
-	// AutoMigrate the Auth domain
 	log.Println("Running AutoMigrate...")
 	if err := db.AutoMigrate(&domain.User{}); err != nil {
 		log.Printf("AutoMigrate failed: %v", err)
 	}
 
-	// Seeder for Admin
 	seedAdmin(db)
 
 	return db, nil

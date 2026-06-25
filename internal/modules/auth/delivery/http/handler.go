@@ -22,18 +22,6 @@ func (h *AuthHandler) RegisterRoutes(router fiber.Router, jwtSecret string) {
 	authGroup.Get("/me", middleware.Protected(jwtSecret), h.Me)
 }
 
-// Login authenticates a user and returns a JWT token.
-// @Summary User Login
-// @Description Authenticates a user and returns a JWT token
-// @Tags Auth
-// @Accept json
-// @Produce json
-// @Param request body domain.LoginRequest true "Login Credentials"
-// @Success 200 {object} response.APIResponse{data=domain.LoginResponse}
-// @Failure 400 {object} response.APIResponse
-// @Failure 401 {object} response.APIResponse
-// @Failure 500 {object} response.APIResponse
-// @Router /auth/login [post]
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var req domain.LoginRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -55,19 +43,7 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	return response.Success(c, fiber.StatusOK, "login successful", res)
 }
 
-// Me returns the profile of the currently logged-in user.
-// @Summary Get User Profile
-// @Description Returns the profile of the user based on the provided JWT token
-// @Tags Auth
-// @Accept json
-// @Produce json
-// @Security ApiKeyAuth
-// @Success 200 {object} response.APIResponse{data=domain.UserProfileResponse}
-// @Failure 401 {object} response.APIResponse
-// @Failure 500 {object} response.APIResponse
-// @Router /auth/me [get]
 func (h *AuthHandler) Me(c *fiber.Ctx) error {
-	// Extract userID from Locals (injected by JWT middleware)
 	userID, ok := c.Locals("userID").(string)
 	if !ok || userID == "" {
 		return apperrors.NewUnauthorized("unauthorized")

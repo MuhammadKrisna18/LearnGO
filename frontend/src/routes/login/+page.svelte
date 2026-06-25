@@ -15,7 +15,6 @@
 		error = '';
 		loading = true;
 		
-		// Mulai menghitung waktu performa login
 		console.time('⚡ API_Login_Execution_Time');
 		const loginStartTime = performance.now();
 
@@ -30,7 +29,6 @@
 
 			const data = await res.json();
 			
-			// Hentikan perhitungan waktu dan log ke console
 			const loginEndTime = performance.now();
 			console.timeEnd('⚡ API_Login_Execution_Time');
 			console.log(`⏱️ Waktu asli backend untuk login: ${(loginEndTime - loginStartTime).toFixed(2)} ms`);
@@ -38,14 +36,12 @@
 			if (!res.ok) {
 				error = data.message || 'Login failed. Please try again.';
 			} else if (data.success && data.data && data.data.token) {
-				// Store the token and role in localStorage
 				localStorage.setItem('token', data.data.token);
 				localStorage.setItem('role', data.data.role);
 				
 				userRole = data.data.role || '';
 				showSplash = true;
 				
-				// Redirect to dashboard after 3 seconds
 				setTimeout(() => {
 					goto('/dashboard');
 				}, 3000);

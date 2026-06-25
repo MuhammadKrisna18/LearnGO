@@ -10,7 +10,6 @@
 		const token = localStorage.getItem('token');
 		
 		if (!token) {
-			// Not logged in, redirect to login page
 			goto('/login');
 			return;
 		}
@@ -29,7 +28,6 @@
 			if (res.ok && data.success) {
 				profile = data.data;
 			} else {
-				// Token might be invalid or expired
 				localStorage.removeItem('token');
 				localStorage.removeItem('role');
 				goto('/login');

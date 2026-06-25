@@ -60,7 +60,6 @@ func (a *App) Start() error {
 	a.fiber.Use(recover.New())
 	a.fiber.Use(cors.New())
 	
-	// Add custom performance logger
 	a.fiber.Use(middleware.PerformanceLogger())
 	
 	a.fiber.Use(logger.New(logger.Config{
@@ -125,16 +124,13 @@ func (a *App) Start() error {
 }
 
 func globalErrorHandler(c *fiber.Ctx, err error) error {
-	// Check if it's our custom AppError
 	if e, ok := err.(*apperrors.AppError); ok {
 		return response.Error(c, e.Code, e.Message, e.Details)
 	}
 
-	// Check if it's a Fiber Error (e.g. 404 Route Not Found, 405 Method Not Allowed)
 	if e, ok := err.(*fiber.Error); ok {
 		return response.Error(c, e.Code, e.Message, nil)
 	}
 
-	// Default to 500 Internal Server Error
 	return response.Error(c, fiber.StatusInternalServerError, "An unexpected error occurred", err.Error())
 }

@@ -21,7 +21,6 @@ func NewAuthService(repo domain.AuthRepository, cfg *config.Config) domain.AuthS
 }
 
 func (s *authService) Login(ctx context.Context, req domain.LoginRequest) (*domain.LoginResponse, error) {
-	// 1. Check if user exists
 	user, err := s.repo.GetByEmail(ctx, req.Email)
 	if err != nil {
 		if err.Error() == "user not found" {
@@ -30,17 +29,15 @@ func (s *authService) Login(ctx context.Context, req domain.LoginRequest) (*doma
 		return nil, err
 	}
 
-	// 2. Compare password
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
 	if err != nil {
 		return nil, errors.New("invalid email or password")
 	}
 
-	// 3. Generate JWT Token
 	claims := jwt.MapClaims{
 		"id":   user.ID,
 		"role": user.Role,
-		"exp":  time.Now().Add(time.Hour * 72).Unix(), // 3 days expiration
+		"exp":  time.Now().Add(time.Hour * 72).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
