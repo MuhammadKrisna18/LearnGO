@@ -33,7 +33,7 @@ func (r *pgMataKuliahRepository) GetByName(ctx context.Context, name string) (*d
 
 func (r *pgMataKuliahRepository) GetAll(ctx context.Context) ([]*domain.MataKuliah, error) {
 	var mkList []*domain.MataKuliah
-	err := r.db.WithContext(ctx).Order("created_at desc").Find(&mkList).Error
+	err := r.db.WithContext(ctx).Preload("ProgramStudi").Order("created_at desc").Find(&mkList).Error
 	if err != nil {
 		return nil, err
 	}

@@ -19,7 +19,11 @@ func NewMataKuliahService(repo domain.MataKuliahRepository) domain.MataKuliahSer
 }
 
 func (s *matakuliahService) CreateMataKuliah(ctx context.Context, req domain.CreateMataKuliahRequest) (*domain.MataKuliah, error) {
-	// Check if already exists
+	if req.ProgramStudiID == "" {
+		return nil, apperrors.NewBadRequest("Program Studi wajib diisi")
+	}
+
+	// 1. Cek apakah mata kuliah dengan nama tersebut sudah ada (unik)
 	existing, err := s.repo.GetByName(ctx, req.Name)
 	if err != nil {
 		return nil, apperrors.NewInternal("Gagal mengecek mata kuliah", err.Error())
@@ -29,17 +33,18 @@ func (s *matakuliahService) CreateMataKuliah(ctx context.Context, req domain.Cre
 		return nil, &apperrors.AppError{Code: http.StatusConflict, Message: "Mata kuliah sudah ada, tidak bisa ditambahkan lagi meskipun berbeda SKS"}
 	}
 
-	mk := &domain.MataKuliah{
-		ID:   uuid.New().String(),
-		Name: req.Name,
-		SKS:  req.SKS,
+	newMk := &domain.MataKuliah{
+		ID:             uuid.New().String(),
+		Name:           req.Name,
+		SKS:            req.SKS,
+		ProgramStudiID: req.ProgramStudiID,
 	}
 
-	if err := s.repo.Create(ctx, mk); err != nil {
+	if err := s.repo.Create(ctx, newMk); err != nil {
 		return nil, apperrors.NewInternal("Gagal menyimpan mata kuliah", err.Error())
 	}
 
-	return mk, nil
+	return newMk, nil
 }
 
 func (s *matakuliahService) GetMataKuliahList(ctx context.Context) ([]*domain.MataKuliah, error) {

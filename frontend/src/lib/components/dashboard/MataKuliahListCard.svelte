@@ -67,6 +67,7 @@
 				<thead>
 					<tr>
 						<th>Nama Mata Kuliah</th>
+						<th>Program Studi</th>
 						<th>SKS</th>
 						<th>Tgl Ditambahkan</th>
 						<th>Aksi</th>
@@ -76,6 +77,11 @@
 					{#each mkList as mk}
 						<tr>
 							<td>{mk.name}</td>
+							<td>
+								<span class="prodi-badge">
+									{mk.program_studi ? mk.program_studi.name : 'Unknown'}
+								</span>
+							</td>
 							<td><span class="badge sks-badge">{mk.sks} SKS</span></td>
 							<td>{new Date(mk.created_at).toLocaleDateString()}</td>
 							<td>
@@ -187,6 +193,16 @@
 		background: rgba(16, 185, 129, 0.1);
 		color: #10b981;
 		border: 1px solid rgba(16, 185, 129, 0.2);
+	}
+	
+	.prodi-badge {
+		background: rgba(99, 102, 241, 0.1);
+		color: #6366f1;
+		border: 1px solid rgba(99, 102, 241, 0.2);
+		padding: 4px 8px;
+		border-radius: 6px;
+		font-size: 0.8rem;
+		font-weight: 500;
 	}
 	
 	.btn-delete {

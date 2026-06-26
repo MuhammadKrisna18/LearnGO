@@ -8,10 +8,10 @@ export const matakuliahService = {
 		});
 	},
 
-	async create(name: string, sks: number): Promise<ApiResponse<MataKuliah>> {
+	async create(name: string, sks: number, program_studi_id: string): Promise<ApiResponse<MataKuliah>> {
 		return await fetchApi<ApiResponse<MataKuliah>>('/matakuliah', {
 			method: 'POST',
-			body: JSON.stringify({ name, sks })
+			body: JSON.stringify({ name, sks, program_studi_id })
 		});
 	},
 

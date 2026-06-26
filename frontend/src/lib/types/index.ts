@@ -24,9 +24,17 @@ export interface LoginResponse {
 	role: 'admin' | 'dosen';
 }
 
+export interface ProgramStudi {
+	id: string;
+	name: string;
+	code: string;
+}
+
 export interface MataKuliah {
 	id: string;
 	name: string;
 	sks: number;
+	program_studi_id: string;
+	program_studi?: ProgramStudi;
 	created_at: string;
 }

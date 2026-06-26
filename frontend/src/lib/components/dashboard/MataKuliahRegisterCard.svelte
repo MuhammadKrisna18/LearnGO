@@ -1,11 +1,32 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { matakuliahService } from '$lib/services/matakuliah';
+	import { programStudiService } from '$lib/services/programstudi';
+	import type { ProgramStudi } from '$lib/types';
 
 	let mkName = $state('');
 	let mkSks = $state<number | ''>('');
+	let mkProdiId = $state('');
+	
+	let prodiList = $state<ProgramStudi[]>([]);
+	let loadingProdi = $state(true);
+	
 	let registerLoading = $state(false);
 	let registerError = $state('');
 	let registerSuccess = $state('');
+
+	onMount(async () => {
+		try {
+			const res = await programStudiService.getList();
+			if (res.success && res.data) {
+				prodiList = res.data;
+			}
+		} catch (err) {
+			console.error("Gagal mengambil data prodi:", err);
+		} finally {
+			loadingProdi = false;
+		}
+	});
 
 	async function handleRegisterMataKuliah(e: Event) {
 		if (e) e.preventDefault();
@@ -17,15 +38,21 @@
 			return;
 		}
 		
+		if (!mkProdiId) {
+			registerError = 'Program Studi wajib dipilih';
+			return;
+		}
+		
 		registerLoading = true;
 
 		try {
-			const res = await matakuliahService.create(mkName, mkSks);
+			const res = await matakuliahService.create(mkName, mkSks, mkProdiId);
 
 			if (res.success) {
 				registerSuccess = `Berhasil membuat Mata Kuliah baru: ${mkName} (${mkSks} SKS)`;
 				mkName = '';
 				mkSks = '';
+				mkProdiId = '';
 			} else {
 				registerError = res.message || 'Gagal membuat Mata Kuliah';
 			}
@@ -70,6 +97,22 @@
 				required
 				disabled={registerLoading}
 			/>
+		</div>
+
+		<div class="form-group">
+			<label class="form-label" for="mkProdi">Program Studi</label>
+			<select 
+				class="form-input" 
+				id="mkProdi" 
+				bind:value={mkProdiId} 
+				required 
+				disabled={registerLoading || loadingProdi}
+			>
+				<option value="" disabled selected>-- Pilih Program Studi --</option>
+				{#each prodiList as prodi}
+					<option value={prodi.id}>{prodi.name}</option>
+				{/each}
+			</select>
 		</div>
 
 		{#if registerError}
