@@ -12,7 +12,18 @@ Sebuah sistem terintegrasi dengan arsitektur **Modular Monolith**, dikembangkan 
 - **Admin Management**: Fitur khusus bagi admin untuk mendaftarkan akun baru (seperti akun dosen) serta fitur **Manajemen Mata Kuliah** lengkap dengan validasi unik.
 - **Svelte 5 Runes**: Memanfaatkan fitur *reactivity* modern dari Svelte 5 (`$state`) yang membuat manajemen *state* frontend lebih efisien.
 - **Database & Cache**: Terhubung dengan **PostgreSQL** (melalui GORM) untuk database persisten dan **Redis** untuk manajemen *cache*.
-- **Swagger Documentation**: Dokumentasi endpoint API otomatis yang dapat diakses dengan mudah untuk kebutuhan *development*.
+	- **Swagger Documentation**: Dokumentasi endpoint API otomatis yang dapat diakses dengan mudah untuk kebutuhan *development*.
+
+---
+
+## 🏆 Quality Attributes
+
+Sistem ini dibangun dengan memprioritaskan NFR (Non-Functional Requirements) berikut:
+- **Maintainability (Keterpeliharaan)**: Diwujudkan melalui pemisahan domain pada *backend* (Modular Monolith) dan pemisahan komponen secara atomik pada *frontend* (SvelteKit).
+- **Performance (Kinerja)**: Backend Go Fiber sangat cepat dalam menangani *request* HTTP, didukung dengan *caching* Redis, serta manajemen *state* reaktif menggunakan *Runes* pada Svelte 5.
+- **Security (Keamanan)**: Diimplementasikan menggunakan autentikasi *stateless* (JWT), enkripsi *password* menggunakan Bcrypt, dan sistem RBAC (Role-Based Access Control) yang ketat di level API maupun UI.
+- **Usability (Kebergunaan)**: Pengalaman antarmuka (*User Experience*) difokuskan dengan desain visual *Glassmorphism*, transisi antar halaman instan (*Single Page Application* feel), serta *feedback* yang responsif (pesan sukses/error).
+- **Scalability (Skalabilitas)**: Arsitektur *stateless* memungkinkan aplikasi untuk mudah di-*scale* (dikembangkan) ke depannya, baik dari sisi fungsionalitas (menambah modul baru) maupun dari sisi infrastruktur (menambah *instance* server).
 
 ---
 
