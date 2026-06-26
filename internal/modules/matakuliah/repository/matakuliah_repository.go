@@ -21,7 +21,7 @@ func (r *pgMataKuliahRepository) Create(ctx context.Context, mk *domain.MataKuli
 
 func (r *pgMataKuliahRepository) GetByName(ctx context.Context, name string) (*domain.MataKuliah, error) {
 	var mk domain.MataKuliah
-	err := r.db.WithContext(ctx).Where("name = ?", name).First(&mk).Error
+	err := r.db.WithContext(ctx).Where("LOWER(name) = LOWER(?)", name).First(&mk).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
