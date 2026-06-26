@@ -83,11 +83,12 @@ func (s *authService) RegisterDosen(ctx context.Context, req domain.RegisterDose
 	}
 
 	newUser := &domain.User{
-		ID:       uuid.New().String(),
-		Name:     req.Name,
-		Email:    email,
-		Password: string(hashedPassword),
-		Role:     "dosen",
+		ID:             uuid.New().String(),
+		Name:           req.Name,
+		Email:          email,
+		Password:       string(hashedPassword),
+		Role:           "dosen",
+		ProgramStudiID: &req.ProgramStudiID,
 	}
 
 	if err := s.repo.Create(ctx, newUser); err != nil {
@@ -95,11 +96,12 @@ func (s *authService) RegisterDosen(ctx context.Context, req domain.RegisterDose
 	}
 
 	return &domain.UserProfileResponse{
-		ID:        newUser.ID,
-		Name:      newUser.Name,
-		Email:     newUser.Email,
-		Role:      newUser.Role,
-		CreatedAt: newUser.CreatedAt,
+		ID:             newUser.ID,
+		Name:           newUser.Name,
+		Email:          newUser.Email,
+		Role:           newUser.Role,
+		ProgramStudiID: newUser.ProgramStudiID,
+		CreatedAt:      newUser.CreatedAt,
 	}, nil
 }
 
@@ -112,11 +114,13 @@ func (s *authService) GetDosenList(ctx context.Context) ([]*domain.UserProfileRe
 	var res []*domain.UserProfileResponse
 	for _, u := range users {
 		res = append(res, &domain.UserProfileResponse{
-			ID:        u.ID,
-			Name:      u.Name,
-			Email:     u.Email,
-			Role:      u.Role,
-			CreatedAt: u.CreatedAt,
+			ID:             u.ID,
+			Name:           u.Name,
+			Email:          u.Email,
+			Role:           u.Role,
+			ProgramStudiID: u.ProgramStudiID,
+			ProgramStudi:   u.ProgramStudi,
+			CreatedAt:      u.CreatedAt,
 		})
 	}
 	return res, nil

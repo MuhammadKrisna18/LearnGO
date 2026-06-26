@@ -42,7 +42,7 @@ func (r *pgAuthRepository) GetByID(ctx context.Context, id string) (*domain.User
 
 func (r *pgAuthRepository) GetUsersByRole(ctx context.Context, role string) ([]*domain.User, error) {
 	var users []*domain.User
-	result := r.db.WithContext(ctx).Where("role = ?", role).Order("created_at desc").Find(&users)
+	result := r.db.WithContext(ctx).Preload("ProgramStudi").Where("role = ?", role).Order("created_at desc").Find(&users)
 	if result.Error != nil {
 		return nil, result.Error
 	}

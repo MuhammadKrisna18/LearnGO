@@ -66,8 +66,8 @@ func (h *AuthHandler) RegisterDosen(c *fiber.Ctx) error {
 		return apperrors.NewBadRequest("invalid request body", err.Error())
 	}
 
-	if req.Name == "" || req.Username == "" || req.Password == "" {
-		return apperrors.NewBadRequest("name, username, and password are required")
+	if req.Name == "" || req.Username == "" || req.Password == "" || req.ProgramStudiID == "" {
+		return apperrors.NewBadRequest("name, username, password, and program studi are required")
 	}
 
 	res, err := h.service.RegisterDosen(c.UserContext(), req)

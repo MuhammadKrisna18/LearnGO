@@ -8,10 +8,10 @@ export const dosenService = {
 		});
 	},
 
-	async register(name: string, username: string, password: string): Promise<ApiResponse<any>> {
-		return await fetchApi<ApiResponse<any>>('/auth/dosen', {
+	async register(name: string, username: string, password: string, program_studi_id: string): Promise<ApiResponse<UserProfile>> {
+		return await fetchApi<ApiResponse<UserProfile>>('/auth/dosen', {
 			method: 'POST',
-			body: JSON.stringify({ name, username, password })
+			body: JSON.stringify({ name, username, password, program_studi_id })
 		});
-	}
+	},
 };

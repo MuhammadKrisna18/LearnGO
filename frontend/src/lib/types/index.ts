@@ -12,6 +12,16 @@ export interface User {
 	created_at: string;
 }
 
+export interface UserProfile {
+	id: string;
+	name: string;
+	email: string;
+	role: 'admin' | 'dosen';
+	program_studi_id?: string;
+	program_studi?: ProgramStudi;
+	created_at: string;
+}
+
 export interface Dosen {
 	id: number;
 	name: string;

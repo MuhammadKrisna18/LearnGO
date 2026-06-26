@@ -2,21 +2,32 @@
 	import { onMount } from 'svelte';
 	import { dosenService } from '$lib/services/dosen';
 	import { authService } from '$lib/services/auth';
-	import type { UserProfile } from '$lib/types';
+	import { programStudiService } from '$lib/services/programstudi';
+	import type { UserProfile, ProgramStudi } from '$lib/types';
 	import DeleteConfirmModal from './DeleteConfirmModal.svelte';
 
 	let dosenList: UserProfile[] = $state([]);
+	let prodiList: ProgramStudi[] = $state([]);
 	let loading = $state(true);
 	let error = $state('');
 
 	onMount(async () => {
 		try {
-			const res = await dosenService.getList();
-			if (res.success && res.data) {
-				dosenList = res.data;
+			const [dosenRes, prodiRes] = await Promise.all([
+				dosenService.getList(),
+				programStudiService.getList()
+			]);
+
+			if (dosenRes.success && dosenRes.data) {
+				dosenList = dosenRes.data;
 			} else {
-				error = res.message || 'Gagal mengambil daftar dosen';
+				error = dosenRes.message || 'Gagal mengambil daftar dosen';
 			}
+
+			if (prodiRes.success && prodiRes.data) {
+				prodiList = prodiRes.data;
+			}
+
 		} catch (err) {
 			error = 'Gagal terhubung ke server';
 			console.error(err);
@@ -24,6 +35,14 @@
 			loading = false;
 		}
 	});
+
+	function getDosenByProdi(prodiId: string) {
+		return dosenList.filter(d => d.program_studi_id === prodiId);
+	}
+
+	function getDosenWithoutProdi() {
+		return dosenList.filter(d => !d.program_studi_id);
+	}
 
 	let isDeleteModalOpen = $state(false);
 	let selectedDosen = $state<UserProfile | null>(null);
@@ -61,40 +80,86 @@
 		<div class="table-loading">Memuat data...</div>
 	{:else if error}
 		<div class="table-error">{error}</div>
-	{:else if dosenList.length === 0}
-		<div class="table-empty">Belum ada akun dosen yang didaftarkan.</div>
 	{:else}
-		<div class="table-container">
-			<table class="dosen-table">
-				<thead>
-					<tr>
-						<th>Nama Dosen</th>
-						<th>Email</th>
-						<th>Tgl Bergabung</th>
-						<th>Aksi</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each dosenList as dosen}
-						<tr>
-							<td>
-								<div class="dosen-info">
-									<div class="avatar">{dosen.name.charAt(0).toUpperCase()}</div>
-									<span>{dosen.name}</span>
-								</div>
-							</td>
-							<td><span class="mono">{dosen.email}</span></td>
-							<td>{new Date(dosen.created_at).toLocaleDateString()}</td>
-							<td>
-								<button class="btn-delete" aria-label="Hapus Dosen" onclick={() => promptDelete(dosen)}>
-									Hapus
-								</button>
-							</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</div>
+		{#each prodiList as prodi}
+			{@const prodiDosen = getDosenByProdi(prodi.id)}
+			<div class="prodi-section">
+				<h4 class="prodi-title">{prodi.name}</h4>
+				{#if prodiDosen.length === 0}
+					<div class="table-empty">Belum ada akun dosen di program studi ini.</div>
+				{:else}
+					<div class="table-container">
+						<table class="dosen-table">
+							<thead>
+								<tr>
+									<th>Nama Dosen</th>
+									<th>Email</th>
+									<th>Tgl Bergabung</th>
+									<th>Aksi</th>
+								</tr>
+							</thead>
+							<tbody>
+								{#each prodiDosen as dosen}
+									<tr>
+										<td>
+											<div class="dosen-info">
+												<div class="avatar">{dosen.name.charAt(0).toUpperCase()}</div>
+												<span>{dosen.name}</span>
+											</div>
+										</td>
+										<td><span class="mono">{dosen.email}</span></td>
+										<td>{new Date(dosen.created_at).toLocaleDateString()}</td>
+										<td>
+											<button class="btn-delete" aria-label="Hapus Dosen" onclick={() => promptDelete(dosen)}>
+												Hapus
+											</button>
+										</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+				{/if}
+			</div>
+		{/each}
+
+		{@const noProdiDosen = getDosenWithoutProdi()}
+		{#if noProdiDosen.length > 0}
+			<div class="prodi-section">
+				<h4 class="prodi-title unassigned">Belum Memiliki Program Studi</h4>
+				<div class="table-container">
+					<table class="dosen-table">
+						<thead>
+							<tr>
+								<th>Nama Dosen</th>
+								<th>Email</th>
+								<th>Tgl Bergabung</th>
+								<th>Aksi</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each noProdiDosen as dosen}
+								<tr>
+									<td>
+										<div class="dosen-info">
+											<div class="avatar">{dosen.name.charAt(0).toUpperCase()}</div>
+											<span>{dosen.name}</span>
+										</div>
+									</td>
+									<td><span class="mono">{dosen.email}</span></td>
+									<td>{new Date(dosen.created_at).toLocaleDateString()}</td>
+									<td>
+										<button class="btn-delete" aria-label="Hapus Dosen" onclick={() => promptDelete(dosen)}>
+											Hapus
+										</button>
+									</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		{/if}
 	{/if}
 </div>
 
@@ -127,6 +192,41 @@
 	.card-header p {
 		font-size: 0.9rem;
 		color: var(--text-muted);
+	}
+
+	.prodi-section {
+		margin-bottom: 32px;
+	}
+
+	.prodi-section:last-child {
+		margin-bottom: 0;
+	}
+
+	.prodi-title {
+		font-size: 1.1rem;
+		font-weight: 600;
+		color: var(--primary-color);
+		margin-bottom: 12px;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.prodi-title::before {
+		content: '';
+		display: block;
+		width: 4px;
+		height: 16px;
+		background: var(--primary-color);
+		border-radius: 4px;
+	}
+
+	.prodi-title.unassigned {
+		color: var(--warning-color, #f59e0b);
+	}
+
+	.prodi-title.unassigned::before {
+		background: var(--warning-color, #f59e0b);
 	}
 
 	.table-container {
@@ -180,6 +280,11 @@
 		color: var(--error-color);
 		background: rgba(239, 68, 68, 0.05);
 		border-color: rgba(239, 68, 68, 0.2);
+	}
+
+	.mono {
+		font-family: monospace;
+		color: var(--text-muted);
 	}
 
 	.mono {
