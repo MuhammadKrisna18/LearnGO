@@ -19,6 +19,7 @@ import (
 	"modular-monolith/config"
 	_ "modular-monolith/docs"
 	"modular-monolith/internal/modules/auth"
+	"modular-monolith/internal/modules/matakuliah"
 	"modular-monolith/internal/shared/apperrors"
 	"modular-monolith/internal/shared/cache"
 	"modular-monolith/internal/shared/database"
@@ -77,8 +78,12 @@ func (a *App) Start() error {
 	a.fiber.Get("/swagger/*", swagger.HandlerDefault)
 
 	api := a.fiber.Group("/api/v1")
+	
 	authModule := auth.NewAuthModule(a.db, a.cfg)
 	authModule.RegisterRoutes(api)
+
+	mkModule := matakuliah.NewMataKuliahModule(a.db, a.cfg)
+	mkModule.RegisterRoutes(api)
 
 	serverErrors := make(chan error, 1)
 	go func() {

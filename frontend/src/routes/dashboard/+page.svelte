@@ -4,6 +4,7 @@
 	import { authService } from '$lib/services/auth';
 	import ProfileCard from '$lib/components/dashboard/ProfileCard.svelte';
 	import DosenListCard from '$lib/components/dashboard/DosenListCard.svelte';
+	import MataKuliahListCard from '$lib/components/dashboard/MataKuliahListCard.svelte';
 
 	let loading = $state(true);
 	let error = $state('');
@@ -40,6 +41,7 @@
 
 		{#if authState.profile.role === 'admin'}
 			<DosenListCard />
+			<MataKuliahListCard />
 		{:else if authState.profile.role === 'dosen'}
 			<div class="dosen-empty-state glass-panel animate-fade-in" style="animation-delay: 0.2s;">
 				<div class="empty-icon">🎓</div>

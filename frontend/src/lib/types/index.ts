@@ -23,3 +23,10 @@ export interface LoginResponse {
 	token: string;
 	role: 'admin' | 'dosen';
 }
+
+export interface MataKuliah {
+	id: string;
+	name: string;
+	sks: number;
+	created_at: string;
+}

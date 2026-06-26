@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 	"modular-monolith/config"
 	"modular-monolith/internal/modules/auth/domain"
+	mkDomain "modular-monolith/internal/modules/matakuliah/domain"
 )
 
 func NewPostgresConnection(cfg *config.Config) (*gorm.DB, error) {
@@ -39,7 +40,7 @@ func NewPostgresConnection(cfg *config.Config) (*gorm.DB, error) {
 	log.Println("Successfully connected to PostgreSQL database via GORM")
 
 	log.Println("Running AutoMigrate...")
-	if err := db.AutoMigrate(&domain.User{}); err != nil {
+	if err := db.AutoMigrate(&domain.User{}, &mkDomain.MataKuliah{}); err != nil {
 		log.Printf("AutoMigrate failed: %v", err)
 	}
 

@@ -40,6 +40,10 @@
 					<span class="menu-icon">👥</span>
 					<span class="menu-text">Manajemen Dosen</span>
 				</a>
+				<a href="/dashboard/matakuliah" class="menu-item {$page.url.pathname.includes('/dashboard/matakuliah') ? 'active' : ''}">
+					<span class="menu-icon">📚</span>
+					<span class="menu-text">Mata Kuliah</span>
+				</a>
 			{/if}
 		</div>
 

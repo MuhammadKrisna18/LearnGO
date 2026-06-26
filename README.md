@@ -4,12 +4,12 @@ Sebuah sistem terintegrasi dengan arsitektur **Modular Monolith**, dikembangkan 
 
 ## 🚀 Fitur Utama
 
-- **Modular Architecture**: Struktur backend dibagi berdasarkan modul (contoh: modul `auth`) yang membuat kode lebih terisolasi dan mudah di-maintain.
+- **Modular Architecture**: Struktur backend dibagi berdasarkan modul (contoh: modul `auth` dan `matakuliah`) yang membuat kode lebih terisolasi dan mudah di-maintain.
+- **Frontend Modular Design**: Pemisahan antarmuka (UI) menjadi komponen-komponen terisolasi di `src/lib/components` dipadukan dengan manajemen *Global State* Svelte 5 Runes untuk optimasi reaktivitas dan caching data.
 - **Modern Authentication**: Implementasi JWT (JSON Web Token) dengan kapabilitas *Role-based Access Control* (RBAC).
 - **Custom Performance Logger**: Middleware khusus untuk mengukur latensi eksekusi setiap request API, dikategorikan secara *real-time* ke dalam tiga level: `FAST`, `MODERATE`, dan `SLOW`.
-- **Dynamic Splash Screen**: Login flow dilengkapi dengan splash screen pintar yang menyesuaikan konten animasi berdasarkan role pengguna (`AdminSplash` vs `DefaultSplash`).
-- **Role-based Dashboards**: Tampilan dashboard spesifik untuk masing-masing role (Admin mendapatkan tabel manajemen, Dosen mendapatkan tampilan status/notifikasi yang bersih).
-- **Admin Management**: Fitur khusus bagi admin untuk mendaftarkan akun baru (seperti akun dosen) secara langsung dari sistem.
+- **Role-based Dashboards**: Tampilan dashboard spesifik untuk masing-masing role. Serta pemisahan Sidebar Navigation untuk fitur Admin.
+- **Admin Management**: Fitur khusus bagi admin untuk mendaftarkan akun baru (seperti akun dosen) serta fitur **Manajemen Mata Kuliah** lengkap dengan validasi unik.
 - **Svelte 5 Runes**: Memanfaatkan fitur *reactivity* modern dari Svelte 5 (`$state`) yang membuat manajemen *state* frontend lebih efisien.
 - **Database & Cache**: Terhubung dengan **PostgreSQL** (melalui GORM) untuk database persisten dan **Redis** untuk manajemen *cache*.
 - **Swagger Documentation**: Dokumentasi endpoint API otomatis yang dapat diakses dengan mudah untuk kebutuhan *development*.
@@ -42,13 +42,13 @@ Sebuah sistem terintegrasi dengan arsitektur **Modular Monolith**, dikembangkan 
  ┣ 📂 config           # Konfigurasi environment (DB, Redis, JWT)
  ┣ 📂 docs             # Dokumentasi auto-generated (Swagger)
  ┣ 📂 frontend         # Direktori frontend SvelteKit
- ┃  ┣ 📂 src/lib       # Komponen reusable (Splash screen, UI)
- ┃  ┣ 📂 src/routes    # Halaman aplikasi (Login, Dashboard)
+ ┃  ┣ 📂 src/lib       # Komponen reusable, API Services, dan Global Stores (Svelte 5 Runes)
+ ┃  ┣ 📂 src/routes    # Halaman aplikasi dengan Layout Sidebar
  ┃  ┗ 📜 app.css       # File core CSS dengan variable desain
  ┣ 📂 internal         # Core logic dari backend Modular Monolith
  ┃  ┣ 📂 app           # Registrasi aplikasi dan middleware (Fiber)
  ┃  ┣ 📂 middleware    # Custom Middleware (Performance Logger, JWT)
- ┃  ┣ 📂 modules       # Folder modular domain (contoh: Auth module)
+ ┃  ┣ 📂 modules       # Folder modular domain (contoh: Auth module, Matakuliah module)
  ┃  ┗ 📂 shared        # Logic shared antar module (DB, Cache, Error Handler)
  ┗ 📜 README.md
 ```
@@ -111,10 +111,14 @@ npm run dev
 2. **Autentikasi**: Pengguna memasukkan Email dan Password.
 3. **Validasi**: Data dikirim ke API `/api/v1/auth/login`. Jika sukses, Backend mengembalikan JWT dan *Role* (Admin/User).
 4. **Performa**: Secara bersamaan di console backend, performa request akan dilog (`FAST` / `MODERATE` / `SLOW`). Di console browser, tercatat latensi dari sisi klien.
-5. **Splash Screen**: Frontend menyimpan token ke `localStorage` dan langsung memunculkan Splash Screen dinamis (*Admin Splash* atau *Default Splash*).
-6. **Redirect**: Setelah simulasi *loading* animasi, pengguna otomatis diarahkan ke `http://localhost:5173/dashboard`.
-7. **Dashboard**: Mengambil data Profile ke API `/api/v1/auth/me` menggunakan token JWT.
-8. **Role UI**: Jika pengguna adalah Admin, halaman akan menampilkan form pembuatan akun Dosen (`POST /api/v1/auth/dosen`) serta tabel reaktif berisikan daftar seluruh dosen (`GET /api/v1/auth/dosen`). Jika pengguna adalah Dosen, halaman akan menampilkan antarmuka bersih (Empty State).
+5. **Splash Screen**: Frontend menyimpan token dan role ke Global Store memory dan langsung memunculkan Splash Screen dinamis (*Admin Splash* atau *Default Splash*).
+6. **Redirect**: Setelah simulasi *loading* animasi (1.5 detik), pengguna otomatis diarahkan ke `http://localhost:5173/dashboard`.
+7. **Dashboard**: Mengambil data Profile ke API `/api/v1/auth/me` menggunakan token JWT (hasil di-_cache_ di Global Store Svelte 5 sehingga navigasi antar menu instan).
+8. **Role UI & Sidebar**: 
+   - Jika pengguna adalah Admin, Admin melihat menu **Manajemen Dosen** dan **Mata Kuliah** di *Sidebar*.
+   - Admin dapat menambahkan Dosen dan Mata Kuliah melalui rute tersendiri yang menampilkan *form registration*.
+   - Admin melihat rekap Daftar Dosen dan Daftar Mata Kuliah di halaman depan (Dashboard).
+   - Jika pengguna adalah Dosen, halaman akan menampilkan antarmuka bersih (Empty State).
 9. **Clean UI**: Semua instruksi di dalam file program bersifat bersih (telah di-*strip* dari semua komentar developer) sehingga *codebase* sangat *clean*.
 
 ---
