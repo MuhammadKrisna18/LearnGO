@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"modular-monolith/config"
 	"modular-monolith/internal/modules/auth/domain"
@@ -64,5 +65,39 @@ func (s *authService) GetProfile(ctx context.Context, id string) (*domain.UserPr
 		Email:     user.Email,
 		Role:      user.Role,
 		CreatedAt: user.CreatedAt,
+	}, nil
+}
+
+func (s *authService) RegisterDosen(ctx context.Context, req domain.RegisterDosenRequest) (*domain.UserProfileResponse, error) {
+	email := req.Username + "@DosenGO.id"
+
+	_, err := s.repo.GetByEmail(ctx, email)
+	if err == nil {
+		return nil, errors.New("email already exists")
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, errors.New("failed to hash password")
+	}
+
+	newUser := &domain.User{
+		ID:       uuid.New().String(),
+		Name:     req.Name,
+		Email:    email,
+		Password: string(hashedPassword),
+		Role:     "dosen",
+	}
+
+	if err := s.repo.Create(ctx, newUser); err != nil {
+		return nil, errors.New("failed to create dosen account")
+	}
+
+	return &domain.UserProfileResponse{
+		ID:        newUser.ID,
+		Name:      newUser.Name,
+		Email:     newUser.Email,
+		Role:      newUser.Role,
+		CreatedAt: newUser.CreatedAt,
 	}, nil
 }

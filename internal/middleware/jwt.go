@@ -45,3 +45,13 @@ func Protected(secret string) fiber.Handler {
 		return c.Next()
 	}
 }
+
+func RequireRole(role string) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		userRole, ok := c.Locals("userRole").(string)
+		if !ok || userRole != role {
+			return apperrors.NewForbidden("you do not have permission to perform this action")
+		}
+		return c.Next()
+	}
+}

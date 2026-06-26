@@ -20,6 +20,12 @@ type LoginRequest struct {
 	Password string `json:"password" validate:"required"`
 }
 
+type RegisterDosenRequest struct {
+	Name     string `json:"name" validate:"required"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
+
 type LoginResponse struct {
 	Token string `json:"token"`
 	Role  string `json:"role"`
@@ -42,4 +48,5 @@ type AuthRepository interface {
 type AuthService interface {
 	Login(ctx context.Context, req LoginRequest) (*LoginResponse, error)
 	GetProfile(ctx context.Context, id string) (*UserProfileResponse, error)
+	RegisterDosen(ctx context.Context, req RegisterDosenRequest) (*UserProfileResponse, error)
 }

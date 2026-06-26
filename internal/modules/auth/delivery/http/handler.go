@@ -20,6 +20,7 @@ func (h *AuthHandler) RegisterRoutes(router fiber.Router, jwtSecret string) {
 	authGroup := router.Group("/auth")
 	authGroup.Post("/login", h.Login)
 	authGroup.Get("/me", middleware.Protected(jwtSecret), h.Me)
+	authGroup.Post("/dosen", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.RegisterDosen)
 }
 
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
@@ -55,4 +56,25 @@ func (h *AuthHandler) Me(c *fiber.Ctx) error {
 	}
 
 	return response.Success(c, fiber.StatusOK, "success", profile)
+}
+
+func (h *AuthHandler) RegisterDosen(c *fiber.Ctx) error {
+	var req domain.RegisterDosenRequest
+	if err := c.BodyParser(&req); err != nil {
+		return apperrors.NewBadRequest("invalid request body", err.Error())
+	}
+
+	if req.Name == "" || req.Username == "" || req.Password == "" {
+		return apperrors.NewBadRequest("name, username, and password are required")
+	}
+
+	res, err := h.service.RegisterDosen(c.UserContext(), req)
+	if err != nil {
+		if err.Error() == "email already exists" {
+			return apperrors.NewBadRequest(err.Error())
+		}
+		return apperrors.NewInternal("failed to register dosen", err.Error())
+	}
+
+	return response.Success(c, fiber.StatusCreated, "dosen account created successfully", res)
 }
