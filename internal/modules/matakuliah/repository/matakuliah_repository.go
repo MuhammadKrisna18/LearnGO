@@ -19,9 +19,9 @@ func (r *pgMataKuliahRepository) Create(ctx context.Context, mk *domain.MataKuli
 	return r.db.WithContext(ctx).Create(mk).Error
 }
 
-func (r *pgMataKuliahRepository) GetByName(ctx context.Context, name string) (*domain.MataKuliah, error) {
+func (r *pgMataKuliahRepository) GetByNameAndProdi(ctx context.Context, name string, prodiID string) (*domain.MataKuliah, error) {
 	var mk domain.MataKuliah
-	err := r.db.WithContext(ctx).Where("LOWER(name) = LOWER(?)", name).First(&mk).Error
+	err := r.db.WithContext(ctx).Where("LOWER(name) = LOWER(?) AND program_studi_id = ?", name, prodiID).First(&mk).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil

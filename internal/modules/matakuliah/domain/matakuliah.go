@@ -9,9 +9,9 @@ import (
 
 type MataKuliah struct {
 	ID             string                `json:"id" gorm:"primaryKey;type:varchar(255)"`
-	Name           string                `json:"name" gorm:"type:varchar(255);uniqueIndex;not null"`
+	Name           string                `json:"name" gorm:"type:varchar(255);uniqueIndex:idx_name_prodi;not null"`
 	SKS            int                   `json:"sks" gorm:"not null"`
-	ProgramStudiID string                `json:"program_studi_id" gorm:"type:varchar(255);not null"`
+	ProgramStudiID string                `json:"program_studi_id" gorm:"type:varchar(255);uniqueIndex:idx_name_prodi;not null"`
 	ProgramStudi   *psDomain.ProgramStudi `json:"program_studi,omitempty" gorm:"foreignKey:ProgramStudiID"`
 	CreatedAt      time.Time             `json:"created_at"`
 	UpdatedAt      time.Time             `json:"updated_at"`
@@ -25,7 +25,7 @@ type CreateMataKuliahRequest struct {
 
 type MataKuliahRepository interface {
 	Create(ctx context.Context, mk *MataKuliah) error
-	GetByName(ctx context.Context, name string) (*MataKuliah, error)
+	GetByNameAndProdi(ctx context.Context, name string, prodiID string) (*MataKuliah, error)
 	GetAll(ctx context.Context) ([]*MataKuliah, error)
 	Delete(ctx context.Context, id string) error
 }

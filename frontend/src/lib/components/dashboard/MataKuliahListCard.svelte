@@ -1,20 +1,30 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { matakuliahService } from '$lib/services/matakuliah';
-	import type { MataKuliah } from '$lib/types';
+	import { programStudiService } from '$lib/services/programstudi';
+	import type { MataKuliah, ProgramStudi } from '$lib/types';
 	import DeleteConfirmModal from './DeleteConfirmModal.svelte';
 
 	let mkList: MataKuliah[] = $state([]);
+	let prodiList: ProgramStudi[] = $state([]);
 	let loading = $state(true);
 	let error = $state('');
 
 	onMount(async () => {
 		try {
-			const res = await matakuliahService.getList();
-			if (res.success && res.data) {
-				mkList = res.data;
+			const [resMk, resProdi] = await Promise.all([
+				matakuliahService.getList(),
+				programStudiService.getList()
+			]);
+			
+			if (resMk.success && resMk.data) {
+				mkList = resMk.data;
 			} else {
-				error = res.message || 'Gagal mengambil daftar mata kuliah';
+				error = resMk.message || 'Gagal mengambil daftar mata kuliah';
+			}
+			
+			if (resProdi.success && resProdi.data) {
+				prodiList = resProdi.data;
 			}
 		} catch (err) {
 			error = 'Gagal terhubung ke server';
@@ -62,37 +72,44 @@
 	{:else if mkList.length === 0}
 		<div class="table-empty">Belum ada mata kuliah yang didaftarkan.</div>
 	{:else}
-		<div class="table-container">
-			<table class="mk-table">
-				<thead>
-					<tr>
-						<th>Nama Mata Kuliah</th>
-						<th>Program Studi</th>
-						<th>SKS</th>
-						<th>Tgl Ditambahkan</th>
-						<th>Aksi</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each mkList as mk}
-						<tr>
-							<td>{mk.name}</td>
-							<td>
-								<span class="prodi-badge">
-									{mk.program_studi ? mk.program_studi.name : 'Unknown'}
-								</span>
-							</td>
-							<td><span class="badge sks-badge">{mk.sks} SKS</span></td>
-							<td>{new Date(mk.created_at).toLocaleDateString()}</td>
-							<td>
-								<button class="btn-delete" aria-label="Hapus Mata Kuliah" onclick={() => promptDelete(mk)}>
-									Hapus
-								</button>
-							</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
+		<div class="prodi-groups">
+			{#each prodiList as prodi}
+				{@const prodiMks = mkList.filter(mk => mk.program_studi_id === prodi.id)}
+				<div class="prodi-section">
+					<h4 class="prodi-title">{prodi.name} ({prodi.code})</h4>
+					
+					{#if prodiMks.length === 0}
+						<div class="table-empty prodi-empty">Belum ada mata kuliah.</div>
+					{:else}
+						<div class="table-container">
+							<table class="mk-table">
+								<thead>
+									<tr>
+										<th>Nama Mata Kuliah</th>
+										<th>SKS</th>
+										<th>Tgl Ditambahkan</th>
+										<th>Aksi</th>
+									</tr>
+								</thead>
+								<tbody>
+									{#each prodiMks as mk}
+										<tr>
+											<td>{mk.name}</td>
+											<td><span class="badge sks-badge">{mk.sks} SKS</span></td>
+											<td>{new Date(mk.created_at).toLocaleDateString()}</td>
+											<td>
+												<button class="btn-delete" aria-label="Hapus Mata Kuliah" onclick={() => promptDelete(mk)}>
+													Hapus
+												</button>
+											</td>
+										</tr>
+									{/each}
+								</tbody>
+							</table>
+						</div>
+					{/if}
+				</div>
+			{/each}
 		</div>
 	{/if}
 </div>
@@ -195,14 +212,25 @@
 		border: 1px solid rgba(16, 185, 129, 0.2);
 	}
 	
-	.prodi-badge {
-		background: rgba(99, 102, 241, 0.1);
-		color: #6366f1;
-		border: 1px solid rgba(99, 102, 241, 0.2);
-		padding: 4px 8px;
-		border-radius: 6px;
-		font-size: 0.8rem;
-		font-weight: 500;
+	.prodi-groups {
+		display: flex;
+		flex-direction: column;
+		gap: 32px;
+	}
+	
+	.prodi-title {
+		font-size: 1.1rem;
+		font-weight: 600;
+		color: var(--primary-color);
+		margin-bottom: 16px;
+		padding-bottom: 8px;
+		border-bottom: 2px solid rgba(99, 102, 241, 0.2);
+	}
+	
+	.prodi-empty {
+		padding: 20px;
+		background: transparent;
+		border: 1px dashed var(--surface-border);
 	}
 	
 	.btn-delete {

@@ -23,14 +23,14 @@ func (s *matakuliahService) CreateMataKuliah(ctx context.Context, req domain.Cre
 		return nil, apperrors.NewBadRequest("Program Studi wajib diisi")
 	}
 
-	// 1. Cek apakah mata kuliah dengan nama tersebut sudah ada (unik)
-	existing, err := s.repo.GetByName(ctx, req.Name)
+	// 1. Cek apakah mata kuliah dengan nama tersebut sudah ada di Program Studi ini
+	existing, err := s.repo.GetByNameAndProdi(ctx, req.Name, req.ProgramStudiID)
 	if err != nil {
 		return nil, apperrors.NewInternal("Gagal mengecek mata kuliah", err.Error())
 	}
 	
 	if existing != nil {
-		return nil, &apperrors.AppError{Code: http.StatusConflict, Message: "Mata kuliah sudah ada, tidak bisa ditambahkan lagi meskipun berbeda SKS"}
+		return nil, &apperrors.AppError{Code: http.StatusConflict, Message: "Mata kuliah sudah terdaftar di Program Studi ini"}
 	}
 
 	newMk := &domain.MataKuliah{
