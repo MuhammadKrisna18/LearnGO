@@ -80,7 +80,7 @@
 							<td>{new Date(mk.created_at).toLocaleDateString()}</td>
 							<td>
 								<button class="btn-delete" aria-label="Hapus Mata Kuliah" onclick={() => promptDelete(mk)}>
-									🗑️
+									Hapus
 								</button>
 							</td>
 						</tr>
@@ -190,17 +190,18 @@
 	}
 	
 	.btn-delete {
-		background: none;
-		border: none;
+		background: rgba(239, 68, 68, 0.1);
+		color: var(--error-color);
+		border: 1px solid rgba(239, 68, 68, 0.2);
 		cursor: pointer;
-		opacity: 0.5;
 		transition: all 0.2s;
-		font-size: 1.1rem;
-		padding: 4px;
+		font-size: 0.85rem;
+		padding: 6px 12px;
+		border-radius: var(--radius-sm);
+		font-weight: 500;
 	}
 	
 	.btn-delete:hover {
-		opacity: 1;
-		transform: scale(1.1);
+		background: rgba(239, 68, 68, 0.2);
 	}
 </style>

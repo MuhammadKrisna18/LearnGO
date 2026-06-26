@@ -87,7 +87,7 @@
 							<td>{new Date(dosen.created_at).toLocaleDateString()}</td>
 							<td>
 								<button class="btn-delete" aria-label="Hapus Dosen" onclick={() => promptDelete(dosen)}>
-									🗑️
+									Hapus
 								</button>
 							</td>
 						</tr>
@@ -185,5 +185,34 @@
 	.mono {
 		font-family: monospace;
 		color: var(--text-muted);
+	}
+
+	.btn-delete {
+		background: rgba(239, 68, 68, 0.1);
+		color: var(--error-color);
+		border: 1px solid rgba(239, 68, 68, 0.2);
+		cursor: pointer;
+		transition: all 0.2s;
+		font-size: 0.85rem;
+		padding: 6px 12px;
+		border-radius: var(--radius-sm);
+		font-weight: 500;
+	}
+	
+	.btn-delete:hover {
+		background: rgba(239, 68, 68, 0.2);
+	}
+
+	.avatar {
+		width: 32px;
+		height: 32px;
+		background: var(--primary-color);
+		color: white;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 600;
+		font-size: 0.85rem;
 	}
 </style>
