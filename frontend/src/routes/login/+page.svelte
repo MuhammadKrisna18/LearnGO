@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import AdminSplash from '$lib/components/splash/AdminSplash.svelte';
 	import DefaultSplash from '$lib/components/splash/DefaultSplash.svelte';
+	import DosenSplash from '$lib/components/splash/DosenSplash.svelte';
 
 	let email = $state('');
 	let password = $state('');
@@ -65,6 +66,8 @@
 		<div class="glass-panel splash-card animate-fade-in">
 			{#if userRole.toLowerCase() === 'admin'}
 				<AdminSplash />
+			{:else if userRole.toLowerCase() === 'dosen'}
+				<DosenSplash />
 			{:else}
 				<DefaultSplash />
 			{/if}
