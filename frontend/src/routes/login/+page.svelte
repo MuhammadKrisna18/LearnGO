@@ -45,7 +45,7 @@
 				
 				setTimeout(() => {
 					goto('/dashboard');
-				}, 3000);
+				}, 1500);
 			} else {
 				error = 'Invalid response from server.';
 			}
