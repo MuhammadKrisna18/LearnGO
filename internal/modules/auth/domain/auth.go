@@ -42,6 +42,7 @@ type UserProfileResponse struct {
 type AuthRepository interface {
 	GetByEmail(ctx context.Context, email string) (*User, error)
 	GetByID(ctx context.Context, id string) (*User, error)
+	GetUsersByRole(ctx context.Context, role string) ([]*User, error)
 	Create(ctx context.Context, user *User) error
 }
 
@@ -49,4 +50,5 @@ type AuthService interface {
 	Login(ctx context.Context, req LoginRequest) (*LoginResponse, error)
 	GetProfile(ctx context.Context, id string) (*UserProfileResponse, error)
 	RegisterDosen(ctx context.Context, req RegisterDosenRequest) (*UserProfileResponse, error)
+	GetDosenList(ctx context.Context) ([]*UserProfileResponse, error)
 }

@@ -8,6 +8,8 @@ Sebuah sistem terintegrasi dengan arsitektur **Modular Monolith**, dikembangkan 
 - **Modern Authentication**: Implementasi JWT (JSON Web Token) dengan kapabilitas *Role-based Access Control* (RBAC).
 - **Custom Performance Logger**: Middleware khusus untuk mengukur latensi eksekusi setiap request API, dikategorikan secara *real-time* ke dalam tiga level: `FAST`, `MODERATE`, dan `SLOW`.
 - **Dynamic Splash Screen**: Login flow dilengkapi dengan splash screen pintar yang menyesuaikan konten animasi berdasarkan role pengguna (`AdminSplash` vs `DefaultSplash`).
+- **Role-based Dashboards**: Tampilan dashboard spesifik untuk masing-masing role (Admin mendapatkan tabel manajemen, Dosen mendapatkan tampilan status/notifikasi yang bersih).
+- **Admin Management**: Fitur khusus bagi admin untuk mendaftarkan akun baru (seperti akun dosen) secara langsung dari sistem.
 - **Svelte 5 Runes**: Memanfaatkan fitur *reactivity* modern dari Svelte 5 (`$state`) yang membuat manajemen *state* frontend lebih efisien.
 - **Database & Cache**: Terhubung dengan **PostgreSQL** (melalui GORM) untuk database persisten dan **Redis** untuk manajemen *cache*.
 - **Swagger Documentation**: Dokumentasi endpoint API otomatis yang dapat diakses dengan mudah untuk kebutuhan *development*.
@@ -112,7 +114,8 @@ npm run dev
 5. **Splash Screen**: Frontend menyimpan token ke `localStorage` dan langsung memunculkan Splash Screen dinamis (*Admin Splash* atau *Default Splash*).
 6. **Redirect**: Setelah simulasi *loading* animasi, pengguna otomatis diarahkan ke `http://localhost:5173/dashboard`.
 7. **Dashboard**: Mengambil data Profile ke API `/api/v1/auth/me` menggunakan token JWT.
-8. **Clean UI**: Semua instruksi di dalam file program bersifat bersih (telah di-*strip* dari semua komentar developer) sehingga *codebase* sangat *clean*.
+8. **Role UI**: Jika pengguna adalah Admin, halaman akan menampilkan form pembuatan akun Dosen (`POST /api/v1/auth/dosen`) serta tabel reaktif berisikan daftar seluruh dosen (`GET /api/v1/auth/dosen`). Jika pengguna adalah Dosen, halaman akan menampilkan antarmuka bersih (Empty State).
+9. **Clean UI**: Semua instruksi di dalam file program bersifat bersih (telah di-*strip* dari semua komentar developer) sehingga *codebase* sangat *clean*.
 
 ---
 

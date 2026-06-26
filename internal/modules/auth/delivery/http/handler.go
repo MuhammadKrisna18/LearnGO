@@ -21,6 +21,7 @@ func (h *AuthHandler) RegisterRoutes(router fiber.Router, jwtSecret string) {
 	authGroup.Post("/login", h.Login)
 	authGroup.Get("/me", middleware.Protected(jwtSecret), h.Me)
 	authGroup.Post("/dosen", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.RegisterDosen)
+	authGroup.Get("/dosen", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.GetDosenList)
 }
 
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
@@ -77,4 +78,12 @@ func (h *AuthHandler) RegisterDosen(c *fiber.Ctx) error {
 	}
 
 	return response.Success(c, fiber.StatusCreated, "dosen account created successfully", res)
+}
+
+func (h *AuthHandler) GetDosenList(c *fiber.Ctx) error {
+	list, err := h.service.GetDosenList(c.UserContext())
+	if err != nil {
+		return apperrors.NewInternal("failed to retrieve dosen list", err.Error())
+	}
+	return response.Success(c, fiber.StatusOK, "success", list)
 }

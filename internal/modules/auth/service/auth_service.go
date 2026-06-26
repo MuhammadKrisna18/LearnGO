@@ -101,3 +101,22 @@ func (s *authService) RegisterDosen(ctx context.Context, req domain.RegisterDose
 		CreatedAt: newUser.CreatedAt,
 	}, nil
 }
+
+func (s *authService) GetDosenList(ctx context.Context) ([]*domain.UserProfileResponse, error) {
+	users, err := s.repo.GetUsersByRole(ctx, "dosen")
+	if err != nil {
+		return nil, errors.New("failed to fetch dosen list")
+	}
+
+	var res []*domain.UserProfileResponse
+	for _, u := range users {
+		res = append(res, &domain.UserProfileResponse{
+			ID:        u.ID,
+			Name:      u.Name,
+			Email:     u.Email,
+			Role:      u.Role,
+			CreatedAt: u.CreatedAt,
+		})
+	}
+	return res, nil
+}
