@@ -10,6 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"modular-monolith/config"
 	"modular-monolith/internal/modules/auth/domain"
+	"modular-monolith/internal/shared/apperrors"
 )
 
 type authService struct {
@@ -119,4 +120,16 @@ func (s *authService) GetDosenList(ctx context.Context) ([]*domain.UserProfileRe
 		})
 	}
 	return res, nil
+}
+
+func (s *authService) DeleteDosen(ctx context.Context, id string) error {
+	// Optional: verify if user exists and is a dosen
+	user, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return apperrors.NewNotFound("Akun dosen tidak ditemukan", err.Error())
+	}
+	if user.Role != "dosen" {
+		return &apperrors.AppError{Code: 400, Message: "Akun ini bukan dosen"}
+	}
+	return s.repo.DeleteUser(ctx, id)
 }

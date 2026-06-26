@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { matakuliahService } from '$lib/services/matakuliah';
 	import type { MataKuliah } from '$lib/types';
+	import DeleteConfirmModal from './DeleteConfirmModal.svelte';
 
 	let mkList: MataKuliah[] = $state([]);
 	let loading = $state(true);
@@ -22,6 +23,30 @@
 			loading = false;
 		}
 	});
+
+	let isDeleteModalOpen = $state(false);
+	let selectedMK = $state<MataKuliah | null>(null);
+
+	function promptDelete(mk: MataKuliah) {
+		selectedMK = mk;
+		isDeleteModalOpen = true;
+	}
+
+	async function handleDelete() {
+		if (!selectedMK) return;
+		
+		try {
+			const res = await matakuliahService.delete(selectedMK.id);
+			if (res.success) {
+				// Remove from list
+				mkList = mkList.filter(m => m.id !== selectedMK!.id);
+			} else {
+				error = res.message || 'Gagal menghapus mata kuliah';
+			}
+		} catch (err) {
+			error = 'Gagal terhubung ke server';
+		}
+	}
 </script>
 
 <div class="mk-list-card glass-panel animate-fade-in" style="animation-delay: 0.4s;">
@@ -44,6 +69,7 @@
 						<th>Nama Mata Kuliah</th>
 						<th>SKS</th>
 						<th>Tgl Ditambahkan</th>
+						<th>Aksi</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -52,6 +78,11 @@
 							<td>{mk.name}</td>
 							<td><span class="badge sks-badge">{mk.sks} SKS</span></td>
 							<td>{new Date(mk.created_at).toLocaleDateString()}</td>
+							<td>
+								<button class="btn-delete" aria-label="Hapus Mata Kuliah" onclick={() => promptDelete(mk)}>
+									🗑️
+								</button>
+							</td>
 						</tr>
 					{/each}
 				</tbody>
@@ -59,6 +90,14 @@
 		</div>
 	{/if}
 </div>
+
+<DeleteConfirmModal 
+	bind:isOpen={isDeleteModalOpen}
+	title="Hapus Mata Kuliah"
+	itemName={selectedMK?.name || ''}
+	onConfirm={handleDelete}
+	onCancel={() => selectedMK = null}
+/>
 
 <style>
 	.mk-list-card {
@@ -148,5 +187,20 @@
 		background: rgba(16, 185, 129, 0.1);
 		color: #10b981;
 		border: 1px solid rgba(16, 185, 129, 0.2);
+	}
+	
+	.btn-delete {
+		background: none;
+		border: none;
+		cursor: pointer;
+		opacity: 0.5;
+		transition: all 0.2s;
+		font-size: 1.1rem;
+		padding: 4px;
+	}
+	
+	.btn-delete:hover {
+		opacity: 1;
+		transform: scale(1.1);
 	}
 </style>

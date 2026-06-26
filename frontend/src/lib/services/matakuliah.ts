@@ -13,5 +13,11 @@ export const matakuliahService = {
 			method: 'POST',
 			body: JSON.stringify({ name, sks })
 		});
+	},
+
+	async delete(id: string): Promise<ApiResponse<null>> {
+		return await fetchApi<ApiResponse<null>>(`/matakuliah/${id}`, {
+			method: 'DELETE'
+		});
 	}
 };

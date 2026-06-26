@@ -52,3 +52,7 @@ func (r *pgAuthRepository) GetUsersByRole(ctx context.Context, role string) ([]*
 func (r *pgAuthRepository) Create(ctx context.Context, user *domain.User) error {
 	return r.db.WithContext(ctx).Create(user).Error
 }
+
+func (r *pgAuthRepository) DeleteUser(ctx context.Context, id string) error {
+	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&domain.User{}).Error
+}

@@ -26,5 +26,17 @@ export const authService = {
 		}
 		
 		return data;
+	},
+
+	async getDosenList(): Promise<ApiResponse<UserProfile[]>> {
+		return await fetchApi<ApiResponse<UserProfile[]>>('/auth/dosen', {
+			method: 'GET'
+		});
+	},
+
+	async deleteDosen(id: string): Promise<ApiResponse<null>> {
+		return await fetchApi<ApiResponse<null>>(`/auth/dosen/${id}`, {
+			method: 'DELETE'
+		});
 	}
 };

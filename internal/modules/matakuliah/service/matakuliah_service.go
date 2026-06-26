@@ -54,3 +54,10 @@ func (s *matakuliahService) GetMataKuliahList(ctx context.Context) ([]*domain.Ma
 
 	return mkList, nil
 }
+
+func (s *matakuliahService) DeleteMataKuliah(ctx context.Context, id string) error {
+	if err := s.repo.Delete(ctx, id); err != nil {
+		return apperrors.NewInternal("Gagal menghapus mata kuliah", err.Error())
+	}
+	return nil
+}

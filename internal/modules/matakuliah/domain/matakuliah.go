@@ -22,9 +22,11 @@ type MataKuliahRepository interface {
 	Create(ctx context.Context, mk *MataKuliah) error
 	GetByName(ctx context.Context, name string) (*MataKuliah, error)
 	GetAll(ctx context.Context) ([]*MataKuliah, error)
+	Delete(ctx context.Context, id string) error
 }
 
 type MataKuliahService interface {
 	CreateMataKuliah(ctx context.Context, req CreateMataKuliahRequest) (*MataKuliah, error)
 	GetMataKuliahList(ctx context.Context) ([]*MataKuliah, error)
+	DeleteMataKuliah(ctx context.Context, id string) error
 }

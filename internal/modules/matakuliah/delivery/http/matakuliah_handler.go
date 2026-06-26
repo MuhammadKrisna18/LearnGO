@@ -24,6 +24,7 @@ func (h *MataKuliahHandler) RegisterRoutes(router fiber.Router, jwtSecret string
 	
 	mkGroup.Get("/", h.GetMataKuliahList)
 	mkGroup.Post("/", middleware.RequireRole("admin"), h.CreateMataKuliah)
+	mkGroup.Delete("/:id", middleware.RequireRole("admin"), h.DeleteMataKuliah)
 }
 
 func (h *MataKuliahHandler) CreateMataKuliah(c *fiber.Ctx) error {
@@ -52,4 +53,17 @@ func (h *MataKuliahHandler) GetMataKuliahList(c *fiber.Ctx) error {
 	}
 
 	return response.Success(c, fiber.StatusOK, "Berhasil mengambil daftar mata kuliah", mkList)
+}
+
+func (h *MataKuliahHandler) DeleteMataKuliah(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return response.Error(c, fiber.StatusBadRequest, "ID tidak valid", nil)
+	}
+
+	if err := h.service.DeleteMataKuliah(c.Context(), id); err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusOK, "Berhasil menghapus mata kuliah", nil)
 }

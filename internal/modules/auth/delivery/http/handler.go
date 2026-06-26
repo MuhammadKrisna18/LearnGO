@@ -22,6 +22,7 @@ func (h *AuthHandler) RegisterRoutes(router fiber.Router, jwtSecret string) {
 	authGroup.Get("/me", middleware.Protected(jwtSecret), h.Me)
 	authGroup.Post("/dosen", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.RegisterDosen)
 	authGroup.Get("/dosen", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.GetDosenList)
+	authGroup.Delete("/dosen/:id", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.DeleteDosen)
 }
 
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
@@ -86,4 +87,17 @@ func (h *AuthHandler) GetDosenList(c *fiber.Ctx) error {
 		return apperrors.NewInternal("failed to retrieve dosen list", err.Error())
 	}
 	return response.Success(c, fiber.StatusOK, "success", list)
+}
+
+func (h *AuthHandler) DeleteDosen(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return apperrors.NewBadRequest("ID tidak valid")
+	}
+
+	if err := h.service.DeleteDosen(c.UserContext(), id); err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusOK, "Berhasil menghapus akun dosen", nil)
 }

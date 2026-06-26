@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { dosenService } from '$lib/services/dosen';
-	import type { Dosen } from '$lib/types';
+	import { authService } from '$lib/services/auth';
+	import type { UserProfile } from '$lib/types';
+	import DeleteConfirmModal from './DeleteConfirmModal.svelte';
 
-	let dosenList: Dosen[] = $state([]);
+	let dosenList: UserProfile[] = $state([]);
 	let loading = $state(true);
 	let error = $state('');
 
@@ -22,6 +24,31 @@
 			loading = false;
 		}
 	});
+
+	let isDeleteModalOpen = $state(false);
+	let selectedDosen = $state<UserProfile | null>(null);
+
+	function promptDelete(dosen: UserProfile) {
+		selectedDosen = dosen;
+		isDeleteModalOpen = true;
+	}
+
+	async function handleDelete() {
+		if (!selectedDosen) return;
+		
+		try {
+			const res = await authService.deleteDosen(selectedDosen.id);
+			if (res.success) {
+				// Remove from list
+				dosenList = dosenList.filter(d => d.id !== selectedDosen!.id);
+				isDeleteModalOpen = false;
+			} else {
+				error = res.message || 'Gagal menghapus dosen';
+			}
+		} catch (err) {
+			error = 'Gagal terhubung ke server';
+		}
+	}
 </script>
 
 <div class="dosen-list-card glass-panel animate-fade-in" style="animation-delay: 0.3s;">
@@ -41,17 +68,28 @@
 			<table class="dosen-table">
 				<thead>
 					<tr>
-						<th>Nama</th>
+						<th>Nama Dosen</th>
 						<th>Email</th>
 						<th>Tgl Bergabung</th>
+						<th>Aksi</th>
 					</tr>
 				</thead>
 				<tbody>
 					{#each dosenList as dosen}
 						<tr>
-							<td>{dosen.name}</td>
+							<td>
+								<div class="dosen-info">
+									<div class="avatar">{dosen.name.charAt(0).toUpperCase()}</div>
+									<span>{dosen.name}</span>
+								</div>
+							</td>
 							<td><span class="mono">{dosen.email}</span></td>
 							<td>{new Date(dosen.created_at).toLocaleDateString()}</td>
+							<td>
+								<button class="btn-delete" aria-label="Hapus Dosen" onclick={() => promptDelete(dosen)}>
+									🗑️
+								</button>
+							</td>
 						</tr>
 					{/each}
 				</tbody>
@@ -59,6 +97,14 @@
 		</div>
 	{/if}
 </div>
+
+<DeleteConfirmModal 
+	bind:isOpen={isDeleteModalOpen}
+	title="Hapus Akun Dosen"
+	itemName={selectedDosen?.name || ''}
+	onConfirm={handleDelete}
+	onCancel={() => selectedDosen = null}
+/>
 
 <style>
 	.dosen-list-card {

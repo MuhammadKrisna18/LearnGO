@@ -41,6 +41,7 @@ type UserProfileResponse struct {
 
 type AuthRepository interface {
 	GetByEmail(ctx context.Context, email string) (*User, error)
+	DeleteUser(ctx context.Context, id string) error
 	GetByID(ctx context.Context, id string) (*User, error)
 	GetUsersByRole(ctx context.Context, role string) ([]*User, error)
 	Create(ctx context.Context, user *User) error
@@ -51,4 +52,5 @@ type AuthService interface {
 	GetProfile(ctx context.Context, id string) (*UserProfileResponse, error)
 	RegisterDosen(ctx context.Context, req RegisterDosenRequest) (*UserProfileResponse, error)
 	GetDosenList(ctx context.Context) ([]*UserProfileResponse, error)
+	DeleteDosen(ctx context.Context, id string) error
 }

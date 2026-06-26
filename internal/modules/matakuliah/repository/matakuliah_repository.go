@@ -39,3 +39,7 @@ func (r *pgMataKuliahRepository) GetAll(ctx context.Context) ([]*domain.MataKuli
 	}
 	return mkList, nil
 }
+
+func (r *pgMataKuliahRepository) Delete(ctx context.Context, id string) error {
+	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&domain.MataKuliah{}).Error
+}
