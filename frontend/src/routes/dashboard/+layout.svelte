@@ -2,18 +2,19 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
+	import { authState } from '$lib/stores/auth.svelte';
+
 	let { children } = $props();
 
-	let userRole = $state('');
-
 	onMount(() => {
-		userRole = localStorage.getItem('role') || 'User';
+		if (!authState.token) {
+			goto('/login');
+		}
 	});
 
-	function handleLogout() {
-		localStorage.removeItem('token');
-		localStorage.removeItem('role');
-		goto('/login');
+	function handleLogout(e: Event) {
+		e.preventDefault();
+		authState.logout();
 	}
 </script>
 
@@ -34,7 +35,7 @@
 				<span class="menu-icon">🏠</span>
 				<span class="menu-text">Dashboard</span>
 			</a>
-			{#if userRole === 'admin'}
+			{#if authState.role === 'admin'}
 				<a href="/dashboard/dosen" class="menu-item {$page.url.pathname.includes('/dashboard/dosen') ? 'active' : ''}">
 					<span class="menu-icon">👥</span>
 					<span class="menu-text">Manajemen Dosen</span>
@@ -44,7 +45,7 @@
 
 		<div class="sidebar-footer">
 			<div class="user-role-badge">
-				{userRole.toUpperCase()}
+				{authState.role?.toUpperCase() || 'USER'}
 			</div>
 			<button class="btn-logout" onclick={handleLogout}>
 				<span class="logout-icon">🚪</span>

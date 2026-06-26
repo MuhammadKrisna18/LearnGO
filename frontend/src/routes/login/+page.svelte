@@ -3,54 +3,34 @@
 	import AdminSplash from '$lib/components/splash/AdminSplash.svelte';
 	import DefaultSplash from '$lib/components/splash/DefaultSplash.svelte';
 	import DosenSplash from '$lib/components/splash/DosenSplash.svelte';
+	import { authService } from '$lib/services/auth';
+	import { authState } from '$lib/stores/auth.svelte';
 
 	let email = $state('');
 	let password = $state('');
 	let loading = $state(false);
 	let error = $state('');
 	let showSplash = $state(false);
-	let userRole = $state('');
 
 	async function handleLogin(e: Event) {
 		if (e) e.preventDefault();
 		error = '';
 		loading = true;
-		
-		console.time('⚡ API_Login_Execution_Time');
-		const loginStartTime = performance.now();
 
 		try {
-			const res = await fetch('http://localhost:8080/api/v1/auth/login', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ email, password })
-			});
+			const res = await authService.login(email, password);
 
-			const data = await res.json();
-			
-			const loginEndTime = performance.now();
-			console.timeEnd('⚡ API_Login_Execution_Time');
-			console.log(`⏱️ Waktu asli backend untuk login: ${(loginEndTime - loginStartTime).toFixed(2)} ms`);
-
-			if (!res.ok) {
-				error = data.message || 'Login failed. Please try again.';
-			} else if (data.success && data.data && data.data.token) {
-				localStorage.setItem('token', data.data.token);
-				localStorage.setItem('role', data.data.role);
-				
-				userRole = data.data.role || '';
+			if (res.success) {
 				showSplash = true;
 				
 				setTimeout(() => {
 					goto('/dashboard');
 				}, 1500);
 			} else {
-				error = 'Invalid response from server.';
+				error = res.message || 'Login failed. Please try again.';
 			}
-		} catch (err) {
-			error = 'Network error. Is the backend server running?';
+		} catch (err: any) {
+			error = err.message || 'Network error. Is the backend server running?';
 		} finally {
 			loading = false;
 		}
@@ -64,9 +44,9 @@
 <main class="login-container">
 	{#if showSplash}
 		<div class="glass-panel splash-card animate-fade-in">
-			{#if userRole.toLowerCase() === 'admin'}
+			{#if authState.role?.toLowerCase() === 'admin'}
 				<AdminSplash />
-			{:else if userRole.toLowerCase() === 'dosen'}
+			{:else if authState.role?.toLowerCase() === 'dosen'}
 				<DosenSplash />
 			{:else}
 				<DefaultSplash />
