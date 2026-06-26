@@ -2,9 +2,9 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 
-	let profile: any = null;
-	let loading = true;
-	let error = '';
+	let profile: any = $state(null);
+	let loading = $state(true);
+	let error = $state('');
 
 	let dosenName = $state('');
 	let dosenUsername = $state('');
@@ -102,7 +102,7 @@
 			<span class="logo-icon">✦</span>
 			<span class="brand-name">Modular Monolith</span>
 		</div>
-		<button class="btn-logout" on:click={handleLogout}>Logout</button>
+		<button class="btn-logout" onclick={handleLogout}>Logout</button>
 	</nav>
 
 	<div class="content">
@@ -129,15 +129,15 @@
 				
 				<div class="profile-details">
 					<div class="detail-group">
-						<label>Email Address</label>
+						<span class="detail-label">Email Address</span>
 						<p>{profile.email}</p>
 					</div>
 					<div class="detail-group">
-						<label>Account ID</label>
+						<span class="detail-label">Account ID</span>
 						<p class="mono">{profile.id}</p>
 					</div>
 					<div class="detail-group">
-						<label>Member Since</label>
+						<span class="detail-label">Member Since</span>
 						<p>{new Date(profile.created_at).toLocaleDateString()}</p>
 					</div>
 				</div>
@@ -355,7 +355,7 @@
 		gap: 24px;
 	}
 
-	.detail-group label {
+	.detail-group .detail-label {
 		display: block;
 		font-size: 0.8rem;
 		color: var(--text-muted);
