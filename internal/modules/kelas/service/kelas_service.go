@@ -18,12 +18,11 @@ func NewKelasService(repo domain.KelasRepository) domain.KelasService {
 }
 
 func (s *kelasService) Create(ctx context.Context, req domain.CreateKelasRequest) (*domain.Kelas, error) {
-	// Validate Name format: e.g. IF-101
-	// The user requested format: IF-101 - IF 107, IF-201 - IF-207, IF-301
-	// Regex: ^[A-Z0-9]+-\d{3}$
-	matched, _ := regexp.MatchString(`^[A-Z0-9]+-\d{3}$`, req.Name)
+	// Validate Name format: wajib menggunakan IF- dan range 101-107, 201-207, 301-307
+	// Regex: ^IF-[1-3]0[1-7]$
+	matched, _ := regexp.MatchString(`^IF-[1-3]0[1-7]$`, req.Name)
 	if !matched {
-		return nil, apperrors.NewBadRequest("Format nama kelas tidak valid (contoh: IF-101)")
+		return nil, apperrors.NewBadRequest("Format nama kelas tidak valid (contoh yang benar: IF-101 s/d IF-107, IF-201 s/d IF-207, IF-301 s/d IF-307)")
 	}
 
 	// Validate Capacity

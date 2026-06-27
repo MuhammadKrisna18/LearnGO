@@ -18,7 +18,7 @@ type Kelas struct {
 }
 
 type CreateKelasRequest struct {
-	Name           string `json:"name" validate:"required,regexp=^[A-Z0-9]+-\\d{3}$"`
+	Name           string `json:"name" validate:"required"`
 	Capacity       int    `json:"capacity" validate:"required,min=25,max=50"`
 	ProgramStudiID string `json:"program_studi_id" validate:"required"`
 }

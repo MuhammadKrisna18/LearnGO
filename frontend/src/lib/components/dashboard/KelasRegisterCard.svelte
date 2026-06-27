@@ -82,8 +82,8 @@
 					placeholder="Cth: IF-101"
 					required
 					disabled={loading}
-					pattern="^[A-Z0-9]+-\d{3}$"
-					title="Gunakan format huruf besar dan angka diikuti strip dan 3 digit angka (contoh: IF-101)"
+					pattern="^IF-[1-3]0[1-7]$"
+					title="Format wajib: IF-101 s/d IF-107, IF-201 s/d IF-207, atau IF-301 s/d IF-307"
 				/>
 			</div>
 
