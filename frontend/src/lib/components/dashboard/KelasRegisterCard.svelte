@@ -7,6 +7,27 @@
 	let name = $state('');
 	let capacity = $state(25);
 	let program_studi_id = $state('');
+	let hari = $state('');
+	let waktu = $state('');
+
+	const hariOptions = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
+	const waktuOptions = [
+		{ label: '07:00 - 09:00', start: '07:00', end: '09:00' },
+		{ label: '09:00 - 11:00', start: '09:00', end: '11:00' },
+		{ label: '11:00 - 13:00', start: '11:00', end: '13:00' },
+		{ label: '13:00 - 15:00', start: '13:00', end: '15:00' },
+		{ label: '15:00 - 17:00', start: '15:00', end: '17:00' },
+		{ label: '17:00 - 19:00', start: '17:00', end: '19:00' },
+		{ label: '19:00 - 21:00', start: '19:00', end: '21:00' }
+	];
+
+	// Generate class names: IF-101 to IF-107, IF-201 to IF-207, IF-301 to IF-307
+	const nameOptions: string[] = [];
+	for (let i = 1; i <= 3; i++) {
+		for (let j = 1; j <= 7; j++) {
+			nameOptions.push(`IF-${i}0${j}`);
+		}
+	}
 
 	let prodiList = $state<ProgramStudi[]>([]);
 	let loadingProdi = $state(true);
@@ -14,11 +35,18 @@
 	let error = $state('');
 	let success = $state('');
 
+	let kelases = $state<Kelas[]>([]);
+
 	onMount(async () => {
 		try {
-			const res = await programStudiService.getList();
-			if (res.success && res.data) {
-				prodiList = res.data;
+			const resProdi = await programStudiService.getList();
+			if (resProdi.success && resProdi.data) {
+				prodiList = resProdi.data;
+			}
+			
+			const resKelas = await kelasService.getList();
+			if (resKelas.success && resKelas.data) {
+				kelases = resKelas.data;
 			}
 		} catch (err) {
 			console.error('Gagal mengambil data program studi:', err);
@@ -34,18 +62,32 @@
 		loading = true;
 
 		try {
+			// Extract jam_mulai and jam_selesai from selected waktu
+			const selectedWaktu = waktuOptions.find(w => w.label === waktu);
+			
 			const res = await kelasService.create({
 				name,
 				capacity,
+				hari,
+				jam_mulai: selectedWaktu?.start || '',
+				jam_selesai: selectedWaktu?.end || '',
 				program_studi_id
 			});
 
 			if (res.success) {
-				success = 'Kelas berhasil ditambahkan!';
+				success = 'Berhasil menambahkan kelas';
 				name = '';
 				capacity = 25;
 				program_studi_id = '';
-				// Dispatch event to refresh list
+				hari = '';
+				waktu = '';
+				
+				// Refresh kelas list so new class blocks its time slot
+				const resKelas = await kelasService.getList();
+				if (resKelas.success && resKelas.data) {
+					kelases = resKelas.data;
+				}
+				
 				window.dispatchEvent(new CustomEvent('kelasCreated'));
 			} else {
 				error = res.message || 'Gagal menambahkan kelas';
@@ -73,18 +115,19 @@
 
 		<form onsubmit={handleSubmit} class="form-grid">
 			<div class="form-group">
-				<label for="name">Nama Kelas (Format: IF-101)</label>
-				<input
-					type="text"
+				<label for="name">Nama Kelas</label>
+				<select
 					id="name"
 					class="form-input"
 					bind:value={name}
-					placeholder="Cth: IF-101"
 					required
 					disabled={loading}
-					pattern="^IF-[1-3]0[1-7]$"
-					title="Format wajib: IF-101 s/d IF-107, IF-201 s/d IF-207, atau IF-301 s/d IF-307"
-				/>
+				>
+					<option value="" disabled>-- Pilih Kelas --</option>
+					{#each nameOptions as n}
+						<option value={n}>{n}</option>
+					{/each}
+				</select>
 			</div>
 
 			<div class="form-group">
@@ -99,6 +142,41 @@
 					required
 					disabled={loading}
 				/>
+			</div>
+
+			<div class="form-group">
+				<label for="hari">Hari</label>
+				<select
+					id="hari"
+					class="form-input"
+					bind:value={hari}
+					required
+					disabled={loading}
+				>
+					<option value="" disabled>-- Pilih Hari --</option>
+					{#each hariOptions as h}
+						<option value={h}>{h}</option>
+					{/each}
+				</select>
+			</div>
+
+			<div class="form-group">
+				<label for="waktu">Jam Kelas</label>
+				<select
+					id="waktu"
+					class="form-input"
+					bind:value={waktu}
+					required
+					disabled={loading || !name || !hari}
+				>
+					<option value="" disabled>-- Pilih Jam Kelas --</option>
+					{#each waktuOptions as w}
+						{@const isUsed = kelases.some(k => k.name === name && k.hari === hari && k.jam_mulai === w.start)}
+						<option value={w.label} disabled={isUsed}>
+							{w.label} {isUsed ? '(Penuh)' : ''}
+						</option>
+					{/each}
+				</select>
 			</div>
 
 			<div class="form-group">

@@ -65,6 +65,9 @@ export interface Kelas {
 	id: string;
 	name: string;
 	capacity: number;
+	hari: string;
+	jam_mulai: string;
+	jam_selesai: string;
 	program_studi_id: string;
 	program_studi?: ProgramStudi;
 	created_at: string;
@@ -73,5 +76,8 @@ export interface Kelas {
 export interface CreateKelasPayload {
 	name: string;
 	capacity: number;
+	hari: string;
+	jam_mulai: string;
+	jam_selesai: string;
 	program_studi_id: string;
 }

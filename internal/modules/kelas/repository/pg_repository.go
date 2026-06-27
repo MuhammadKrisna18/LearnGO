@@ -50,6 +50,17 @@ func (r *pgKelasRepository) GetByName(ctx context.Context, name string) (*domain
 	return &kelas, nil
 }
 
+func (r *pgKelasRepository) CheckScheduleConflict(ctx context.Context, name string, hari string, jamMulai string) (bool, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&domain.Kelas{}).
+		Where("name = ? AND hari = ? AND jam_mulai = ?", name, hari, jamMulai).
+		Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
 func (r *pgKelasRepository) Delete(ctx context.Context, id string) error {
 	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&domain.Kelas{}).Error
 }

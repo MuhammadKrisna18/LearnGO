@@ -9,8 +9,11 @@ import (
 
 type Kelas struct {
 	ID             string                 `json:"id" gorm:"primaryKey;type:varchar(255)"`
-	Name           string                 `json:"name" gorm:"type:varchar(255);uniqueIndex;not null"`
+	Name           string                 `json:"name" gorm:"type:varchar(255);not null"`
 	Capacity       int                    `json:"capacity" gorm:"not null"`
+	Hari           string                 `json:"hari" gorm:"type:varchar(20)"`
+	JamMulai       string                 `json:"jam_mulai" gorm:"type:varchar(10)"`
+	JamSelesai     string                 `json:"jam_selesai" gorm:"type:varchar(10)"`
 	ProgramStudiID string                 `json:"program_studi_id" gorm:"type:varchar(255);not null"`
 	ProgramStudi   *psDomain.ProgramStudi `json:"program_studi,omitempty" gorm:"foreignKey:ProgramStudiID"`
 	CreatedAt      time.Time              `json:"created_at" gorm:"autoCreateTime"`
@@ -20,6 +23,9 @@ type Kelas struct {
 type CreateKelasRequest struct {
 	Name           string `json:"name" validate:"required"`
 	Capacity       int    `json:"capacity" validate:"required,min=25,max=50"`
+	Hari           string `json:"hari" validate:"required"`
+	JamMulai       string `json:"jam_mulai" validate:"required"`
+	JamSelesai     string `json:"jam_selesai" validate:"required"`
 	ProgramStudiID string `json:"program_studi_id" validate:"required"`
 }
 
@@ -28,6 +34,7 @@ type KelasRepository interface {
 	GetAll(ctx context.Context) ([]*Kelas, error)
 	GetByID(ctx context.Context, id string) (*Kelas, error)
 	GetByName(ctx context.Context, name string) (*Kelas, error)
+	CheckScheduleConflict(ctx context.Context, name string, hari string, jamMulai string) (bool, error)
 	Delete(ctx context.Context, id string) error
 }
 

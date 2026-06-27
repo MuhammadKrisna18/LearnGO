@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log"
 	"regexp"
 
 	"github.com/google/uuid"
@@ -30,21 +31,36 @@ func (s *kelasService) Create(ctx context.Context, req domain.CreateKelasRequest
 		return nil, apperrors.NewBadRequest("Kapasitas kelas harus antara 25 dan 50")
 	}
 
-	// Check for unique name
-	existing, _ := s.repo.GetByName(ctx, req.Name)
-	if existing != nil {
-		return nil, apperrors.NewBadRequest("Nama kelas sudah terdaftar")
+	// Check for schedule conflict
+	conflict, _ := s.repo.CheckScheduleConflict(ctx, req.Name, req.Hari, req.JamMulai)
+	if conflict {
+		return nil, apperrors.NewBadRequest("Kelas tersebut sudah terdaftar pada hari dan jam yang sama")
+	}
+
+	// Validate Hari
+	validHari := map[string]bool{"Senin": true, "Selasa": true, "Rabu": true, "Kamis": true, "Jumat": true}
+	if !validHari[req.Hari] {
+		return nil, apperrors.NewBadRequest("Hari harus antara Senin sampai Jumat")
+	}
+
+	// Validate Jam
+	if req.JamMulai == "" || req.JamSelesai == "" {
+		return nil, apperrors.NewBadRequest("Jam mulai dan selesai harus diisi")
 	}
 
 	kelas := &domain.Kelas{
 		ID:             uuid.New().String(),
 		Name:           req.Name,
 		Capacity:       req.Capacity,
+		Hari:           req.Hari,
+		JamMulai:       req.JamMulai,
+		JamSelesai:     req.JamSelesai,
 		ProgramStudiID: req.ProgramStudiID,
 	}
 
 	if err := s.repo.Create(ctx, kelas); err != nil {
-		return nil, apperrors.NewInternal("Gagal membuat kelas", err.Error())
+		log.Println("DB INSERT ERROR:", err)
+		return nil, apperrors.NewInternal("Gagal membuat kelas: " + err.Error())
 	}
 
 	return s.repo.GetByID(ctx, kelas.ID) // Fetch with relations

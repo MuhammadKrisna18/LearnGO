@@ -12,6 +12,62 @@
 	let isDeleteModalOpen = $state(false);
 	let selectedKelas = $state<Kelas | null>(null);
 
+	let searchQuery = $state('');
+	let sortBy = $state('kelas');
+
+	const hariOrder: Record<string, number> = {
+		'Senin': 1,
+		'Selasa': 2,
+		'Rabu': 3,
+		'Kamis': 4,
+		'Jumat': 5
+	};
+
+	let groupedKelases = $derived.by(() => {
+		let filtered = [...kelases];
+		
+		if (searchQuery.trim() !== '') {
+			const q = searchQuery.toLowerCase();
+			filtered = filtered.filter(k => 
+				k.name.toLowerCase().includes(q) || 
+				(k.program_studi?.name || 'Lainnya').toLowerCase().includes(q)
+			);
+		}
+
+		filtered.sort((a, b) => {
+			if (sortBy === 'kelas') {
+				const diff = a.name.localeCompare(b.name);
+				if (diff !== 0) return diff;
+				return (hariOrder[a.hari] || 99) - (hariOrder[b.hari] || 99);
+			} else if (sortBy === 'hari') {
+				const diff = (hariOrder[a.hari] || 99) - (hariOrder[b.hari] || 99);
+				if (diff !== 0) return diff;
+				return a.jam_mulai.localeCompare(b.jam_mulai);
+			} else if (sortBy === 'jam') {
+				const diff = a.jam_mulai.localeCompare(b.jam_mulai);
+				if (diff !== 0) return diff;
+				return (hariOrder[a.hari] || 99) - (hariOrder[b.hari] || 99);
+			}
+			return 0;
+		});
+
+		const groups: Record<string, Kelas[]> = {};
+		for (const k of filtered) {
+			const psName = k.program_studi ? k.program_studi.name : 'Lainnya';
+			if (!groups[psName]) {
+				groups[psName] = [];
+			}
+			groups[psName].push(k);
+		}
+		
+		return Object.entries(groups)
+			.sort((a, b) => a[0].localeCompare(b[0]))
+			.map(([name, classes]) => ({
+				programStudiName: name,
+				classes
+			}));
+	});
+
 	async function fetchKelases() {
 		try {
 			loading = true;
@@ -62,7 +118,17 @@
 
 <div class="card glass-panel animate-fade-in">
 	<div class="card-header">
-		<h2>Daftar Kelas</h2>
+		<div class="header-content">
+			<h2>Daftar Kelas</h2>
+			<div class="controls">
+				<input type="text" class="search-input" bind:value={searchQuery} placeholder="Cari nama kelas atau prodi..." />
+				<select class="sort-select" bind:value={sortBy}>
+					<option value="kelas">Urutkan: Kelas</option>
+					<option value="hari">Urutkan: Hari</option>
+					<option value="jam">Urutkan: Jam</option>
+				</select>
+			</div>
+		</div>
 	</div>
 
 	{#if loading}
@@ -81,39 +147,56 @@
 			<p>Belum ada data kelas.</p>
 		</div>
 	{:else}
-		<div class="table-container">
-			<table class="data-table">
-				<thead>
-					<tr>
-						<th>Nama Kelas</th>
-						<th>Kapasitas</th>
-						<th>Program Studi</th>
-						{#if authState.role === 'admin'}
-							<th>Aksi</th>
-						{/if}
-					</tr>
-				</thead>
-				<tbody>
-					{#each kelases as k}
-						<tr>
-							<td><strong>{k.name}</strong></td>
-							<td>
-								<span class="badge capacity-badge">
-									{k.capacity} Mhs
-								</span>
-							</td>
-							<td>{k.program_studi ? k.program_studi.name : '-'}</td>
-							{#if authState.role === 'admin'}
-								<td>
-									<button class="btn-delete" aria-label="Hapus Kelas" onclick={() => promptDelete(k)}>
-										Hapus
-									</button>
-								</td>
-							{/if}
-						</tr>
-					{/each}
-				</tbody>
-			</table>
+		<div class="groups-container">
+			{#each groupedKelases as group}
+				<div class="group-section">
+					<h3 class="group-title">{group.programStudiName}</h3>
+					<div class="table-container">
+						<table class="data-table">
+							<thead>
+								<tr>
+									<th>Nama Kelas</th>
+									<th>Kapasitas</th>
+									<th>Jadwal</th>
+									{#if authState.role === 'admin'}
+										<th>Aksi</th>
+									{/if}
+								</tr>
+							</thead>
+							<tbody>
+								{#each group.classes as k}
+									<tr>
+										<td><strong>{k.name}</strong></td>
+										<td>
+											<span class="badge capacity-badge">
+												{k.capacity} Mhs
+											</span>
+										</td>
+										<td>
+											<div class="jadwal-info">
+												<span class="hari">{k.hari}</span>
+												<span class="jam">{k.jam_mulai} - {k.jam_selesai}</span>
+											</div>
+										</td>
+										{#if authState.role === 'admin'}
+											<td>
+												<button class="btn-delete" aria-label="Hapus Kelas" onclick={() => promptDelete(k)}>
+													Hapus
+												</button>
+											</td>
+										{/if}
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			{:else}
+				<div class="empty-state">
+					<div class="empty-icon">🔍</div>
+					<p>Tidak ada data kelas yang sesuai pencarian.</p>
+				</div>
+			{/each}
 		</div>
 	{/if}
 </div>
@@ -139,10 +222,65 @@
 		background: rgba(255, 255, 255, 0.02);
 	}
 
+	.header-content {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 16px;
+	}
+
 	.card-header h2 {
 		font-size: 1.25rem;
 		font-weight: 600;
 		margin: 0;
+	}
+
+	.controls {
+		display: flex;
+		gap: 12px;
+		flex-wrap: wrap;
+	}
+
+	.search-input, .sort-select {
+		padding: 8px 12px;
+		border: 1px solid var(--surface-border);
+		border-radius: var(--radius-sm);
+		background: var(--surface-light);
+		color: var(--text-main);
+		font-size: 0.9rem;
+	}
+
+	.search-input {
+		width: 200px;
+	}
+
+	.search-input:focus, .sort-select:focus {
+		outline: none;
+		border-color: var(--primary-color);
+	}
+
+	.groups-container {
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+	}
+
+	.group-section {
+		border-bottom: 2px solid var(--surface-border);
+	}
+	
+	.group-section:last-child {
+		border-bottom: none;
+	}
+
+	.group-title {
+		padding: 16px 24px;
+		margin: 0;
+		background: rgba(var(--primary-color-rgb), 0.03);
+		color: var(--primary-color);
+		font-size: 1rem;
+		font-weight: 600;
 	}
 
 	.table-container {
@@ -190,6 +328,27 @@
 		font-size: 0.8rem;
 		font-weight: 600;
 		border: 1px solid rgba(16, 185, 129, 0.2);
+	}
+
+	.jadwal-info {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.hari {
+		font-weight: 600;
+		color: var(--text-main);
+	}
+
+	.jam {
+		font-size: 0.85rem;
+		color: var(--text-muted);
+		background: rgba(0, 0, 0, 0.04);
+		padding: 2px 6px;
+		border-radius: 4px;
+		display: inline-block;
+		width: max-content;
 	}
 
 	.btn-delete {
