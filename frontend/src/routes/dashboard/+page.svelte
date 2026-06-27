@@ -5,8 +5,6 @@
 	import ProfileCard from '$lib/components/dashboard/ProfileCard.svelte';
 	import DosenProfileCard from '$lib/components/dashboard/DosenProfileCard.svelte';
 	import EmailRequestListCard from '$lib/components/dashboard/EmailRequestListCard.svelte';
-	import DosenListCard from '$lib/components/dashboard/DosenListCard.svelte';
-	import MataKuliahListCard from '$lib/components/dashboard/MataKuliahListCard.svelte';
 
 	let loading = $state(true);
 	let error = $state('');
@@ -28,7 +26,12 @@
 	<title>Dashboard - Modular Monolith</title>
 </svelte:head>
 
-<div class="content">
+<div class="page-header">
+	<h1>Beranda</h1>
+	<p>Ringkasan informasi akun dan notifikasi Anda.</p>
+</div>
+
+<div class="page-grid">
 	{#if loading}
 		<div class="loading-state glass-panel animate-fade-in">
 			<div class="spinner"></div>
@@ -40,14 +43,16 @@
 		</div>
 	{:else if authState.profile}
 		{#if authState.profile.role === 'admin'}
-			<ProfileCard profile={authState.profile} />
-			<EmailRequestListCard />
-			<DosenListCard />
-			<MataKuliahListCard />
+			<div class="page-grid two-cols">
+				<ProfileCard profile={authState.profile} />
+				<EmailRequestListCard />
+			</div>
 		{:else if authState.profile.role === 'dosen'}
 			<DosenProfileCard profile={authState.profile} />
 			<div class="dosen-empty-state glass-panel animate-fade-in" style="animation-delay: 0.2s;">
-				<div class="empty-icon">🎓</div>
+				<div class="empty-icon">
+					<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-color)"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+				</div>
 				<h3>Selamat Datang, Dosen {authState.profile.name}!</h3>
 				<p>Belum ada jadwal atau kelas yang ditugaskan kepada Anda saat ini.</p>
 				<button class="btn-primary empty-action-btn">Cek Notifikasi</button>
@@ -57,13 +62,6 @@
 </div>
 
 <style>
-	.content {
-		max-width: 800px;
-		display: flex;
-		flex-direction: column;
-		gap: 24px;
-	}
-
 	.loading-state {
 		padding: 48px;
 		text-align: center;
@@ -90,7 +88,6 @@
 		padding: 12px;
 		border-radius: var(--radius-sm);
 		border: 1px solid rgba(239, 68, 68, 0.2);
-		margin-bottom: 20px;
 		font-size: 0.875rem;
 		text-align: center;
 	}
@@ -99,20 +96,22 @@
 		padding: 48px 32px;
 		text-align: center;
 		border-radius: var(--radius-lg);
-		background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(56, 189, 248, 0.05));
-		border: 1px solid rgba(37, 99, 235, 0.1);
+		background: linear-gradient(135deg, rgba(79, 70, 229, 0.03), rgba(16, 185, 129, 0.03));
 	}
 
 	.empty-icon {
-		font-size: 48px;
-		margin-bottom: 16px;
-		filter: drop-shadow(0 4px 12px rgba(37, 99, 235, 0.2));
+		margin-bottom: 20px;
+		display: flex;
+		justify-content: center;
+		filter: drop-shadow(0 4px 12px rgba(79, 70, 229, 0.2));
 	}
 
 	.dosen-empty-state h3 {
 		font-size: 1.5rem;
 		color: var(--text-main);
 		margin-bottom: 12px;
+		font-weight: 700;
+		letter-spacing: -0.025em;
 	}
 
 	.dosen-empty-state p {
@@ -124,20 +123,9 @@
 	}
 
 	.empty-action-btn {
-		background: var(--primary-color);
-		color: white;
+		width: auto;
 		padding: 10px 24px;
-		border-radius: var(--radius-md);
-		font-weight: 500;
-		border: none;
-		cursor: pointer;
-		transition: all 0.2s;
-	}
-
-	.empty-action-btn:hover {
-		background: var(--primary-hover);
-		transform: translateY(-1px);
-		box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+		border-radius: var(--radius-full);
 	}
 
 	@keyframes spin {

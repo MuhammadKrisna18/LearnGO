@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import { authState } from '$lib/stores/auth.svelte';
 	import MataKuliahRegisterCard from '$lib/components/dashboard/MataKuliahRegisterCard.svelte';
+	import MataKuliahListCard from '$lib/components/dashboard/MataKuliahListCard.svelte';
 
 	onMount(() => {
 		if (authState.role !== 'admin') {
@@ -15,35 +16,25 @@
 	<title>Mata Kuliah - Modular Monolith</title>
 </svelte:head>
 
-<div class="content">
-	<div class="header-section">
-		<h2>Manajemen Mata Kuliah</h2>
-		<p>Tambahkan dan kelola mata kuliah yang tersedia di kampus.</p>
-	</div>
+<div class="page-header">
+	<h1>Manajemen Mata Kuliah</h1>
+	<p>Tambahkan dan kelola mata kuliah yang tersedia di kampus.</p>
+</div>
 
-	<MataKuliahRegisterCard />
+<div class="page-grid two-cols">
+	<div class="col-main">
+		<MataKuliahListCard />
+	</div>
+	<div class="col-side">
+		<MataKuliahRegisterCard />
+	</div>
 </div>
 
 <style>
-	.content {
-		max-width: 800px;
-		display: flex;
-		flex-direction: column;
-		gap: 24px;
-	}
-
-	.header-section {
-		margin-bottom: 8px;
-	}
-
-	.header-section h2 {
-		font-size: 1.75rem;
-		font-weight: 700;
-		color: var(--text-main);
-	}
-
-	.header-section p {
-		color: var(--text-muted);
-		margin-top: 4px;
+	/* Custom widths for specific layout, overriding standard 1fr 1fr if needed */
+	@media (min-width: 1024px) {
+		.page-grid.two-cols {
+			grid-template-columns: 2fr 1fr;
+		}
 	}
 </style>

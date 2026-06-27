@@ -4,17 +4,17 @@
 		onSubmit: (newEmail: string) => void;
 	}>();
 
-	let newEmail = $state('');
+	let newUsername = $state('');
 
 	function close() {
 		isOpen = false;
-		newEmail = '';
+		newUsername = '';
 	}
 
 	function handleSubmit(e: Event) {
 		e.preventDefault();
-		if (newEmail.trim()) {
-			onSubmit(newEmail.trim());
+		if (newUsername.trim()) {
+			onSubmit(newUsername.trim() + '@DosenGO.id');
 			close();
 		}
 	}
@@ -30,21 +30,24 @@
 			
 			<form onsubmit={handleSubmit}>
 				<div class="form-group">
-					<label for="newEmail">Email Baru</label>
-					<input 
-						id="newEmail"
-						type="email" 
-						bind:value={newEmail} 
-						class="form-input" 
-						placeholder="Masukkan email baru..."
-						required
-					/>
+					<label for="newUsername">Username Email Baru</label>
+					<div class="input-with-addon">
+						<input 
+							id="newUsername"
+							type="text" 
+							bind:value={newUsername} 
+							class="form-input" 
+							placeholder="usernamebaru"
+							required
+						/>
+						<span class="addon">@DosenGO.id</span>
+					</div>
 					<p class="help-text">Email baru Anda membutuhkan persetujuan dari Admin sebelum aktif.</p>
 				</div>
 				
 				<div class="modal-actions">
 					<button type="button" class="btn-secondary" onclick={close}>Batal</button>
-					<button type="submit" class="btn-primary" disabled={!newEmail}>Ajukan Perubahan</button>
+					<button type="submit" class="btn-primary" disabled={!newUsername}>Ajukan Perubahan</button>
 				</div>
 			</form>
 		</div>
@@ -122,10 +125,10 @@
 	}
 
 	.form-input {
-		width: 100%;
+		flex: 1;
 		padding: 10px 14px;
 		border: 1px solid var(--surface-border);
-		border-radius: var(--radius-md);
+		border-radius: var(--radius-md) 0 0 var(--radius-md);
 		font-size: 0.95rem;
 		transition: all 0.2s;
 	}
@@ -133,7 +136,23 @@
 	.form-input:focus {
 		outline: none;
 		border-color: var(--primary-color);
-		box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+		box-shadow: inset 0 0 0 1px var(--primary-color);
+	}
+
+	.input-with-addon {
+		display: flex;
+		align-items: center;
+	}
+
+	.addon {
+		background: var(--surface-light);
+		border: 1px solid var(--surface-border);
+		border-left: none;
+		padding: 10px 14px;
+		border-radius: 0 var(--radius-md) var(--radius-md) 0;
+		color: var(--text-muted);
+		font-weight: 500;
+		font-size: 0.95rem;
 	}
 
 	.help-text {
