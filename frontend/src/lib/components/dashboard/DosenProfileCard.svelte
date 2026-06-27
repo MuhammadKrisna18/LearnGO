@@ -10,7 +10,7 @@
 	let isEditing = $state(false);
 	let isEmailModalOpen = $state(false);
 
-	// Form states
+
 	let editName = $state(profile.name);
 	let editNickname = $state(profile.nickname || '');
 
@@ -37,7 +37,7 @@
 	function toggleEdit() {
 		isEditing = !isEditing;
 		if (!isEditing) {
-			// reset forms
+
 			editName = profile.name;
 			editNickname = profile.nickname || '';
 			error = '';

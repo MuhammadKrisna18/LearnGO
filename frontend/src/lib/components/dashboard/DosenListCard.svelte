@@ -58,7 +58,7 @@
 		try {
 			const res = await authService.deleteDosen(selectedDosen.id);
 			if (res.success) {
-				// Remove from list
+
 				dosenList = dosenList.filter(d => d.id !== selectedDosen!.id);
 				isDeleteModalOpen = false;
 			} else {

@@ -49,7 +49,7 @@
 		try {
 			const res = await matakuliahService.delete(selectedMK.id);
 			if (res.success) {
-				// Remove from list
+
 				mkList = mkList.filter(m => m.id !== selectedMK!.id);
 			} else {
 				error = res.message || 'Gagal menghapus mata kuliah';

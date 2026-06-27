@@ -86,7 +86,7 @@
 
 	onMount(() => {
 		fetchKelases();
-		// Listen for event from register card
+
 		window.addEventListener('kelasCreated', fetchKelases);
 		return () => {
 			window.removeEventListener('kelasCreated', fetchKelases);

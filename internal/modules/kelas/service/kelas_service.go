@@ -19,31 +19,30 @@ func NewKelasService(repo domain.KelasRepository) domain.KelasService {
 }
 
 func (s *kelasService) Create(ctx context.Context, req domain.CreateKelasRequest) (*domain.Kelas, error) {
-	// Validate Name format: wajib menggunakan IF- dan range 101-107, 201-207, 301-307
-	// Regex: ^IF-[1-3]0[1-7]$
+
 	matched, _ := regexp.MatchString(`^IF-[1-3]0[1-7]$`, req.Name)
 	if !matched {
 		return nil, apperrors.NewBadRequest("Format nama kelas tidak valid (contoh yang benar: IF-101 s/d IF-107, IF-201 s/d IF-207, IF-301 s/d IF-307)")
 	}
 
-	// Validate Capacity
+
 	if req.Capacity < 25 || req.Capacity > 50 {
 		return nil, apperrors.NewBadRequest("Kapasitas kelas harus antara 25 dan 50")
 	}
 
-	// Check for schedule conflict
+
 	conflict, _ := s.repo.CheckScheduleConflict(ctx, req.Name, req.Hari, req.JamMulai)
 	if conflict {
 		return nil, apperrors.NewBadRequest("Kelas tersebut sudah terdaftar pada hari dan jam yang sama")
 	}
 
-	// Validate Hari
+
 	validHari := map[string]bool{"Senin": true, "Selasa": true, "Rabu": true, "Kamis": true, "Jumat": true}
 	if !validHari[req.Hari] {
 		return nil, apperrors.NewBadRequest("Hari harus antara Senin sampai Jumat")
 	}
 
-	// Validate Jam
+
 	if req.JamMulai == "" || req.JamSelesai == "" {
 		return nil, apperrors.NewBadRequest("Jam mulai dan selesai harus diisi")
 	}
@@ -63,7 +62,7 @@ func (s *kelasService) Create(ctx context.Context, req domain.CreateKelasRequest
 		return nil, apperrors.NewInternal("Gagal membuat kelas: " + err.Error())
 	}
 
-	return s.repo.GetByID(ctx, kelas.ID) // Fetch with relations
+	return s.repo.GetByID(ctx, kelas.ID)
 }
 
 func (s *kelasService) GetAll(ctx context.Context) ([]*domain.Kelas, error) {

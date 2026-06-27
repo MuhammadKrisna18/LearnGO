@@ -21,7 +21,7 @@
 		{ label: '19:00 - 21:00', start: '19:00', end: '21:00' }
 	];
 
-	// Generate class names: IF-101 to IF-107, IF-201 to IF-207, IF-301 to IF-307
+
 	const nameOptions: string[] = [];
 	for (let i = 1; i <= 3; i++) {
 		for (let j = 1; j <= 7; j++) {
@@ -62,7 +62,7 @@
 		loading = true;
 
 		try {
-			// Extract jam_mulai and jam_selesai from selected waktu
+
 			const selectedWaktu = waktuOptions.find(w => w.label === waktu);
 			
 			const res = await kelasService.create({
@@ -82,7 +82,7 @@
 				hari = '';
 				waktu = '';
 				
-				// Refresh kelas list so new class blocks its time slot
+
 				const resKelas = await kelasService.getList();
 				if (resKelas.success && resKelas.data) {
 					kelases = resKelas.data;
