@@ -11,6 +11,7 @@ import (
 	gormlogger "gorm.io/gorm/logger"
 	"modular-monolith/config"
 	"modular-monolith/internal/modules/auth/domain"
+	kelasDomain "modular-monolith/internal/modules/kelas/domain"
 	mkDomain "modular-monolith/internal/modules/matakuliah/domain"
 	psDomain "modular-monolith/internal/modules/programstudi/domain"
 )
@@ -49,6 +50,7 @@ func NewPostgresConnection(cfg *config.Config) (*gorm.DB, error) {
 		&mkDomain.MataKuliah{},
 		&psDomain.ProgramStudi{},
 		&domain.EmailChangeRequest{},
+		&kelasDomain.Kelas{},
 	); err != nil {
 		log.Printf("AutoMigrate failed: %v", err)
 	}

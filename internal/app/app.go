@@ -18,6 +18,7 @@ import (
 	"modular-monolith/config"
 	_ "modular-monolith/docs"
 	"modular-monolith/internal/modules/auth"
+	"modular-monolith/internal/modules/kelas"
 	"modular-monolith/internal/modules/matakuliah"
 	"modular-monolith/internal/modules/programstudi"
 	"modular-monolith/internal/shared/apperrors"
@@ -83,6 +84,9 @@ func (a *App) Start() error {
 
 	psModule := programstudi.NewProgramStudiModule(a.db, a.cfg)
 	psModule.RegisterRoutes(api)
+
+	kelasModule := kelas.NewKelasModule(a.db, a.cfg)
+	kelasModule.RegisterRoutes(api)
 
 	serverErrors := make(chan error, 1)
 	go func() {

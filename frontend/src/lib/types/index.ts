@@ -60,3 +60,18 @@ export interface MataKuliah {
 	program_studi?: ProgramStudi;
 	created_at: string;
 }
+
+export interface Kelas {
+	id: string;
+	name: string;
+	capacity: number;
+	program_studi_id: string;
+	program_studi?: ProgramStudi;
+	created_at: string;
+}
+
+export interface CreateKelasPayload {
+	name: string;
+	capacity: number;
+	program_studi_id: string;
+}
