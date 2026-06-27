@@ -11,7 +11,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/redis/go-redis/v9"
 	"github.com/gofiber/swagger"
@@ -63,10 +62,6 @@ func (a *App) Start() error {
 	a.fiber.Use(cors.New())
 	
 	a.fiber.Use(middleware.PerformanceLogger())
-	
-	a.fiber.Use(logger.New(logger.Config{
-		Format: "[${time}] ${status} - ${latency} ${method} ${path}\n",
-	}))
 
 	a.fiber.Get("/", func(c *fiber.Ctx) error {
 		return response.Success(c, fiber.StatusOK, "System is healthy", fiber.Map{

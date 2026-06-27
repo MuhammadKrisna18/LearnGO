@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { matakuliahService } from '$lib/services/matakuliah';
 	import { programStudiService } from '$lib/services/programstudi';
+	import { authState } from '$lib/stores/auth.svelte';
 	import type { MataKuliah, ProgramStudi } from '$lib/types';
 	import DeleteConfirmModal from './DeleteConfirmModal.svelte';
 
@@ -88,7 +89,9 @@
 										<th>Nama Mata Kuliah</th>
 										<th>SKS</th>
 										<th>Tgl Ditambahkan</th>
-										<th>Aksi</th>
+										{#if authState.role === 'admin'}
+											<th>Aksi</th>
+										{/if}
 									</tr>
 								</thead>
 								<tbody>
@@ -97,11 +100,13 @@
 											<td>{mk.name}</td>
 											<td><span class="badge sks-badge">{mk.sks} SKS</span></td>
 											<td>{new Date(mk.created_at).toLocaleDateString()}</td>
-											<td>
-												<button class="btn-delete" aria-label="Hapus Mata Kuliah" onclick={() => promptDelete(mk)}>
-													Hapus
-												</button>
-											</td>
+											{#if authState.role === 'admin'}
+												<td>
+													<button class="btn-delete" aria-label="Hapus Mata Kuliah" onclick={() => promptDelete(mk)}>
+														Hapus
+													</button>
+												</td>
+											{/if}
 										</tr>
 									{/each}
 								</tbody>

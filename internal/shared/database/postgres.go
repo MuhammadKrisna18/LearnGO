@@ -8,6 +8,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	gormlogger "gorm.io/gorm/logger"
 	"modular-monolith/config"
 	"modular-monolith/internal/modules/auth/domain"
 	mkDomain "modular-monolith/internal/modules/matakuliah/domain"
@@ -24,7 +25,9 @@ func NewPostgresConnection(cfg *config.Config) (*gorm.DB, error) {
 		cfg.DBSslMode,
 	)
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: gormlogger.Default.LogMode(gormlogger.Error),
+	})
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to database: %w", err)
 	}

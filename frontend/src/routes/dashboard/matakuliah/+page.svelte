@@ -6,7 +6,9 @@
 	import MataKuliahListCard from '$lib/components/dashboard/MataKuliahListCard.svelte';
 
 	onMount(() => {
-		if (authState.role !== 'admin') {
+		if (!authState.token) {
+			goto('/login');
+		} else if (authState.role !== 'admin' && authState.role !== 'dosen') {
 			goto('/dashboard');
 		}
 	});
@@ -21,13 +23,15 @@
 	<p>Tambahkan dan kelola mata kuliah yang tersedia di kampus.</p>
 </div>
 
-<div class="page-grid two-cols">
+<div class="page-grid {authState.role === 'admin' ? 'two-cols' : ''}">
 	<div class="col-main">
 		<MataKuliahListCard />
 	</div>
-	<div class="col-side">
-		<MataKuliahRegisterCard />
-	</div>
+	{#if authState.role === 'admin'}
+		<div class="col-side">
+			<MataKuliahRegisterCard />
+		</div>
+	{/if}
 </div>
 
 <style>

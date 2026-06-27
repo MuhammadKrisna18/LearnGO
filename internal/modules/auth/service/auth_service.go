@@ -173,9 +173,6 @@ func (s *authService) UpdateProfile(ctx context.Context, id string, req domain.U
 	if req.Nickname != "" {
 		user.Nickname = &req.Nickname
 	}
-	if req.ProgramStudiID != "" && user.Role == "dosen" {
-		user.ProgramStudiID = &req.ProgramStudiID
-	}
 
 	if err := s.repo.Update(ctx, user); err != nil {
 		return nil, apperrors.NewInternal("Gagal mengupdate profil", err.Error())

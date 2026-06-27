@@ -13,7 +13,6 @@
 	// Form states
 	let editName = $state(profile.name);
 	let editNickname = $state(profile.nickname || '');
-	let editProdiId = $state(profile.program_studi_id || '');
 
 	let loading = $state(false);
 	let error = $state('');
@@ -41,7 +40,6 @@
 			// reset forms
 			editName = profile.name;
 			editNickname = profile.nickname || '';
-			editProdiId = profile.program_studi_id || '';
 			error = '';
 			success = '';
 		}
@@ -55,8 +53,7 @@
 		try {
 			const res = await authService.updateProfile({
 				name: editName,
-				nickname: editNickname,
-				program_studi_id: editProdiId
+				nickname: editNickname
 			});
 
 			if (res.success) {
@@ -153,16 +150,7 @@
 
 		<div class="info-group">
 			<label>Program Studi</label>
-			{#if isEditing}
-				<select class="form-input" bind:value={editProdiId} disabled={loading || loadingProdi}>
-					<option value="" disabled>-- Pilih Program Studi --</option>
-					{#each prodiList as prodi}
-						<option value={prodi.id}>{prodi.name}</option>
-					{/each}
-				</select>
-			{:else}
-				<p>{profile.program_studi ? profile.program_studi.name : 'Belum diatur'}</p>
-			{/if}
+			<p>{profile.program_studi ? profile.program_studi.name : 'Belum diatur'}</p>
 		</div>
 
 		{#if isEditing}
