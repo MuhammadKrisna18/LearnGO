@@ -13,6 +13,7 @@ func main() {
 	cfg := config.LoadConfig()
 
 	application := app.NewApp(cfg)
+
 	if err := application.Start(); err != nil {
 		log.Fatalf("Fatal error starting application: %v\n", err)
 	}

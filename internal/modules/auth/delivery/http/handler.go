@@ -20,6 +20,12 @@ func (h *AuthHandler) RegisterRoutes(router fiber.Router, jwtSecret string) {
 	authGroup := router.Group("/auth")
 	authGroup.Post("/login", h.Login)
 	authGroup.Get("/me", middleware.Protected(jwtSecret), h.Me)
+	authGroup.Put("/me", middleware.Protected(jwtSecret), h.UpdateProfile)
+	
+	authGroup.Post("/email-request", middleware.Protected(jwtSecret), h.RequestEmailChange)
+	authGroup.Get("/email-request", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.GetEmailRequests)
+	authGroup.Put("/email-request/:id", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.ReviewEmailRequest)
+
 	authGroup.Post("/dosen", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.RegisterDosen)
 	authGroup.Get("/dosen", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.GetDosenList)
 	authGroup.Delete("/dosen/:id", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.DeleteDosen)
@@ -58,6 +64,83 @@ func (h *AuthHandler) Me(c *fiber.Ctx) error {
 	}
 
 	return response.Success(c, fiber.StatusOK, "success", profile)
+}
+
+func (h *AuthHandler) UpdateProfile(c *fiber.Ctx) error {
+	userID, ok := c.Locals("userID").(string)
+	if !ok || userID == "" {
+		return apperrors.NewUnauthorized("unauthorized")
+	}
+
+	var req domain.UpdateProfileRequest
+	if err := c.BodyParser(&req); err != nil {
+		return apperrors.NewBadRequest("invalid request body", err.Error())
+	}
+
+	if req.Name == "" {
+		return apperrors.NewBadRequest("Name is required")
+	}
+
+	res, err := h.service.UpdateProfile(c.UserContext(), userID, req)
+	if err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusOK, "Profile updated successfully", res)
+}
+
+func (h *AuthHandler) RequestEmailChange(c *fiber.Ctx) error {
+	userID, ok := c.Locals("userID").(string)
+	if !ok || userID == "" {
+		return apperrors.NewUnauthorized("unauthorized")
+	}
+
+	var req domain.EmailChangeRequestPayload
+	if err := c.BodyParser(&req); err != nil {
+		return apperrors.NewBadRequest("invalid request body", err.Error())
+	}
+
+	if req.NewEmail == "" {
+		return apperrors.NewBadRequest("New email is required")
+	}
+
+	if err := h.service.RequestEmailChange(c.UserContext(), userID, req); err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusCreated, "Permintaan ganti email berhasil diajukan", nil)
+}
+
+func (h *AuthHandler) GetEmailRequests(c *fiber.Ctx) error {
+	list, err := h.service.GetPendingEmailRequests(c.UserContext())
+	if err != nil {
+		return apperrors.NewInternal("Gagal mengambil data request", err.Error())
+	}
+	return response.Success(c, fiber.StatusOK, "success", list)
+}
+
+func (h *AuthHandler) ReviewEmailRequest(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return apperrors.NewBadRequest("ID tidak valid")
+	}
+
+	var req struct {
+		Approve bool `json:"approve"`
+	}
+	if err := c.BodyParser(&req); err != nil {
+		return apperrors.NewBadRequest("invalid request body", err.Error())
+	}
+
+	if err := h.service.ReviewEmailRequest(c.UserContext(), id, req.Approve); err != nil {
+		return err
+	}
+
+	statusStr := "ditolak"
+	if req.Approve {
+		statusStr = "disetujui"
+	}
+	return response.Success(c, fiber.StatusOK, "Permintaan ganti email " + statusStr, nil)
 }
 
 func (h *AuthHandler) RegisterDosen(c *fiber.Ctx) error {

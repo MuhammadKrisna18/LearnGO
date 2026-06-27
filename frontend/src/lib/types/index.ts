@@ -15,10 +15,22 @@ export interface User {
 export interface UserProfile {
 	id: string;
 	name: string;
+	nickname?: string;
+	nid?: string;
 	email: string;
 	role: 'admin' | 'dosen';
 	program_studi_id?: string;
 	program_studi?: ProgramStudi;
+	pending_email?: string;
+	created_at: string;
+}
+
+export interface EmailChangeRequest {
+	id: string;
+	user_id: string;
+	user?: UserProfile;
+	new_email: string;
+	status: 'pending' | 'approved' | 'rejected';
 	created_at: string;
 }
 

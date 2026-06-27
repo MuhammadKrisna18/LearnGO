@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -60,12 +62,23 @@ func (s *authService) GetProfile(ctx context.Context, id string) (*domain.UserPr
 		return nil, err
 	}
 
+	var pendingEmail *string
+	pendingReq, err := s.repo.GetPendingEmailRequestByUserID(ctx, id)
+	if err == nil && pendingReq != nil {
+		pendingEmail = &pendingReq.NewEmail
+	}
+
 	return &domain.UserProfileResponse{
-		ID:        user.ID,
-		Name:      user.Name,
-		Email:     user.Email,
-		Role:      user.Role,
-		CreatedAt: user.CreatedAt,
+		ID:             user.ID,
+		Name:           user.Name,
+		Nickname:       user.Nickname,
+		NID:            user.NID,
+		Email:          user.Email,
+		Role:           user.Role,
+		ProgramStudiID: user.ProgramStudiID,
+		ProgramStudi:   user.ProgramStudi,
+		PendingEmail:   pendingEmail,
+		CreatedAt:      user.CreatedAt,
 	}, nil
 }
 
@@ -82,10 +95,13 @@ func (s *authService) RegisterDosen(ctx context.Context, req domain.RegisterDose
 		return nil, errors.New("failed to hash password")
 	}
 
+	nidStr := fmt.Sprintf("%05d", rand.Intn(90000)+10000)
+
 	newUser := &domain.User{
 		ID:             uuid.New().String(),
 		Name:           req.Name,
 		Email:          email,
+		NID:            &nidStr,
 		Password:       string(hashedPassword),
 		Role:           "dosen",
 		ProgramStudiID: &req.ProgramStudiID,
@@ -98,6 +114,8 @@ func (s *authService) RegisterDosen(ctx context.Context, req domain.RegisterDose
 	return &domain.UserProfileResponse{
 		ID:             newUser.ID,
 		Name:           newUser.Name,
+		Nickname:       newUser.Nickname,
+		NID:            newUser.NID,
 		Email:          newUser.Email,
 		Role:           newUser.Role,
 		ProgramStudiID: newUser.ProgramStudiID,
@@ -116,6 +134,8 @@ func (s *authService) GetDosenList(ctx context.Context) ([]*domain.UserProfileRe
 		res = append(res, &domain.UserProfileResponse{
 			ID:             u.ID,
 			Name:           u.Name,
+			Nickname:       u.Nickname,
+			NID:            u.NID,
 			Email:          u.Email,
 			Role:           u.Role,
 			ProgramStudiID: u.ProgramStudiID,
@@ -136,4 +156,94 @@ func (s *authService) DeleteDosen(ctx context.Context, id string) error {
 		return &apperrors.AppError{Code: 400, Message: "Akun ini bukan dosen"}
 	}
 	return s.repo.DeleteUser(ctx, id)
+}
+
+func (s *authService) UpdateProfile(ctx context.Context, id string, req domain.UpdateProfileRequest) (*domain.UserProfileResponse, error) {
+	user, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, apperrors.NewNotFound("Akun tidak ditemukan", err.Error())
+	}
+
+	// Email update is now handled via EmailChangeRequest
+	// So we don't update email here directly anymore
+
+	if req.Name != "" {
+		user.Name = req.Name
+	}
+	if req.Nickname != "" {
+		user.Nickname = &req.Nickname
+	}
+	if req.ProgramStudiID != "" && user.Role == "dosen" {
+		user.ProgramStudiID = &req.ProgramStudiID
+	}
+
+	if err := s.repo.Update(ctx, user); err != nil {
+		return nil, apperrors.NewInternal("Gagal mengupdate profil", err.Error())
+	}
+
+	return s.GetProfile(ctx, id)
+}
+
+func (s *authService) RequestEmailChange(ctx context.Context, userID string, req domain.EmailChangeRequestPayload) error {
+	user, err := s.repo.GetByID(ctx, userID)
+	if err != nil {
+		return apperrors.NewNotFound("Akun tidak ditemukan", err.Error())
+	}
+
+	if user.Email == req.NewEmail {
+		return apperrors.NewBadRequest("Email baru tidak boleh sama dengan email saat ini")
+	}
+
+	existingUser, err := s.repo.GetByEmail(ctx, req.NewEmail)
+	if err == nil && existingUser.ID != user.ID {
+		return apperrors.NewBadRequest("Email sudah digunakan oleh pengguna lain")
+	}
+
+	existingReq, err := s.repo.GetPendingEmailRequestByUserID(ctx, userID)
+	if err == nil && existingReq != nil {
+		// Update existing pending request
+		existingReq.NewEmail = req.NewEmail
+		return s.repo.UpdateEmailChangeRequest(ctx, existingReq)
+	}
+
+	newReq := &domain.EmailChangeRequest{
+		ID:       uuid.New().String(),
+		UserID:   userID,
+		NewEmail: req.NewEmail,
+		Status:   "pending",
+	}
+
+	return s.repo.CreateEmailChangeRequest(ctx, newReq)
+}
+
+func (s *authService) GetPendingEmailRequests(ctx context.Context) ([]*domain.EmailChangeRequest, error) {
+	return s.repo.GetAllPendingEmailRequests(ctx)
+}
+
+func (s *authService) ReviewEmailRequest(ctx context.Context, requestID string, approve bool) error {
+	req, err := s.repo.GetEmailChangeRequestByID(ctx, requestID)
+	if err != nil {
+		return apperrors.NewNotFound("Request tidak ditemukan", err.Error())
+	}
+	if req.Status != "pending" {
+		return apperrors.NewBadRequest("Request sudah diproses")
+	}
+
+	if approve {
+		req.Status = "approved"
+		
+		user, err := s.repo.GetByID(ctx, req.UserID)
+		if err != nil {
+			return apperrors.NewNotFound("User tidak ditemukan", err.Error())
+		}
+		
+		user.Email = req.NewEmail
+		if err := s.repo.Update(ctx, user); err != nil {
+			return apperrors.NewInternal("Gagal mengupdate email user", err.Error())
+		}
+	} else {
+		req.Status = "rejected"
+	}
+
+	return s.repo.UpdateEmailChangeRequest(ctx, req)
 }

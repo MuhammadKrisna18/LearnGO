@@ -56,3 +56,39 @@ func (r *pgAuthRepository) Create(ctx context.Context, user *domain.User) error 
 func (r *pgAuthRepository) DeleteUser(ctx context.Context, id string) error {
 	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&domain.User{}).Error
 }
+
+func (r *pgAuthRepository) Update(ctx context.Context, user *domain.User) error {
+	return r.db.WithContext(ctx).Save(user).Error
+}
+
+func (r *pgAuthRepository) CreateEmailChangeRequest(ctx context.Context, req *domain.EmailChangeRequest) error {
+	return r.db.WithContext(ctx).Create(req).Error
+}
+
+func (r *pgAuthRepository) GetPendingEmailRequestByUserID(ctx context.Context, userID string) (*domain.EmailChangeRequest, error) {
+	var req domain.EmailChangeRequest
+	err := r.db.WithContext(ctx).Where("user_id = ? AND status = ?", userID, "pending").First(&req).Error
+	if err != nil {
+		return nil, err
+	}
+	return &req, nil
+}
+
+func (r *pgAuthRepository) GetAllPendingEmailRequests(ctx context.Context) ([]*domain.EmailChangeRequest, error) {
+	var reqs []*domain.EmailChangeRequest
+	err := r.db.WithContext(ctx).Preload("User").Where("status = ?", "pending").Find(&reqs).Error
+	return reqs, err
+}
+
+func (r *pgAuthRepository) GetEmailChangeRequestByID(ctx context.Context, id string) (*domain.EmailChangeRequest, error) {
+	var req domain.EmailChangeRequest
+	err := r.db.WithContext(ctx).Preload("User").Where("id = ?", id).First(&req).Error
+	if err != nil {
+		return nil, err
+	}
+	return &req, nil
+}
+
+func (r *pgAuthRepository) UpdateEmailChangeRequest(ctx context.Context, req *domain.EmailChangeRequest) error {
+	return r.db.WithContext(ctx).Save(req).Error
+}

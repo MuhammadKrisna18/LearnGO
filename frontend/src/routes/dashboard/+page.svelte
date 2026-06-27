@@ -3,6 +3,8 @@
 	import { authState } from '$lib/stores/auth.svelte';
 	import { authService } from '$lib/services/auth';
 	import ProfileCard from '$lib/components/dashboard/ProfileCard.svelte';
+	import DosenProfileCard from '$lib/components/dashboard/DosenProfileCard.svelte';
+	import EmailRequestListCard from '$lib/components/dashboard/EmailRequestListCard.svelte';
 	import DosenListCard from '$lib/components/dashboard/DosenListCard.svelte';
 	import MataKuliahListCard from '$lib/components/dashboard/MataKuliahListCard.svelte';
 
@@ -37,12 +39,13 @@
 			{error}
 		</div>
 	{:else if authState.profile}
-		<ProfileCard profile={authState.profile} />
-
 		{#if authState.profile.role === 'admin'}
+			<ProfileCard profile={authState.profile} />
+			<EmailRequestListCard />
 			<DosenListCard />
 			<MataKuliahListCard />
 		{:else if authState.profile.role === 'dosen'}
+			<DosenProfileCard profile={authState.profile} />
 			<div class="dosen-empty-state glass-panel animate-fade-in" style="animation-delay: 0.2s;">
 				<div class="empty-icon">🎓</div>
 				<h3>Selamat Datang, Dosen {authState.profile.name}!</h3>
