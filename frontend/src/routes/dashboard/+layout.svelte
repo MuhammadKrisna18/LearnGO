@@ -76,14 +76,14 @@
 				</span>
 			</div>
 			
-			<div class="header-profile">
+			<a href="/dashboard/profile" class="header-profile">
 				<div class="user-role-badge">
 					{authState.role?.toUpperCase() || 'USER'}
 				</div>
 				<div class="user-avatar">
 					{authState.profile?.name?.charAt(0).toUpperCase() || 'U'}
 				</div>
-			</div>
+			</a>
 		</header>
 
 		<!-- Main Content Slot -->
@@ -269,6 +269,15 @@
 		display: flex;
 		align-items: center;
 		gap: 16px;
+		text-decoration: none;
+		cursor: pointer;
+		padding: 4px 8px;
+		border-radius: var(--radius-full);
+		transition: background-color 0.2s;
+	}
+
+	.header-profile:hover {
+		background-color: rgba(0, 0, 0, 0.03);
 	}
 
 	.user-role-badge {

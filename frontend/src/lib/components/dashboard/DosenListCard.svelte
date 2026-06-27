@@ -68,6 +68,16 @@
 			error = 'Gagal terhubung ke server';
 		}
 	}
+
+	let isDetailModalOpen = $state(false);
+	let detailDosen = $state<UserProfile | null>(null);
+	let detailProdiName = $state('');
+
+	function viewDetail(dosen: UserProfile, prodi?: ProgramStudi) {
+		detailDosen = dosen;
+		detailProdiName = prodi ? prodi.name : '';
+		isDetailModalOpen = true;
+	}
 </script>
 
 <div class="dosen-list-card glass-panel animate-fade-in" style="animation-delay: 0.3s;">
@@ -104,15 +114,20 @@
 										<td>
 											<div class="dosen-info">
 												<div class="avatar">{dosen.name.charAt(0).toUpperCase()}</div>
-												<span>{dosen.name}</span>
+												<span class="dosen-name">{dosen.name}</span>
 											</div>
 										</td>
 										<td><span class="mono">{dosen.email}</span></td>
 										<td>{new Date(dosen.created_at).toLocaleDateString()}</td>
 										<td>
-											<button class="btn-delete" aria-label="Hapus Dosen" onclick={() => promptDelete(dosen)}>
-												Hapus
-											</button>
+											<div class="action-buttons">
+												<button class="btn-detail" aria-label="Lihat Detail Dosen" onclick={() => viewDetail(dosen, prodi)}>
+													Detail
+												</button>
+												<button class="btn-delete" aria-label="Hapus Dosen" onclick={() => promptDelete(dosen)}>
+													Hapus
+												</button>
+											</div>
 										</td>
 									</tr>
 								{/each}
@@ -143,15 +158,20 @@
 									<td>
 										<div class="dosen-info">
 											<div class="avatar">{dosen.name.charAt(0).toUpperCase()}</div>
-											<span>{dosen.name}</span>
+											<span class="dosen-name">{dosen.name}</span>
 										</div>
 									</td>
 									<td><span class="mono">{dosen.email}</span></td>
 									<td>{new Date(dosen.created_at).toLocaleDateString()}</td>
 									<td>
-										<button class="btn-delete" aria-label="Hapus Dosen" onclick={() => promptDelete(dosen)}>
-											Hapus
-										</button>
+										<div class="action-buttons">
+											<button class="btn-detail" aria-label="Lihat Detail Dosen" onclick={() => viewDetail(dosen)}>
+												Detail
+											</button>
+											<button class="btn-delete" aria-label="Hapus Dosen" onclick={() => promptDelete(dosen)}>
+												Hapus
+											</button>
+										</div>
 									</td>
 								</tr>
 							{/each}
@@ -170,6 +190,55 @@
 	onConfirm={handleDelete}
 	onCancel={() => selectedDosen = null}
 />
+
+{#if isDetailModalOpen && detailDosen}
+	<div class="modal-backdrop" onclick={() => isDetailModalOpen = false}>
+		<div class="modal-content glass-panel animate-fade-in" onclick={e => e.stopPropagation()}>
+			<div class="modal-header">
+				<h3>Detail Profil Dosen</h3>
+				<button class="btn-close" onclick={() => isDetailModalOpen = false}>✕</button>
+			</div>
+			<div class="modal-body">
+				<div class="detail-avatar">
+					{detailDosen.name.charAt(0).toUpperCase()}
+				</div>
+				<div class="detail-group">
+					<span class="detail-label">Nama Lengkap</span>
+					<span class="detail-value">{detailDosen.name}</span>
+				</div>
+				<div class="detail-group">
+					<span class="detail-label">Nama Panggilan</span>
+					<span class="detail-value">{detailDosen.nickname || '-'}</span>
+				</div>
+				<div class="detail-group">
+					<span class="detail-label">Nomor Induk Dosen (NID)</span>
+					<span class="detail-value">
+						{#if detailDosen.nid}
+							<span class="dosen-nid">{detailDosen.nid}</span>
+						{:else}
+							-
+						{/if}
+					</span>
+				</div>
+				<div class="detail-group">
+					<span class="detail-label">Email</span>
+					<span class="detail-value mono">{detailDosen.email}</span>
+				</div>
+				<div class="detail-group">
+					<span class="detail-label">Program Studi</span>
+					<span class="detail-value">{detailProdiName || 'Belum ada program studi'}</span>
+				</div>
+				<div class="detail-group">
+					<span class="detail-label">Tanggal Bergabung</span>
+					<span class="detail-value">{new Date(detailDosen.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn-secondary" onclick={() => isDetailModalOpen = false}>Tutup</button>
+			</div>
+		</div>
+	</div>
+{/if}
 
 <style>
 	.dosen-list-card {
@@ -292,6 +361,28 @@
 		color: var(--text-muted);
 	}
 
+	.action-buttons {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.btn-detail {
+		background: rgba(79, 70, 229, 0.1);
+		color: var(--primary-color);
+		border: 1px solid rgba(79, 70, 229, 0.2);
+		cursor: pointer;
+		transition: all 0.2s;
+		font-size: 0.85rem;
+		padding: 6px 12px;
+		border-radius: var(--radius-sm);
+		font-weight: 500;
+	}
+
+	.btn-detail:hover {
+		background: rgba(79, 70, 229, 0.2);
+	}
+
 	.btn-delete {
 		background: rgba(239, 68, 68, 0.1);
 		color: var(--error-color);
@@ -308,16 +399,122 @@
 		background: rgba(239, 68, 68, 0.2);
 	}
 
-	.avatar {
-		width: 32px;
-		height: 32px;
-		background: var(--primary-color);
+	/* Modal Styles */
+	.modal-backdrop {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100vw;
+		height: 100vh;
+		background: rgba(15, 23, 42, 0.6);
+		backdrop-filter: blur(4px);
+		-webkit-backdrop-filter: blur(4px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 100;
+		padding: 24px;
+	}
+
+	.modal-content {
+		width: 100%;
+		max-width: 480px;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+	}
+
+	.modal-header {
+		padding: 20px 24px;
+		border-bottom: 1px solid var(--surface-border);
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.modal-header h3 {
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: var(--text-main);
+	}
+
+	.btn-close {
+		background: transparent;
+		border: none;
+		font-size: 1.25rem;
+		color: var(--text-muted);
+		cursor: pointer;
+		transition: color 0.2s;
+	}
+
+	.btn-close:hover {
+		color: var(--error-color);
+	}
+
+	.modal-body {
+		padding: 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+	}
+
+	.detail-avatar {
+		width: 64px;
+		height: 64px;
+		background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
 		color: white;
 		border-radius: 50%;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-weight: 600;
-		font-size: 0.85rem;
+		font-weight: 700;
+		font-size: 1.75rem;
+		margin: 0 auto 16px auto;
+		box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+	}
+
+	.detail-group {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.detail-label {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--text-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.detail-value {
+		font-size: 1rem;
+		color: var(--text-main);
+		font-weight: 500;
+	}
+
+	.modal-footer {
+		padding: 16px 24px;
+		border-top: 1px solid var(--surface-border);
+		display: flex;
+		justify-content: flex-end;
+		background: rgba(248, 250, 252, 0.5);
+	}
+
+	.btn-secondary {
+		padding: 10px 20px;
+		background: white;
+		border: 1px solid var(--surface-border);
+		color: var(--text-main);
+		border-radius: var(--radius-sm);
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.btn-secondary:hover {
+		background: #f1f5f9;
 	}
 </style>

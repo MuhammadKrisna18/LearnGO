@@ -2,8 +2,6 @@
 	import { onMount } from 'svelte';
 	import { authState } from '$lib/stores/auth.svelte';
 	import { authService } from '$lib/services/auth';
-	import ProfileCard from '$lib/components/dashboard/ProfileCard.svelte';
-	import DosenProfileCard from '$lib/components/dashboard/DosenProfileCard.svelte';
 	import EmailRequestListCard from '$lib/components/dashboard/EmailRequestListCard.svelte';
 
 	let loading = $state(true);
@@ -43,12 +41,10 @@
 		</div>
 	{:else if authState.profile}
 		{#if authState.profile.role === 'admin'}
-			<div class="page-grid two-cols">
-				<ProfileCard profile={authState.profile} />
+			<div class="page-grid">
 				<EmailRequestListCard />
 			</div>
 		{:else if authState.profile.role === 'dosen'}
-			<DosenProfileCard profile={authState.profile} />
 			<div class="dosen-empty-state glass-panel animate-fade-in" style="animation-delay: 0.2s;">
 				<div class="empty-icon">
 					<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-color)"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
