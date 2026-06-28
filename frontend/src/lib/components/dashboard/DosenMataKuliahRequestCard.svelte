@@ -57,6 +57,35 @@
 		}
 	}
 
+	async function acceptOffer(id: string) {
+		try {
+			const res = await matakuliahService.acceptOffer(id);
+			if (res.success) {
+				await loadData();
+			} else {
+				alert(res.message);
+				await loadData(); // Reload to remove stale offer
+			}
+		} catch (err: any) {
+			alert(err.message || 'Gagal menerima penawaran');
+			await loadData();
+		}
+	}
+
+	async function rejectOffer(id: string) {
+		if (!confirm('Tolak penawaran mata kuliah ini?')) return;
+		try {
+			const res = await matakuliahService.rejectOffer(id);
+			if (res.success) {
+				await loadData();
+			} else {
+				alert(res.message);
+			}
+		} catch (err: any) {
+			alert(err.message || 'Gagal menolak penawaran');
+		}
+	}
+
 	function getStatusBadgeClass(status: string) {
 		switch(status) {
 			case 'approved': return 'badge-success';
@@ -104,25 +133,58 @@
 
 		<hr class="section-divider" />
 
+		<!-- Penawaran Mata Kuliah Prodi Anda -->
+		<div class="mk-diampu-section">
+			<h3>Penawaran Mata Kuliah Prodi Anda</h3>
+			{#if myRequests.filter(req => req.status === 'offered').length === 0}
+				<p class="empty-text">Tidak ada penawaran mata kuliah saat ini.</p>
+			{:else}
+				<ul class="list-container">
+					{#each myRequests.filter(req => req.status === 'offered') as req}
+						<li class="list-item">
+							<div>
+								<div class="item-title">{req.mata_kuliah?.name || 'Mata Kuliah Dihapus'}</div>
+								<div class="item-subtitle">{req.mata_kuliah?.sks || 0} SKS - {req.mata_kuliah?.program_studi?.name || 'Unknown'}</div>
+							</div>
+							<div style="display: flex; gap: 8px;">
+								<button class="btn-primary-sm bg-success" onclick={() => acceptOffer(req.id)}>
+									Terima
+								</button>
+								<button class="btn-primary-sm bg-danger" onclick={() => rejectOffer(req.id)}>
+									Tolak
+								</button>
+							</div>
+						</li>
+					{/each}
+				</ul>
+			{/if}
+		</div>
+
+		<hr class="section-divider" />
+
 		<div class="grid-container">
-			<!-- Available MKs -->
+			<!-- Available Lintas Prodi MKs -->
 			<div class="grid-column">
-				<h3>Mata Kuliah Tersedia</h3>
-				{#if mkList.length === 0}
-					<p class="empty-text">Belum ada mata kuliah.</p>
+				<h3>Mata Kuliah Tersedia (Lintas Prodi)</h3>
+				{#if mkList.filter(mk => mk.program_studi_id !== authState.profile?.program_studi_id).length === 0}
+					<p class="empty-text">Belum ada mata kuliah lintas prodi yang tersedia.</p>
 				{:else}
 					<ul class="list-container">
-						{#each mkList as mk}
+						{#each mkList.filter(mk => mk.program_studi_id !== authState.profile?.program_studi_id) as mk}
 							<li class="list-item">
 								<div>
 									<div class="item-title">{mk.name}</div>
 									<div class="item-subtitle">{mk.sks} SKS - {mk.program_studi?.name || 'Unknown'}</div>
 								</div>
-								{#if mk.pengajuan && mk.pengajuan.some(p => p.status === 'pending' || p.status === 'approved')}
-									{#if mk.pengajuan.some(p => (p.status === 'pending' || p.status === 'approved') && p.dosen_id === authState.profile?.id)}
+								{#if mk.pengajuan && mk.pengajuan.some(p => p.status === 'pending' || p.status === 'approved' || p.status === 'offered')}
+									{#if mk.pengajuan.some(p => (p.status === 'pending') && p.dosen_id === authState.profile?.id)}
 										<span class="status-text text-warning">Sudah Anda Ajukan</span>
-									{:else}
+									{:else if mk.pengajuan.some(p => p.status === 'approved')}
 										<span class="status-text text-muted">Diambil Dosen Lain</span>
+									{:else}
+										<button class="btn-primary-sm" onclick={() => requestMk(mk.id)}>
+											Ajukan
+										</button>
 									{/if}
 								{:else}
 									<button class="btn-primary-sm" onclick={() => requestMk(mk.id)}>
@@ -135,14 +197,14 @@
 				{/if}
 			</div>
 
-			<!-- My Requests -->
+			<!-- My Requests (Pending/Rejected) -->
 			<div class="grid-column">
-				<h3>Riwayat Pengajuan</h3>
-				{#if myRequests.length === 0}
-					<p class="empty-text">Belum ada pengajuan.</p>
+				<h3>Riwayat Pengajuan Lintas Prodi</h3>
+				{#if myRequests.filter(req => req.status === 'pending' || req.status === 'rejected').length === 0}
+					<p class="empty-text">Belum ada riwayat pengajuan.</p>
 				{:else}
 					<ul class="list-container">
-						{#each myRequests as req}
+						{#each myRequests.filter(req => req.status === 'pending' || req.status === 'rejected') as req}
 							<li class="list-item flex-col">
 								<div class="req-header" style="margin-bottom: 0;">
 									<div class="item-title">{req.mata_kuliah?.name || 'Mata Kuliah Dihapus'}</div>
@@ -253,6 +315,11 @@
 	.btn-primary-sm:hover {
 		background: var(--primary-hover);
 	}
+	
+	.bg-success { background: #10b981; }
+	.bg-success:hover { background: #059669; }
+	.bg-danger { background: #ef4444; }
+	.bg-danger:hover { background: #dc2626; }
 
 	.status-text {
 		font-size: 0.75rem;

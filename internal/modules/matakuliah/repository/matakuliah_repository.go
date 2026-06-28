@@ -94,3 +94,11 @@ func (r *pgMataKuliahRepository) UpdatePengajuan(ctx context.Context, p *domain.
 func (r *pgMataKuliahRepository) DeletePengajuan(ctx context.Context, id string) error {
 	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&domain.PengajuanMataKuliah{}).Error
 }
+
+func (r *pgMataKuliahRepository) GetDosenIDsByProdi(ctx context.Context, prodiID string) ([]string, error) {
+	var ids []string
+	err := r.db.WithContext(ctx).Table("users").
+		Where("role = ? AND program_studi_id = ?", "dosen", prodiID).
+		Pluck("id", &ids).Error
+	return ids, err
+}

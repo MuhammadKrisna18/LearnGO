@@ -47,6 +47,21 @@ func (s *matakuliahService) CreateMataKuliah(ctx context.Context, req domain.Cre
 		return nil, apperrors.NewInternal("Gagal menyimpan mata kuliah", err.Error())
 	}
 
+	// Otomatis tawarkan ke semua dosen di prodi yang sama
+	dosenIDs, err := s.repo.GetDosenIDsByProdi(ctx, req.ProgramStudiID)
+	if err == nil && len(dosenIDs) > 0 {
+		for _, dID := range dosenIDs {
+			pengajuan := &domain.PengajuanMataKuliah{
+				ID:           uuid.New().String(),
+				DosenID:      dID,
+				MataKuliahID: newMk.ID,
+				Status:       domain.StatusOffered,
+				Code:         "", // tidak butuh code untuk offered
+			}
+			s.repo.CreatePengajuan(ctx, pengajuan)
+		}
+	}
+
 	return newMk, nil
 }
 
@@ -159,9 +174,77 @@ func (s *matakuliahService) RejectPengajuan(ctx context.Context, id string) erro
 		return apperrors.NewBadRequest("Pengajuan sudah tidak dalam status pending")
 	}
 
-	p.Status = "rejected"
+	p.Status = domain.StatusRejected
 	if err := s.repo.UpdatePengajuan(ctx, p); err != nil {
 		return apperrors.NewInternal("Gagal menolak pengajuan", err.Error())
+	}
+	return nil
+}
+
+func (s *matakuliahService) AcceptOffer(ctx context.Context, id string, dosenID string) error {
+	p, err := s.repo.GetPengajuanByID(ctx, id)
+	if err != nil {
+		return apperrors.NewInternal("Gagal mengambil data penawaran", err.Error())
+	}
+	if p == nil {
+		return apperrors.NewNotFound("Penawaran tidak ditemukan")
+	}
+
+	if p.DosenID != dosenID {
+		return apperrors.NewBadRequest("Anda tidak berhak menerima penawaran ini")
+	}
+
+	if p.Status != domain.StatusOffered {
+		return apperrors.NewBadRequest("Penawaran sudah tidak valid")
+	}
+
+	// Cek apakah mata kuliah sudah diambil dosen lain
+	activeReqs, _ := s.repo.GetActivePengajuanByMataKuliahID(ctx, p.MataKuliahID)
+	for _, req := range activeReqs {
+		if req.Status == domain.StatusApproved {
+			// Self-heal: hapus penawaran usang ini agar tidak muncul lagi
+			s.repo.DeletePengajuan(ctx, p.ID)
+			return apperrors.NewBadRequest("Mata kuliah ini sudah diambil oleh dosen lain")
+		}
+	}
+
+	p.Status = domain.StatusApproved
+	if err := s.repo.UpdatePengajuan(ctx, p); err != nil {
+		return apperrors.NewInternal("Gagal menyetujui penawaran", err.Error())
+	}
+
+	// Hapus penawaran (offered) lainnya untuk mata kuliah ini
+	if allReqs, err := s.repo.GetAllPengajuan(ctx); err == nil {
+		for _, req := range allReqs {
+			if req.MataKuliahID == p.MataKuliahID && req.ID != p.ID && req.Status == domain.StatusOffered {
+				s.repo.DeletePengajuan(ctx, req.ID)
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s *matakuliahService) RejectOffer(ctx context.Context, id string, dosenID string) error {
+	p, err := s.repo.GetPengajuanByID(ctx, id)
+	if err != nil {
+		return apperrors.NewInternal("Gagal mengambil data penawaran", err.Error())
+	}
+	if p == nil {
+		return apperrors.NewNotFound("Penawaran tidak ditemukan")
+	}
+
+	if p.DosenID != dosenID {
+		return apperrors.NewBadRequest("Anda tidak berhak menolak penawaran ini")
+	}
+
+	if p.Status != domain.StatusOffered {
+		return apperrors.NewBadRequest("Penawaran sudah tidak valid")
+	}
+
+	// Hapus pengajuan karena ditolak (agar tidak penuhi riwayat)
+	if err := s.repo.DeletePengajuan(ctx, id); err != nil {
+		return apperrors.NewInternal("Gagal menolak penawaran", err.Error())
 	}
 	return nil
 }

@@ -28,10 +28,11 @@ func (h *MataKuliahHandler) RegisterRoutes(router fiber.Router, jwtSecret string
 	mkGroup.Delete("/:id", middleware.RequireRole("admin"), h.DeleteMataKuliah)
 	mkGroup.Post("/:id/lepas", middleware.RequireRole("admin"), h.LepasMataKuliah)
 
-	// Pengajuan routes
+	// Pengajuan & Penawaran routes
 	mkGroup.Post("/requests", middleware.RequireRole("dosen"), h.RequestMataKuliah)
-	mkGroup.Get("/requests/my", middleware.RequireRole("dosen"), h.GetMyPengajuan)
-	
+	mkGroup.Post("/requests/:id/accept-offer", middleware.RequireRole("dosen"), h.AcceptOffer)
+	mkGroup.Post("/requests/:id/reject-offer", middleware.RequireRole("dosen"), h.RejectOffer)
+	mkGroup.Get("/my-requests", middleware.RequireRole("dosen"), h.GetMyPengajuan)
 	mkGroup.Get("/requests", middleware.RequireRole("admin"), h.GetAllPengajuan)
 	mkGroup.Post("/requests/:id/approve", middleware.RequireRole("admin"), h.ApprovePengajuan)
 	mkGroup.Post("/requests/:id/reject", middleware.RequireRole("admin"), h.RejectPengajuan)
@@ -105,6 +106,34 @@ func (h *MataKuliahHandler) RequestMataKuliah(c *fiber.Ctx) error {
 	}
 
 	return response.Success(c, fiber.StatusCreated, "Berhasil mengajukan mata kuliah", pengajuan)
+}
+
+func (h *MataKuliahHandler) AcceptOffer(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return response.Error(c, fiber.StatusBadRequest, "ID tidak valid", nil)
+	}
+
+	dosenID := c.Locals("userID").(string)
+	if err := h.service.AcceptOffer(c.Context(), id, dosenID); err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusOK, "Berhasil menerima penawaran mata kuliah", nil)
+}
+
+func (h *MataKuliahHandler) RejectOffer(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return response.Error(c, fiber.StatusBadRequest, "ID tidak valid", nil)
+	}
+
+	dosenID := c.Locals("userID").(string)
+	if err := h.service.RejectOffer(c.Context(), id, dosenID); err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusOK, "Berhasil menolak penawaran mata kuliah", nil)
 }
 
 func (h *MataKuliahHandler) GetMyPengajuan(c *fiber.Ctx) error {

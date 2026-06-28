@@ -35,7 +35,7 @@ export const matakuliahService = {
 	},
 
 	async getMyRequests(): Promise<ApiResponse<PengajuanMataKuliah[]>> {
-		return await fetchApi<ApiResponse<PengajuanMataKuliah[]>>('/matakuliah/requests/my', {
+		return await fetchApi<ApiResponse<PengajuanMataKuliah[]>>('/matakuliah/my-requests', {
 			method: 'GET'
 		});
 	},
@@ -52,9 +52,21 @@ export const matakuliahService = {
 		});
 	},
 
-	async rejectRequest(id: string): Promise<ApiResponse> {
-		return await fetchApi<ApiResponse>(`/matakuliah/requests/${id}/reject`, {
-			method: 'POST',
+	async rejectPengajuan(id: string): Promise<ApiResponse<null>> {
+		return await fetchApi<ApiResponse<null>>(`/matakuliah/requests/${id}/reject`, {
+			method: 'POST'
+		});
+	},
+
+	async acceptOffer(id: string): Promise<ApiResponse<null>> {
+		return await fetchApi<ApiResponse<null>>(`/matakuliah/requests/${id}/accept-offer`, {
+			method: 'POST'
+		});
+	},
+
+	async rejectOffer(id: string): Promise<ApiResponse<null>> {
+		return await fetchApi<ApiResponse<null>>(`/matakuliah/requests/${id}/reject-offer`, {
+			method: 'POST'
 		});
 	}
 };

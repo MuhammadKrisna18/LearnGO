@@ -19,6 +19,13 @@ type MataKuliah struct {
 	UpdatedAt      time.Time              `json:"updated_at"`
 }
 
+const (
+	StatusPending  = "pending"
+	StatusOffered  = "offered"
+	StatusApproved = "approved"
+	StatusRejected = "rejected"
+)
+
 type CreateMataKuliahRequest struct {
 	Name           string `json:"name" validate:"required"`
 	SKS            int    `json:"sks" validate:"required,min=1"`
@@ -36,6 +43,7 @@ type MataKuliahRepository interface {
 	GetPengajuanByDosenID(ctx context.Context, dosenID string) ([]*PengajuanMataKuliah, error)
 	GetActivePengajuanByMataKuliahID(ctx context.Context, mkID string) ([]*PengajuanMataKuliah, error)
 	GetAllPengajuan(ctx context.Context) ([]*PengajuanMataKuliah, error)
+	GetDosenIDsByProdi(ctx context.Context, prodiID string) ([]string, error)
 	UpdatePengajuan(ctx context.Context, p *PengajuanMataKuliah) error
 	DeletePengajuan(ctx context.Context, id string) error
 }
@@ -46,9 +54,13 @@ type MataKuliahService interface {
 	DeleteMataKuliah(ctx context.Context, id string) error
 	LepasMataKuliah(ctx context.Context, mkID string) error
 
+	// Pengajuan & Penawaran
 	RequestMataKuliah(ctx context.Context, dosenID string, req RequestMataKuliahPayload) (*PengajuanMataKuliah, error)
 	ApprovePengajuan(ctx context.Context, id string) error
 	RejectPengajuan(ctx context.Context, id string) error
+	AcceptOffer(ctx context.Context, id string, dosenID string) error
+	RejectOffer(ctx context.Context, id string, dosenID string) error
+
 	GetMyPengajuan(ctx context.Context, dosenID string) ([]*PengajuanMataKuliah, error)
 	GetAllPengajuan(ctx context.Context) ([]*PengajuanMataKuliah, error)
 }
