@@ -4,7 +4,7 @@
 	import { programStudiService } from '$lib/services/programstudi';
 	import { authState } from '$lib/stores/auth.svelte';
 	import type { MataKuliah, ProgramStudi } from '$lib/types';
-	import DeleteConfirmModal from './DeleteConfirmModal.svelte';
+	import PromptCodeModal from '$lib/components/ui/PromptCodeModal.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import { toast } from '$lib/stores/toast.svelte';
@@ -42,95 +42,78 @@
 		}
 	});
 
-	let isDeleteModalOpen = $state(false);
-	let isLepasModalOpen = $state(false);
+	let isPromptOpen = $state(false);
+	let promptTitle = $state("");
+	let promptMessage = $state("");
+	let expectedCode = $state("");
+	let pendingAction = $state<"delete" | "lepas" | null>(null);
 	let selectedMK = $state<MataKuliah | null>(null);
 
 	function promptDelete(mk: MataKuliah) {
 		selectedMK = mk;
-		isDeleteModalOpen = true;
+		pendingAction = "delete";
+		expectedCode = Math.floor(100000 + Math.random() * 900000).toString();
+		promptTitle = "Hapus Mata Kuliah";
+		promptMessage = `Untuk menghapus mata kuliah ${selectedMK?.name || ''}, masukkan kode berikut:`;
+		isPromptOpen = true;
 	}
 
 	function promptLepas(mk: MataKuliah) {
 		selectedMK = mk;
-		isLepasModalOpen = true;
+		pendingAction = "lepas";
+		expectedCode = Math.floor(100000 + Math.random() * 900000).toString();
+		promptTitle = "Lepaskan Mata Kuliah";
+		promptMessage = `Untuk melepas mata kuliah ${selectedMK?.name || ''}, masukkan kode berikut:`;
+		isPromptOpen = true;
 	}
 
-	async function handleDelete() {
+	async function handlePromptConfirm(code: string) {
 		if (!selectedMK) return;
-		
-		const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
-		const code = prompt(`Untuk menghapus mata kuliah, masukkan kode berikut: ${randomCode}`);
-		
-		if (!code) {
-			selectedMK = null;
-			isDeleteModalOpen = false;
-			return;
-		}
 
-		if (code !== randomCode) {
+		if (code !== expectedCode) {
 			toast.error('Kode tidak cocok. Aksi dibatalkan.');
 			selectedMK = null;
-			isDeleteModalOpen = false;
+			isPromptOpen = false;
 			return;
 		}
 
-		try {
-			const res = await matakuliahService.delete(selectedMK.id);
-			if (res.success) {
-				toast.success('Mata kuliah berhasil dihapus');
-				mkList = mkList.filter(m => m.id !== selectedMK!.id);
-			} else {
-				toast.error(res.message || 'Gagal menghapus mata kuliah');
-			}
-		} catch (err: any) {
-			toast.error(err.message || 'Gagal terhubung ke server');
-		} finally {
-			selectedMK = null;
-			isDeleteModalOpen = false;
-		}
-	}
-
-	async function handleLepas() {
-		if (!selectedMK) return;
-		
-		const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
-		const code = prompt(`Untuk melepas mata kuliah, masukkan kode berikut: ${randomCode}`);
-		
-		if (!code) {
-			selectedMK = null;
-			isLepasModalOpen = false;
-			return;
-		}
-
-		if (code !== randomCode) {
-			toast.error('Kode tidak cocok. Aksi dibatalkan.');
-			selectedMK = null;
-			isLepasModalOpen = false;
-			return;
-		}
-
-		try {
-			const res = await matakuliahService.lepasMataKuliah(selectedMK.id);
-			if (res.success) {
-				toast.success('Mata kuliah berhasil dilepas');
-				// Refresh data
-				const resMk = await matakuliahService.getList();
-				if (resMk.success && resMk.data) {
-					if (authState.role === 'admin') {
-						mkList = resMk.data;
-					} else {
-						mkList = resMk.data.filter((mk: MataKuliah) => !mk.pengajuan?.some(p => p.status === 'approved'));
-					}
+		if (pendingAction === "delete") {
+			try {
+				const res = await matakuliahService.delete(selectedMK.id);
+				if (res.success) {
+					toast.success('Mata kuliah berhasil dihapus');
+					mkList = mkList.filter(m => m.id !== selectedMK!.id);
+				} else {
+					toast.error(res.message || 'Gagal menghapus mata kuliah');
 				}
-			} else {
-				toast.error(res.message || 'Gagal melepas mata kuliah');
+			} catch (err: any) {
+				toast.error(err.message || 'Gagal terhubung ke server');
+			} finally {
+				selectedMK = null;
+				isPromptOpen = false;
 			}
-		} catch (err: any) {
-			toast.error(err.message || 'Gagal terhubung ke server');
-		} finally {
-			selectedMK = null;
-			isLepasModalOpen = false;
+		} else if (pendingAction === "lepas") {
+			try {
+				const res = await matakuliahService.lepasMataKuliah(selectedMK.id);
+				if (res.success) {
+					toast.success('Mata kuliah berhasil dilepas');
+					const resMk = await matakuliahService.getList();
+					if (resMk.success && resMk.data) {
+						if (authState.role === 'admin') {
+							mkList = resMk.data;
+						} else {
+							mkList = resMk.data.filter((mk: MataKuliah) => !mk.pengajuan?.some(p => p.status === 'approved'));
+						}
+					}
+				} else {
+					toast.error(res.message || 'Gagal melepas mata kuliah');
+				}
+			} catch (err: any) {
+				toast.error(err.message || 'Gagal terhubung ke server');
+			} finally {
+				selectedMK = null;
+				isPromptOpen = false;
+			}
 		}
 	}
 </script>
@@ -217,20 +200,13 @@
 	{/if}
 </div>
 
-<DeleteConfirmModal 
-	bind:isOpen={isDeleteModalOpen}
-	title="Hapus Mata Kuliah"
-	itemName={selectedMK?.name || ''}
-	onConfirm={handleDelete}
-	onCancel={() => selectedMK = null}
-/>
-
-<DeleteConfirmModal 
-	bind:isOpen={isLepasModalOpen}
-	title="Lepaskan Mata Kuliah"
-	itemName={`mata kuliah ${selectedMK?.name || ''} dari dosen yang bersangkutan`}
-	onConfirm={handleLepas}
-	onCancel={() => selectedMK = null}
+<PromptCodeModal
+	bind:isOpen={isPromptOpen}
+	title={promptTitle}
+	message={promptMessage}
+	{expectedCode}
+	onConfirm={handlePromptConfirm}
+	onCancel={() => { isPromptOpen = false; selectedMK = null; }}
 />
 
 <style>

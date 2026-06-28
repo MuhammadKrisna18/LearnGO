@@ -4,9 +4,9 @@
 	import { authService } from '$lib/services/auth';
 	import { programStudiService } from '$lib/services/programstudi';
 	import type { UserProfile, ProgramStudi } from '$lib/types';
-	import DeleteConfirmModal from './DeleteConfirmModal.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
+	import PromptCodeModal from '$lib/components/ui/PromptCodeModal.svelte';
 	import { toast } from '$lib/stores/toast.svelte';
 
 	let dosenList: UserProfile[] = $state([]);
@@ -47,30 +47,23 @@
 		return dosenList.filter(d => !d.program_studi_id);
 	}
 
-	let isDeleteModalOpen = $state(false);
+	let isPromptOpen = $state(false);
 	let selectedDosen = $state<UserProfile | null>(null);
+	let expectedCode = $state("");
 
 	function promptDelete(dosen: UserProfile) {
 		selectedDosen = dosen;
-		isDeleteModalOpen = true;
+		expectedCode = Math.floor(100000 + Math.random() * 900000).toString();
+		isPromptOpen = true;
 	}
 
-	async function handleDelete() {
+	async function handleDelete(code: string) {
 		if (!selectedDosen) return;
-		
-		const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
-		const code = prompt(`Untuk menghapus akun dosen, masukkan kode berikut: ${randomCode}`);
-		
-		if (!code) {
-			selectedDosen = null;
-			isDeleteModalOpen = false;
-			return;
-		}
 
-		if (code !== randomCode) {
+		if (code !== expectedCode) {
 			toast.error('Kode tidak cocok. Aksi dibatalkan.');
 			selectedDosen = null;
-			isDeleteModalOpen = false;
+			isPromptOpen = false;
 			return;
 		}
 
@@ -79,7 +72,7 @@
 			if (res.success) {
 				toast.success('Akun dosen berhasil dihapus');
 				dosenList = dosenList.filter(d => d.id !== selectedDosen!.id);
-				isDeleteModalOpen = false;
+				isPromptOpen = false;
 			} else {
 				toast.error(res.message || 'Gagal menghapus dosen');
 			}
@@ -202,10 +195,11 @@
 	{/if}
 </Card>
 
-<DeleteConfirmModal 
-	bind:isOpen={isDeleteModalOpen}
+<PromptCodeModal 
+	bind:isOpen={isPromptOpen}
 	title="Hapus Akun Dosen"
-	itemName={selectedDosen?.name || ''}
+	message={`Untuk menghapus akun dosen ${selectedDosen?.name || ''}, masukkan kode berikut:`}
+	{expectedCode}
 	onConfirm={handleDelete}
 	onCancel={() => selectedDosen = null}
 />

@@ -3,12 +3,20 @@
 	import { matakuliahService } from '$lib/services/matakuliah';
 	import { authState } from '$lib/stores/auth.svelte';
 	import type { MataKuliah, PengajuanMataKuliah } from '$lib/types';
+	import PromptCodeModal from '$lib/components/ui/PromptCodeModal.svelte';
 	import { toast } from '$lib/stores/toast.svelte';
 
 	let mkList = $state<MataKuliah[]>([]);
 	let myRequests = $state<PengajuanMataKuliah[]>([]);
 	let loading = $state(true);
 	let error = $state('');
+
+	let isPromptOpen = $state(false);
+	let promptTitle = $state("");
+	let promptMessage = $state("");
+	let expectedCode = $state("");
+	let pendingAction = $state<"request" | "accept" | "reject" | null>(null);
+	let pendingId = $state("");
 
 	async function loadData() {
 		loading = true;
@@ -36,72 +44,77 @@
 		loadData();
 	});
 
-	async function requestMk(mkId: string) {
-		const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
-		const userInput = prompt(`Untuk melanjutkan pengajuan, masukkan kode berikut: ${randomCode}`);
-		if (!userInput) return;
-		
-		if (userInput !== randomCode) {
-			toast.error('Kode tidak cocok. Pengajuan dibatalkan.');
-			return;
-		}
-
-		try {
-			const res = await matakuliahService.requestMataKuliah(mkId);
-			if (res.success) {
-				toast.success('Pengajuan berhasil');
-				await loadData();
-			} else {
-				toast.error(res.message);
-			}
-		} catch (err: any) {
-			toast.error(err.message || 'Gagal mengajukan mata kuliah');
-		}
+	function openRequestPrompt(mkId: string) {
+		pendingId = mkId;
+		pendingAction = "request";
+		expectedCode = Math.floor(100000 + Math.random() * 900000).toString();
+		promptTitle = "Konfirmasi Pengajuan";
+		promptMessage = "Untuk melanjutkan pengajuan, masukkan kode berikut:";
+		isPromptOpen = true;
 	}
 
-	async function acceptOffer(id: string) {
-		const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
-		const code = prompt(`Untuk menerima penawaran, masukkan kode berikut: ${randomCode}`);
-		if (!code) return;
-		if (code !== randomCode) {
+	function openAcceptPrompt(id: string) {
+		pendingId = id;
+		pendingAction = "accept";
+		expectedCode = Math.floor(100000 + Math.random() * 900000).toString();
+		promptTitle = "Konfirmasi Terima Penawaran";
+		promptMessage = "Untuk menerima penawaran, masukkan kode berikut:";
+		isPromptOpen = true;
+	}
+
+	function openRejectPrompt(id: string) {
+		pendingId = id;
+		pendingAction = "reject";
+		expectedCode = Math.floor(100000 + Math.random() * 900000).toString();
+		promptTitle = "Konfirmasi Tolak Penawaran";
+		promptMessage = "Untuk menolak penawaran, masukkan kode berikut:";
+		isPromptOpen = true;
+	}
+
+	async function handlePromptConfirm(code: string) {
+		if (code !== expectedCode) {
 			toast.error('Kode tidak cocok. Aksi dibatalkan.');
 			return;
 		}
 
-		try {
-			const res = await matakuliahService.acceptOffer(id);
-			if (res.success) {
-				toast.success('Penawaran berhasil diterima');
-				await loadData();
-			} else {
-				toast.error(res.message);
-				await loadData(); // Reload to remove stale offer
+		if (pendingAction === "request") {
+			try {
+				const res = await matakuliahService.requestMataKuliah(pendingId);
+				if (res.success) {
+					toast.success('Pengajuan berhasil');
+					await loadData();
+				} else {
+					toast.error(res.message);
+				}
+			} catch (err: any) {
+				toast.error(err.message || 'Gagal mengajukan mata kuliah');
 			}
-		} catch (err: any) {
-			toast.error(err.message || 'Gagal menerima penawaran');
-			await loadData();
-		}
-	}
-
-	async function rejectOffer(id: string) {
-		const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
-		const code = prompt(`Untuk menolak penawaran, masukkan kode berikut: ${randomCode}`);
-		if (!code) return;
-		if (code !== randomCode) {
-			toast.error('Kode tidak cocok. Aksi dibatalkan.');
-			return;
-		}
-
-		try {
-			const res = await matakuliahService.rejectOffer(id);
-			if (res.success) {
-				toast.success('Penawaran berhasil ditolak');
+		} else if (pendingAction === "accept") {
+			try {
+				const res = await matakuliahService.acceptOffer(pendingId);
+				if (res.success) {
+					toast.success('Penawaran berhasil diterima');
+					await loadData();
+				} else {
+					toast.error(res.message);
+					await loadData(); // Reload to remove stale offer
+				}
+			} catch (err: any) {
+				toast.error(err.message || 'Gagal menerima penawaran');
 				await loadData();
-			} else {
-				toast.error(res.message);
 			}
-		} catch (err: any) {
-			toast.error(err.message || 'Gagal menolak penawaran');
+		} else if (pendingAction === "reject") {
+			try {
+				const res = await matakuliahService.rejectOffer(pendingId);
+				if (res.success) {
+					toast.success('Penawaran berhasil ditolak');
+					await loadData();
+				} else {
+					toast.error(res.message);
+				}
+			} catch (err: any) {
+				toast.error(err.message || 'Gagal menolak penawaran');
+			}
 		}
 	}
 
@@ -166,10 +179,10 @@
 								<div class="item-subtitle">{req.mata_kuliah?.sks || 0} SKS - {req.mata_kuliah?.program_studi?.name || 'Unknown'}</div>
 							</div>
 							<div style="display: flex; gap: 8px;">
-								<button class="btn-primary-sm bg-success" onclick={() => acceptOffer(req.id)}>
+								<button class="btn-primary-sm bg-success" onclick={() => openAcceptPrompt(req.id)}>
 									Terima
 								</button>
-								<button class="btn-primary-sm bg-danger" onclick={() => rejectOffer(req.id)}>
+								<button class="btn-primary-sm bg-danger" onclick={() => openRejectPrompt(req.id)}>
 									Tolak
 								</button>
 							</div>
@@ -201,12 +214,12 @@
 									{:else if mk.pengajuan.some(p => p.status === 'approved')}
 										<span class="status-text text-muted">Diambil Dosen Lain</span>
 									{:else}
-										<button class="btn-primary-sm" onclick={() => requestMk(mk.id)}>
+										<button class="btn-primary-sm" onclick={() => openRequestPrompt(mk.id)}>
 											Ajukan
 										</button>
 									{/if}
 								{:else}
-									<button class="btn-primary-sm" onclick={() => requestMk(mk.id)}>
+									<button class="btn-primary-sm" onclick={() => openRequestPrompt(mk.id)}>
 										Ajukan
 									</button>
 								{/if}
@@ -239,6 +252,14 @@
 		</div>
 	{/if}
 </div>
+
+<PromptCodeModal
+	bind:isOpen={isPromptOpen}
+	title={promptTitle}
+	message={promptMessage}
+	{expectedCode}
+	onConfirm={handlePromptConfirm}
+/>
 
 <style>
 	.glass-panel {

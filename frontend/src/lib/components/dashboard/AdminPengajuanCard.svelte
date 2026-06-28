@@ -4,11 +4,19 @@
 	import type { PengajuanMataKuliah } from '$lib/types';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import PromptCodeModal from '$lib/components/ui/PromptCodeModal.svelte';
 	import { toast } from '$lib/stores/toast.svelte';
 
 	let requests = $state<PengajuanMataKuliah[]>([]);
 	let loading = $state(true);
 	let error = $state('');
+
+	let isPromptOpen = $state(false);
+	let promptTitle = $state("");
+	let promptMessage = $state("");
+	let expectedCode = $state("");
+	let pendingAction = $state<"approve" | "reject" | null>(null);
+	let pendingId = $state("");
 
 	async function loadRequests() {
 		loading = true;
@@ -29,49 +37,54 @@
 		loadRequests();
 	});
 
-	async function handleApprove(id: string) {
-		const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
-		const code = prompt(`Untuk Menerima pengajuan, masukkan kode berikut: ${randomCode}`);
-		if (!code) return;
-		
-		if (code !== randomCode) {
-			toast.error('Kode tidak cocok. Aksi dibatalkan.');
-			return;
-		}
-
-		try {
-			const res = await matakuliahService.approveRequest(id);
-			if (res.success) {
-				toast.success('Pengajuan berhasil disetujui');
-				await loadRequests();
-			} else {
-				toast.error(res.message);
-			}
-		} catch (err: any) {
-			toast.error(err.message || 'Gagal menyetujui pengajuan');
-		}
+	function openApprovePrompt(id: string) {
+		pendingId = id;
+		pendingAction = "approve";
+		expectedCode = Math.floor(100000 + Math.random() * 900000).toString();
+		promptTitle = "Konfirmasi Terima Pengajuan";
+		promptMessage = "Untuk menerima pengajuan, masukkan kode berikut:";
+		isPromptOpen = true;
 	}
 
-	async function handleReject(id: string) {
-		const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
-		const code = prompt(`Untuk Menolak pengajuan, masukkan kode berikut: ${randomCode}`);
-		if (!code) return;
+	function openRejectPrompt(id: string) {
+		pendingId = id;
+		pendingAction = "reject";
+		expectedCode = Math.floor(100000 + Math.random() * 900000).toString();
+		promptTitle = "Konfirmasi Tolak Pengajuan";
+		promptMessage = "Untuk menolak pengajuan, masukkan kode berikut:";
+		isPromptOpen = true;
+	}
 
-		if (code !== randomCode) {
+	async function handlePromptConfirm(code: string) {
+		if (code !== expectedCode) {
 			toast.error('Kode tidak cocok. Aksi dibatalkan.');
 			return;
 		}
 
-		try {
-			const res = await matakuliahService.rejectPengajuan(id);
-			if (res.success) {
-				toast.success('Pengajuan berhasil ditolak');
-				await loadRequests();
-			} else {
-				toast.error(res.message);
+		if (pendingAction === "approve") {
+			try {
+				const res = await matakuliahService.approveRequest(pendingId);
+				if (res.success) {
+					toast.success('Pengajuan berhasil disetujui');
+					await loadRequests();
+				} else {
+					toast.error(res.message);
+				}
+			} catch (err: any) {
+				toast.error(err.message || 'Gagal menyetujui pengajuan');
 			}
-		} catch (err: any) {
-			toast.error(err.message || 'Gagal menolak pengajuan');
+		} else if (pendingAction === "reject") {
+			try {
+				const res = await matakuliahService.rejectPengajuan(pendingId);
+				if (res.success) {
+					toast.success('Pengajuan berhasil ditolak');
+					await loadRequests();
+				} else {
+					toast.error(res.message);
+				}
+			} catch (err: any) {
+				toast.error(err.message || 'Gagal menolak pengajuan');
+			}
 		}
 	}
 
@@ -137,8 +150,8 @@
 							<td>
 								{#if req.status === 'pending'}
 									<div class="action-buttons">
-										<button class="btn-approve" onclick={() => handleApprove(req.id)}>Terima</button>
-										<button class="btn-reject" onclick={() => handleReject(req.id)}>Tolak</button>
+										<button class="btn-approve" onclick={() => openApprovePrompt(req.id)}>Terima</button>
+										<button class="btn-reject" onclick={() => openRejectPrompt(req.id)}>Tolak</button>
 									</div>
 								{:else}
 									<span class="txt-sm">Selesai</span>
@@ -151,6 +164,14 @@
 		</div>
 	{/if}
 </Card>
+
+<PromptCodeModal
+	bind:isOpen={isPromptOpen}
+	title={promptTitle}
+	message={promptMessage}
+	{expectedCode}
+	onConfirm={handlePromptConfirm}
+/>
 
 <style>
 	.btn-approve {

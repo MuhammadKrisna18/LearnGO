@@ -3,15 +3,16 @@
 	import { kelasService } from '$lib/services/kelas';
 	import { authState } from '$lib/stores/auth.svelte';
 	import type { Kelas } from '$lib/types';
-	import DeleteConfirmModal from './DeleteConfirmModal.svelte';
+	import PromptCodeModal from '$lib/components/ui/PromptCodeModal.svelte';
 	import { toast } from '$lib/stores/toast.svelte';
 
 	let kelases = $state<Kelas[]>([]);
 	let loading = $state(true);
 	let error = $state('');
 
-	let isDeleteModalOpen = $state(false);
+	let isPromptOpen = $state(false);
 	let selectedKelas = $state<Kelas | null>(null);
+	let expectedCode = $state("");
 
 	let searchQuery = $state('');
 	let sortBy = $state('kelas');
@@ -96,25 +97,17 @@
 
 	function promptDelete(k: Kelas) {
 		selectedKelas = k;
-		isDeleteModalOpen = true;
+		expectedCode = Math.floor(100000 + Math.random() * 900000).toString();
+		isPromptOpen = true;
 	}
 
-	async function handleDelete() {
+	async function handleDelete(code: string) {
 		if (!selectedKelas) return;
 
-		const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
-		const code = prompt(`Untuk menghapus kelas, masukkan kode berikut: ${randomCode}`);
-		
-		if (!code) {
-			selectedKelas = null;
-			isDeleteModalOpen = false;
-			return;
-		}
-
-		if (code !== randomCode) {
+		if (code !== expectedCode) {
 			toast.error('Kode tidak cocok. Aksi dibatalkan.');
 			selectedKelas = null;
-			isDeleteModalOpen = false;
+			isPromptOpen = false;
 			return;
 		}
 
@@ -129,7 +122,7 @@
 		} catch (err) {
 			toast.error('Terjadi kesalahan saat menghapus kelas');
 		} finally {
-			isDeleteModalOpen = false;
+			isPromptOpen = false;
 			selectedKelas = null;
 		}
 	}
@@ -220,12 +213,13 @@
 	{/if}
 </div>
 
-<DeleteConfirmModal
-	bind:isOpen={isDeleteModalOpen}
+<PromptCodeModal
+	bind:isOpen={isPromptOpen}
 	title="Hapus Kelas"
-	itemName={selectedKelas?.name || 'kelas ini'}
+	message={`Untuk menghapus kelas ${selectedKelas?.name || 'ini'}, masukkan kode berikut:`}
+	{expectedCode}
 	onConfirm={handleDelete}
-	onCancel={() => { isDeleteModalOpen = false; selectedKelas = null; }}
+	onCancel={() => { isPromptOpen = false; selectedKelas = null; }}
 />
 
 <style>
