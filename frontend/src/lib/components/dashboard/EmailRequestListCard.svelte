@@ -2,6 +2,7 @@
 	import { authService } from '$lib/services/auth';
 	import type { EmailChangeRequest } from '$lib/types';
 	import { onMount } from 'svelte';
+	import Card from '$lib/components/ui/Card.svelte';
 
 	let requests = $state<EmailChangeRequest[]>([]);
 	let loading = $state(true);
@@ -45,7 +46,7 @@
 	}
 </script>
 
-<div class="email-requests-card glass-panel animate-fade-in" style="animation-delay: 0.3s;">
+<Card class="email-requests-card animate-fade-in" style="animation-delay: 0.3s; padding: 24px; margin-bottom: 24px; background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.6));">
 	<div class="card-header">
 		<h2>Permintaan Ganti Email</h2>
 		<button class="btn-refresh" onclick={fetchRequests} disabled={loading} title="Refresh">
@@ -54,20 +55,20 @@
 	</div>
 
 	{#if error}
-		<div class="error-message">{error}</div>
+		<div class="state-container state-error" style="padding: 16px; margin-bottom: 16px;">{error}</div>
 	{/if}
 	{#if successMsg}
-		<div class="success-message">{successMsg}</div>
+		<div class="success-message" style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 12px; border-radius: var(--radius-sm); margin-bottom: 20px; text-align: center;">{successMsg}</div>
 	{/if}
 
-	<div class="table-container">
+	<div class="data-table-container">
 		{#if loading && requests.length === 0}
-			<div class="loading-state">
+			<div class="state-container">
 				<div class="spinner"></div>
 				<p>Memuat daftar permintaan...</p>
 			</div>
 		{:else if requests.length === 0}
-			<div class="empty-state">
+			<div class="state-container">
 				<p>🎉 Tidak ada permintaan ganti email saat ini.</p>
 			</div>
 		{:else}
@@ -102,16 +103,9 @@
 			</table>
 		{/if}
 	</div>
-</div>
+</Card>
 
 <style>
-	.email-requests-card {
-		padding: 24px;
-		border-radius: var(--radius-lg);
-		background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.6));
-		margin-bottom: 24px;
-	}
-
 	.card-header {
 		display: flex;
 		justify-content: space-between;
@@ -139,58 +133,9 @@
 		transform: scale(1.05);
 	}
 
-	.table-container {
-		overflow-x: auto;
-	}
-
-	.data-table {
-		width: 100%;
-		border-collapse: separate;
-		border-spacing: 0;
-	}
-
-	.data-table th {
-		text-align: left;
-		padding: 12px 16px;
-		font-size: 0.75rem;
-		font-weight: 600;
-		color: var(--text-muted);
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-		border-bottom: 2px solid var(--surface-border);
-	}
-
-	.data-table td {
-		padding: 16px;
-		font-size: 0.95rem;
-		color: var(--text-main);
-		border-bottom: 1px solid var(--surface-border);
-		vertical-align: middle;
-	}
-
-	.data-table tbody tr {
-		transition: background-color 0.2s;
-	}
-
-	.data-table tbody tr:hover {
-		background: var(--surface-light);
-	}
-
 	.actions-col {
 		text-align: right;
 		width: 120px;
-	}
-
-	.font-medium {
-		font-weight: 500;
-	}
-
-	.text-muted {
-		color: var(--text-muted);
-	}
-
-	.mono {
-		font-family: monospace;
 	}
 
 	.highlight {
@@ -227,12 +172,6 @@
 		transform: translateY(-2px);
 	}
 
-	.loading-state, .empty-state {
-		padding: 48px 0;
-		text-align: center;
-		color: var(--text-muted);
-	}
-
 	.spinner {
 		width: 24px;
 		height: 24px;
@@ -241,24 +180,6 @@
 		border-radius: 50%;
 		animation: spin 1s linear infinite;
 		margin: 0 auto 16px;
-	}
-
-	.error-message {
-		background: rgba(239, 68, 68, 0.1);
-		color: var(--error-color);
-		padding: 12px;
-		border-radius: var(--radius-sm);
-		margin-bottom: 20px;
-		text-align: center;
-	}
-
-	.success-message {
-		background: rgba(16, 185, 129, 0.1);
-		color: var(--success-color);
-		padding: 12px;
-		border-radius: var(--radius-sm);
-		margin-bottom: 20px;
-		text-align: center;
 	}
 
 	@keyframes spin {

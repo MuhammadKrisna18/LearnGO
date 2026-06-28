@@ -37,12 +37,14 @@ type MataKuliahRepository interface {
 	GetActivePengajuanByMataKuliahID(ctx context.Context, mkID string) ([]*PengajuanMataKuliah, error)
 	GetAllPengajuan(ctx context.Context) ([]*PengajuanMataKuliah, error)
 	UpdatePengajuan(ctx context.Context, p *PengajuanMataKuliah) error
+	DeletePengajuan(ctx context.Context, id string) error
 }
 
 type MataKuliahService interface {
 	CreateMataKuliah(ctx context.Context, req CreateMataKuliahRequest) (*MataKuliah, error)
 	GetMataKuliahList(ctx context.Context) ([]*MataKuliah, error)
 	DeleteMataKuliah(ctx context.Context, id string) error
+	LepasMataKuliah(ctx context.Context, mkID string) error
 
 	RequestMataKuliah(ctx context.Context, dosenID string, req RequestMataKuliahPayload) (*PengajuanMataKuliah, error)
 	ApprovePengajuan(ctx context.Context, id string) error

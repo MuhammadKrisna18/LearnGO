@@ -81,6 +81,29 @@
 	{#if loading}
 		<div style="text-align: center; padding: 20px;">Memuat data...</div>
 	{:else}
+		<!-- Mata Kuliah yang Sudah Diambil -->
+		<div class="mk-diampu-section">
+			<h3>Mata Kuliah Yang Diampu</h3>
+			{#if myRequests.filter(req => req.status === 'approved').length === 0}
+				<p class="empty-text">Anda belum mengampu mata kuliah apapun.</p>
+			{:else}
+				<div class="grid-container diampu-grid">
+					{#each myRequests.filter(req => req.status === 'approved') as req}
+						<div class="mk-card">
+							<div class="mk-card-icon">📚</div>
+							<div class="mk-card-content">
+								<div class="mk-title">{req.mata_kuliah?.name || 'Mata Kuliah Dihapus'}</div>
+								<div class="mk-subtitle">{req.mata_kuliah?.sks || 0} SKS - {req.mata_kuliah?.program_studi?.name || 'Unknown'}</div>
+								<div class="mk-date">Disetujui: {new Date(req.created_at).toLocaleDateString()}</div>
+							</div>
+						</div>
+					{/each}
+				</div>
+			{/if}
+		</div>
+
+		<hr class="section-divider" />
+
 		<div class="grid-container">
 			<!-- Available MKs -->
 			<div class="grid-column">
@@ -170,6 +193,9 @@
 		.grid-container {
 			grid-template-columns: 1fr 1fr;
 		}
+		.diampu-grid {
+			grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+		}
 	}
 
 	h3 {
@@ -245,14 +271,6 @@
 		margin-bottom: 12px;
 	}
 
-	.req-footer {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding-top: 12px;
-		border-top: 1px solid rgba(0, 0, 0, 0.05);
-	}
-
 	.status-badge {
 		font-size: 0.7rem;
 		padding: 4px 8px;
@@ -263,17 +281,52 @@
 	.badge-warning { background: #fef9c3; color: #854d0e; }
 	.badge-error { background: #fee2e2; color: #991b1b; }
 
-	.code-label {
-		font-size: 0.75rem;
-		color: var(--text-muted);
+	.mk-diampu-section {
+		margin-bottom: 24px;
 	}
-	.code-value {
-		font-family: monospace;
-		font-weight: 700;
-		letter-spacing: 2px;
-		color: var(--primary-color);
+	.section-divider {
+		border: 0;
+		border-top: 1px solid rgba(0,0,0,0.05);
+		margin: 32px 0;
+	}
+	.mk-card {
+		background: rgba(255,255,255,0.9);
+		border: 1px solid var(--surface-border);
+		border-radius: var(--radius-md);
+		padding: 16px;
+		display: flex;
+		gap: 16px;
+		align-items: center;
+		transition: transform 0.2s, box-shadow 0.2s;
+	}
+	.mk-card:hover {
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-md);
+	}
+	.mk-card-icon {
+		font-size: 2rem;
 		background: rgba(79, 70, 229, 0.1);
-		padding: 4px 8px;
-		border-radius: var(--radius-sm);
+		width: 56px;
+		height: 56px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--radius-md);
+	}
+	.mk-title {
+		font-weight: 600;
+		font-size: 1.05rem;
+		color: var(--text-main);
+	}
+	.mk-subtitle {
+		font-size: 0.85rem;
+		color: var(--text-muted);
+		margin-top: 4px;
+	}
+	.mk-date {
+		font-size: 0.75rem;
+		color: var(--primary-color);
+		margin-top: 8px;
+		font-weight: 500;
 	}
 </style>

@@ -2,6 +2,8 @@
 	import { onMount } from 'svelte';
 	import { matakuliahService } from '$lib/services/matakuliah';
 	import type { PengajuanMataKuliah } from '$lib/types';
+	import Card from '$lib/components/ui/Card.svelte';
+	import Badge from '$lib/components/ui/Badge.svelte';
 
 	let requests = $state<PengajuanMataKuliah[]>([]);
 	let loading = $state(true);
@@ -70,33 +72,33 @@
 		}
 	}
 
-	function getStatusBadgeClass(status: string) {
+	function getBadgeType(status: string) {
 		switch(status) {
-			case 'approved': return 'badge-success';
-			case 'rejected': return 'badge-error';
-			default: return 'badge-warning';
+			case 'approved': return 'success';
+			case 'rejected': return 'error';
+			default: return 'warning';
 		}
 	}
 </script>
 
-<div class="glass-panel p-6 mt-6">
-	<div class="flex justify-between items-center mb-6">
-		<h2 class="text-xl font-bold">Daftar Pengajuan Mata Kuliah Dosen</h2>
+<Card style="padding: 24px; margin-top: 24px;">
+	<div class="card-header-flex">
+		<h3>Daftar Pengajuan Mata Kuliah Dosen</h3>
 		<button class="btn-secondary" onclick={loadRequests} disabled={loading}>
 			Refresh
 		</button>
 	</div>
 
 	{#if error}
-		<div class="error-message mb-4">{error}</div>
+		<div class="state-container state-error" style="padding: 16px; margin-bottom: 16px;">{error}</div>
 	{/if}
 
 	{#if loading}
-		<div class="text-center py-4">Memuat data...</div>
+		<div class="state-container">Memuat data...</div>
 	{:else if requests.length === 0}
-		<p class="text-center text-gray-500 py-4">Belum ada pengajuan mata kuliah.</p>
+		<div class="state-container">Belum ada pengajuan mata kuliah.</div>
 	{:else}
-		<div class="overflow-x-auto">
+		<div class="data-table-container">
 			<table class="data-table">
 				<thead>
 					<tr>
@@ -111,27 +113,27 @@
 					{#each requests as req}
 						<tr>
 							<td>
-								<div class="font-medium">{req.dosen?.name || 'Unknown'}</div>
-								<div class="text-xs text-gray-500">{req.dosen?.email || ''}</div>
+								<div class="fw-medium">{req.dosen?.name || 'Unknown'}</div>
+								<div class="txt-sm">{req.dosen?.email || ''}</div>
 							</td>
 							<td>
-								<div class="font-medium">{req.mata_kuliah?.name || 'Unknown'}</div>
-								<div class="text-xs text-gray-500">{req.mata_kuliah?.sks || '-'} SKS</div>
+								<div class="fw-medium">{req.mata_kuliah?.name || 'Unknown'}</div>
+								<div class="txt-sm">{req.mata_kuliah?.sks || '-'} SKS</div>
 							</td>
 							<td>
-								<span class={`status-badge ${getStatusBadgeClass(req.status)}`}>
+								<Badge type={getBadgeType(req.status)}>
 									{req.status.toUpperCase()}
-								</span>
+								</Badge>
 							</td>
 							<td>{new Date(req.created_at).toLocaleDateString('id-ID')}</td>
 							<td>
 								{#if req.status === 'pending'}
-									<div class="flex gap-2">
+									<div class="action-buttons">
 										<button class="btn-approve" onclick={() => handleApprove(req.id)}>Terima</button>
 										<button class="btn-reject" onclick={() => handleReject(req.id)}>Tolak</button>
 									</div>
 								{:else}
-									<span class="text-gray-400 text-sm">Selesai</span>
+									<span class="txt-sm">Selesai</span>
 								{/if}
 							</td>
 						</tr>
@@ -140,60 +142,9 @@
 			</table>
 		</div>
 	{/if}
-</div>
+</Card>
 
 <style>
-	.glass-panel {
-		background: rgba(255, 255, 255, 0.8);
-		backdrop-filter: blur(12px);
-		border-radius: var(--radius-lg);
-		border: 1px solid rgba(255, 255, 255, 0.5);
-		box-shadow: var(--shadow-md);
-	}
-
-	.error-message {
-		color: var(--error-color);
-		font-size: 0.875rem;
-		background: rgba(239, 68, 68, 0.1);
-		padding: 10px;
-		border-radius: var(--radius-sm);
-	}
-
-	.data-table {
-		width: 100%;
-		border-collapse: separate;
-		border-spacing: 0;
-	}
-
-	.data-table th {
-		text-align: left;
-		padding: 12px 16px;
-		font-size: 0.875rem;
-		font-weight: 600;
-		color: var(--text-muted);
-		border-bottom: 2px solid rgba(0, 0, 0, 0.05);
-	}
-
-	.data-table td {
-		padding: 16px;
-		vertical-align: middle;
-		border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-	}
-
-	.data-table tr:last-child td {
-		border-bottom: none;
-	}
-
-	.status-badge {
-		font-size: 0.7rem;
-		padding: 4px 8px;
-		border-radius: 9999px;
-		font-weight: 600;
-	}
-	.badge-success { background: #dcfce7; color: #166534; }
-	.badge-warning { background: #fef9c3; color: #854d0e; }
-	.badge-error { background: #fee2e2; color: #991b1b; }
-
 	.btn-approve {
 		background: #10b981;
 		color: white;
@@ -217,4 +168,34 @@
 		cursor: pointer;
 	}
 	.btn-reject:hover { background: #dc2626; }
+
+	.card-header-flex {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 24px;
+	}
+
+	.card-header-flex h3 {
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: var(--text-main);
+		margin: 0;
+	}
+
+	.fw-medium {
+		font-weight: 500;
+		color: var(--text-main);
+	}
+
+	.txt-sm {
+		font-size: 0.8rem;
+		color: var(--text-muted);
+		margin-top: 4px;
+	}
+
+	.action-buttons {
+		display: flex;
+		gap: 8px;
+	}
 </style>

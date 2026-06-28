@@ -5,6 +5,8 @@
 	import { authState } from '$lib/stores/auth.svelte';
 	import type { MataKuliah, ProgramStudi } from '$lib/types';
 	import DeleteConfirmModal from './DeleteConfirmModal.svelte';
+	import Card from '$lib/components/ui/Card.svelte';
+	import Badge from '$lib/components/ui/Badge.svelte';
 
 	let mkList: MataKuliah[] = $state([]);
 	let prodiList: ProgramStudi[] = $state([]);
@@ -36,11 +38,17 @@
 	});
 
 	let isDeleteModalOpen = $state(false);
+	let isLepasModalOpen = $state(false);
 	let selectedMK = $state<MataKuliah | null>(null);
 
 	function promptDelete(mk: MataKuliah) {
 		selectedMK = mk;
 		isDeleteModalOpen = true;
+	}
+
+	function promptLepas(mk: MataKuliah) {
+		selectedMK = mk;
+		isLepasModalOpen = true;
 	}
 
 	async function handleDelete() {
@@ -49,45 +57,73 @@
 		try {
 			const res = await matakuliahService.delete(selectedMK.id);
 			if (res.success) {
-
 				mkList = mkList.filter(m => m.id !== selectedMK!.id);
 			} else {
-				error = res.message || 'Gagal menghapus mata kuliah';
+				alert(res.message || 'Gagal menghapus mata kuliah');
 			}
-		} catch (err) {
-			error = 'Gagal terhubung ke server';
+		} catch (err: any) {
+			alert(err.message || 'Gagal terhubung ke server');
+		} finally {
+			selectedMK = null;
+			isDeleteModalOpen = false;
+		}
+	}
+
+	async function handleLepas() {
+		if (!selectedMK) return;
+		
+		try {
+			const res = await matakuliahService.lepasMataKuliah(selectedMK.id);
+			if (res.success) {
+				// Refresh data
+				const resMk = await matakuliahService.getList();
+				if (resMk.success && resMk.data) {
+					mkList = resMk.data;
+				}
+			} else {
+				alert(res.message || 'Gagal melepas mata kuliah');
+			}
+		} catch (err: any) {
+			alert(err.message || 'Gagal terhubung ke server');
+		} finally {
+			selectedMK = null;
+			isLepasModalOpen = false;
 		}
 	}
 </script>
 
-<div class="mk-list-card glass-panel animate-fade-in" style="animation-delay: 0.4s;">
-	<div class="card-header">
-		<h3>Daftar Mata Kuliah</h3>
-		<p>Daftar seluruh mata kuliah yang tersedia di dalam sistem.</p>
+<div class="mk-list-container animate-fade-in" style="animation-delay: 0.4s;">
+	<div class="section-header">
+		<h3>Daftar Mata Kuliah per Program Studi</h3>
+		<p>Daftar seluruh mata kuliah yang tersedia di dalam sistem dikelompokkan berdasarkan program studi.</p>
 	</div>
 
 	{#if loading}
-		<div class="table-loading">Memuat data...</div>
+		<Card class="state-container">Memuat data...</Card>
 	{:else if error}
-		<div class="table-error">{error}</div>
+		<Card class="state-container state-error">{error}</Card>
 	{:else if mkList.length === 0}
-		<div class="table-empty">Belum ada mata kuliah yang didaftarkan.</div>
+		<Card class="state-container">Belum ada mata kuliah yang didaftarkan.</Card>
 	{:else}
 		<div class="prodi-groups">
 			{#each prodiList as prodi}
 				{@const prodiMks = mkList.filter(mk => mk.program_studi_id === prodi.id)}
-				<div class="prodi-section">
-					<h4 class="prodi-title">{prodi.name} ({prodi.code})</h4>
+				<Card class="prodi-section" style="padding: 24px;">
+					<div class="prodi-header">
+						<h4 class="prodi-title">{prodi.name} ({prodi.code})</h4>
+						<span class="prodi-count">{prodiMks.length} Mata Kuliah</span>
+					</div>
 					
 					{#if prodiMks.length === 0}
-						<div class="table-empty prodi-empty">Belum ada mata kuliah.</div>
+						<div class="state-container prodi-empty">Belum ada mata kuliah untuk program studi ini.</div>
 					{:else}
-						<div class="table-container">
-							<table class="mk-table">
+						<div class="data-table-container">
+							<table class="data-table">
 								<thead>
 									<tr>
 										<th>Nama Mata Kuliah</th>
 										<th>SKS</th>
+										<th>Dosen Pengampu</th>
 										<th>Tgl Ditambahkan</th>
 										{#if authState.role === 'admin'}
 											<th>Aksi</th>
@@ -97,14 +133,33 @@
 								<tbody>
 									{#each prodiMks as mk}
 										<tr>
-											<td>{mk.name}</td>
-											<td><span class="badge sks-badge">{mk.sks} SKS</span></td>
+											<td><span class="font-medium">{mk.name}</span></td>
+											<td><Badge type="info">{mk.sks} SKS</Badge></td>
+											<td>
+												{#if mk.pengajuan && mk.pengajuan.some(p => p.status === 'approved')}
+													{@const approvedP = mk.pengajuan.find(p => p.status === 'approved')}
+													<div class="dosen-info">
+														<span class="dosen-name">{approvedP?.dosen?.name || 'Unknown'}</span>
+														{#if approvedP?.dosen?.email}
+															<span class="dosen-email">{approvedP.dosen.email}</span>
+														{/if}
+													</div>
+												{:else}
+													<span class="text-muted italic">Belum diambil</span>
+												{/if}
+											</td>
 											<td>{new Date(mk.created_at).toLocaleDateString()}</td>
 											{#if authState.role === 'admin'}
 												<td>
-													<button class="btn-delete" aria-label="Hapus Mata Kuliah" onclick={() => promptDelete(mk)}>
-														Hapus
-													</button>
+													{#if mk.pengajuan && mk.pengajuan.some(p => p.status === 'approved' || p.status === 'pending')}
+														<button class="btn-lepas" aria-label="Lepas Mata Kuliah" onclick={() => promptLepas(mk)}>
+															Lepas
+														</button>
+													{:else}
+														<button class="btn-delete" aria-label="Hapus Mata Kuliah" onclick={() => promptDelete(mk)}>
+															Hapus
+														</button>
+													{/if}
 												</td>
 											{/if}
 										</tr>
@@ -113,7 +168,7 @@
 							</table>
 						</div>
 					{/if}
-				</div>
+				</Card>
 			{/each}
 		</div>
 	{/if}
@@ -127,130 +182,107 @@
 	onCancel={() => selectedMK = null}
 />
 
+<DeleteConfirmModal 
+	bind:isOpen={isLepasModalOpen}
+	title="Lepaskan Mata Kuliah"
+	itemName={`mata kuliah ${selectedMK?.name || ''} dari dosen yang bersangkutan`}
+	onConfirm={handleLepas}
+	onCancel={() => selectedMK = null}
+/>
+
 <style>
-	.mk-list-card {
-		padding: 32px;
-		border-radius: var(--radius-lg);
+	.mk-list-container {
 		margin-top: 24px;
 	}
 
-	.card-header {
+	.section-header {
 		margin-bottom: 24px;
 	}
 
-	.card-header h3 {
+	.section-header h3 {
 		font-size: 1.25rem;
 		font-weight: 600;
 		color: var(--text-main);
 		margin-bottom: 4px;
 	}
 
-	.card-header p {
+	.section-header p {
 		font-size: 0.9rem;
 		color: var(--text-muted);
 	}
 
-	.table-container {
-		overflow-x: auto;
-		border: 1px solid var(--surface-border);
-		border-radius: var(--radius-md);
+	.prodi-section {
+		border-radius: var(--radius-lg);
 	}
 
-	.mk-table {
-		width: 100%;
-		border-collapse: collapse;
-		text-align: left;
+	.prodi-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 16px;
+		padding-bottom: 12px;
+		border-bottom: 2px solid rgba(79, 70, 229, 0.1);
 	}
 
-	.mk-table th {
-		background: rgba(241, 245, 249, 0.5);
-		padding: 16px;
+	.prodi-title {
+		font-size: 1.1rem;
+		font-weight: 600;
+		color: var(--primary-color);
+		margin: 0;
+	}
+
+	.prodi-count {
 		font-size: 0.85rem;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
 		color: var(--text-muted);
-		border-bottom: 1px solid var(--surface-border);
-	}
-
-	.mk-table td {
-		padding: 16px;
-		border-bottom: 1px solid var(--surface-border);
-		font-size: 0.95rem;
-	}
-
-	.mk-table tr:last-child td {
-		border-bottom: none;
-	}
-
-	.mk-table tr:hover {
-		background: rgba(248, 250, 252, 0.5);
-	}
-
-	.table-loading,
-	.table-empty,
-	.table-error {
-		padding: 32px;
-		text-align: center;
-		color: var(--text-muted);
-		background: rgba(248, 250, 252, 0.5);
-		border-radius: var(--radius-md);
-		border: 1px dashed var(--surface-border);
+		background: rgba(0,0,0,0.05);
+		padding: 4px 10px;
+		border-radius: 9999px;
+		font-weight: 500;
 	}
 	
-	.table-error {
-		color: var(--error-color);
-		background: rgba(239, 68, 68, 0.05);
-		border-color: rgba(239, 68, 68, 0.2);
+	.dosen-info {
+		display: flex;
+		flex-direction: column;
 	}
-
-	.badge {
+	
+	.dosen-name {
+		font-weight: 500;
+		color: var(--text-main);
+	}
+	
+	.dosen-email {
 		font-size: 0.75rem;
-		padding: 4px 10px;
-		border-radius: 12px;
-		font-weight: 600;
-		letter-spacing: 0.5px;
+		color: var(--text-muted);
 	}
-
-	.sks-badge {
-		background: rgba(16, 185, 129, 0.1);
-		color: #10b981;
-		border: 1px solid rgba(16, 185, 129, 0.2);
+	
+	.italic {
+		font-style: italic;
 	}
 	
 	.prodi-groups {
 		display: flex;
 		flex-direction: column;
-		gap: 32px;
-	}
-	
-	.prodi-title {
-		font-size: 1.1rem;
-		font-weight: 600;
-		color: var(--primary-color);
-		margin-bottom: 16px;
-		padding-bottom: 8px;
-		border-bottom: 2px solid rgba(99, 102, 241, 0.2);
+		gap: 24px;
 	}
 	
 	.prodi-empty {
-		padding: 20px;
+		padding: 32px;
 		background: transparent;
 		border: 1px dashed var(--surface-border);
+		color: var(--text-muted);
 	}
-	
-	.btn-delete {
-		background: rgba(239, 68, 68, 0.1);
-		color: var(--error-color);
-		border: 1px solid rgba(239, 68, 68, 0.2);
-		cursor: pointer;
-		transition: all 0.2s;
-		font-size: 0.85rem;
+
+	.btn-lepas {
 		padding: 6px 12px;
+		background: rgba(245, 158, 11, 0.1);
+		color: #d97706;
 		border-radius: var(--radius-sm);
 		font-weight: 500;
+		font-size: 0.85rem;
+		transition: all 0.2s;
 	}
-	
-	.btn-delete:hover {
-		background: rgba(239, 68, 68, 0.2);
+
+	.btn-lepas:hover {
+		background: rgba(245, 158, 11, 0.2);
 	}
 </style>

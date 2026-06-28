@@ -146,3 +146,119 @@ body {
     align-items: start;
   }
 }
+
+/* Base Table Styles */
+.data-table-container {
+  overflow-x: auto;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  margin-top: 12px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.data-table th {
+  background: rgba(241, 245, 249, 0.5);
+  padding: 16px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.data-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--surface-border);
+  font-size: 0.95rem;
+  vertical-align: middle;
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tr:hover {
+  background: rgba(248, 250, 252, 0.5);
+}
+
+/* Empty, Loading, and Error States */
+.state-container {
+  padding: 32px;
+  text-align: center;
+  color: var(--text-muted);
+  background: rgba(248, 250, 252, 0.5);
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--surface-border);
+}
+
+.state-error {
+  color: var(--error-color);
+  background: rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+/* Typography Utilities */
+.text-muted { color: var(--text-muted); }
+.font-medium { font-weight: 500; }
+.font-bold { font-weight: 700; }
+.text-center { text-align: center; }
+.mono { font-family: monospace; color: var(--text-muted); }
+
+/* Buttons */
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-secondary {
+  padding: 10px 20px;
+  background: white;
+  border: 1px solid var(--surface-border);
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.btn-delete, .btn-reject {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error-color);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+}
+
+.btn-delete:hover, .btn-reject:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.btn-detail, .btn-approve {
+  background: rgba(79, 70, 229, 0.1);
+  color: var(--primary-color);
+  border: 1px solid rgba(79, 70, 229, 0.2);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+}
+
+.btn-detail:hover, .btn-approve:hover {
+  background: rgba(79, 70, 229, 0.2);
+}

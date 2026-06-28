@@ -45,8 +45,6 @@
 		{#if authState.profile.role === 'admin'}
 			<div class="page-grid">
 				<EmailRequestListCard />
-			</div>
-			<div class="mt-6">
 				<AdminPengajuanCard />
 			</div>
 		{:else if authState.profile.role === 'dosen'}

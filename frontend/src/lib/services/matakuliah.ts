@@ -21,6 +21,12 @@ export const matakuliahService = {
 		});
 	},
 
+	async lepasMataKuliah(id: string): Promise<ApiResponse<null>> {
+		return await fetchApi<ApiResponse<null>>(`/matakuliah/${id}/lepas`, {
+			method: 'POST'
+		});
+	},
+
 	async requestMataKuliah(mata_kuliah_id: string): Promise<ApiResponse<PengajuanMataKuliah>> {
 		return await fetchApi<ApiResponse<PengajuanMataKuliah>>('/matakuliah/requests', {
 			method: 'POST',

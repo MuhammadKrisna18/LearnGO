@@ -64,9 +64,33 @@ func (s *matakuliahService) GetMataKuliahList(ctx context.Context) ([]*domain.Ma
 }
 
 func (s *matakuliahService) DeleteMataKuliah(ctx context.Context, id string) error {
+	// Check if there are any pengajuan for this mata kuliah
+	activeReqs, err := s.repo.GetActivePengajuanByMataKuliahID(ctx, id)
+	if err != nil {
+		return apperrors.NewInternal("Gagal mengecek status mata kuliah", err.Error())
+	}
+	if len(activeReqs) > 0 {
+		return apperrors.NewBadRequest("Mata kuliah tidak dapat dihapus karena sudah diajukan atau diambil oleh dosen")
+	}
+
 	if err := s.repo.Delete(ctx, id); err != nil {
 		return apperrors.NewInternal("Gagal menghapus mata kuliah", err.Error())
 	}
+	return nil
+}
+
+func (s *matakuliahService) LepasMataKuliah(ctx context.Context, mkID string) error {
+	activeReqs, err := s.repo.GetActivePengajuanByMataKuliahID(ctx, mkID)
+	if err != nil {
+		return apperrors.NewInternal("Gagal mengecek status mata kuliah", err.Error())
+	}
+	
+	for _, req := range activeReqs {
+		if err := s.repo.DeletePengajuan(ctx, req.ID); err != nil {
+			return apperrors.NewInternal("Gagal melepas mata kuliah", err.Error())
+		}
+	}
+
 	return nil
 }
 

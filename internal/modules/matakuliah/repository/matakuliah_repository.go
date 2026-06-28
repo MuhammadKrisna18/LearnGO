@@ -90,3 +90,7 @@ func (r *pgMataKuliahRepository) GetAllPengajuan(ctx context.Context) ([]*domain
 func (r *pgMataKuliahRepository) UpdatePengajuan(ctx context.Context, p *domain.PengajuanMataKuliah) error {
 	return r.db.WithContext(ctx).Save(p).Error
 }
+
+func (r *pgMataKuliahRepository) DeletePengajuan(ctx context.Context, id string) error {
+	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&domain.PengajuanMataKuliah{}).Error
+}
