@@ -1,10 +1,11 @@
 package http
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"modular-monolith/internal/middleware"
 	"modular-monolith/internal/modules/matakuliah/domain"
 	"modular-monolith/internal/shared/response"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 type MataKuliahHandler struct {
@@ -21,10 +22,18 @@ func (h *MataKuliahHandler) RegisterRoutes(router fiber.Router, jwtSecret string
 	mkGroup := router.Group("/matakuliah")
 
 	mkGroup.Use(middleware.Protected(jwtSecret))
-	
+
 	mkGroup.Get("/", h.GetMataKuliahList)
 	mkGroup.Post("/", middleware.RequireRole("admin"), h.CreateMataKuliah)
 	mkGroup.Delete("/:id", middleware.RequireRole("admin"), h.DeleteMataKuliah)
+
+	// Pengajuan routes
+	mkGroup.Post("/requests", middleware.RequireRole("dosen"), h.RequestMataKuliah)
+	mkGroup.Get("/requests/my", middleware.RequireRole("dosen"), h.GetMyPengajuan)
+	
+	mkGroup.Get("/requests", middleware.RequireRole("admin"), h.GetAllPengajuan)
+	mkGroup.Post("/requests/:id/approve", middleware.RequireRole("admin"), h.ApprovePengajuan)
+	mkGroup.Post("/requests/:id/reject", middleware.RequireRole("admin"), h.RejectPengajuan)
 }
 
 func (h *MataKuliahHandler) CreateMataKuliah(c *fiber.Ctx) error {
@@ -40,7 +49,7 @@ func (h *MataKuliahHandler) CreateMataKuliah(c *fiber.Ctx) error {
 
 	mk, err := h.service.CreateMataKuliah(c.Context(), req)
 	if err != nil {
-		return err // handled by global error handler
+		return err
 	}
 
 	return response.Success(c, fiber.StatusCreated, "Mata kuliah berhasil ditambahkan", mk)
@@ -66,4 +75,63 @@ func (h *MataKuliahHandler) DeleteMataKuliah(c *fiber.Ctx) error {
 	}
 
 	return response.Success(c, fiber.StatusOK, "Berhasil menghapus mata kuliah", nil)
+}
+
+func (h *MataKuliahHandler) RequestMataKuliah(c *fiber.Ctx) error {
+	var req domain.RequestMataKuliahPayload
+	if err := c.BodyParser(&req); err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Invalid request payload", err.Error())
+	}
+
+	dosenID := c.Locals("userID").(string)
+
+	pengajuan, err := h.service.RequestMataKuliah(c.Context(), dosenID, req)
+	if err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusCreated, "Berhasil mengajukan mata kuliah", pengajuan)
+}
+
+func (h *MataKuliahHandler) GetMyPengajuan(c *fiber.Ctx) error {
+	dosenID := c.Locals("userID").(string)
+	list, err := h.service.GetMyPengajuan(c.Context(), dosenID)
+	if err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusOK, "Berhasil mengambil riwayat pengajuan", list)
+}
+
+func (h *MataKuliahHandler) GetAllPengajuan(c *fiber.Ctx) error {
+	list, err := h.service.GetAllPengajuan(c.Context())
+	if err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusOK, "Berhasil mengambil semua pengajuan", list)
+}
+
+func (h *MataKuliahHandler) ApprovePengajuan(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return response.Error(c, fiber.StatusBadRequest, "ID Pengajuan wajib diisi", nil)
+	}
+
+	if err := h.service.ApprovePengajuan(c.Context(), id); err != nil {
+		return err
+	}
+	return response.Success(c, fiber.StatusOK, "Pengajuan berhasil disetujui", nil)
+}
+
+func (h *MataKuliahHandler) RejectPengajuan(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return response.Error(c, fiber.StatusBadRequest, "ID Pengajuan wajib diisi", nil)
+	}
+
+	if err := h.service.RejectPengajuan(c.Context(), id); err != nil {
+		return err
+	}
+	return response.Success(c, fiber.StatusOK, "Pengajuan berhasil ditolak", nil)
 }

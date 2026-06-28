@@ -3,6 +3,8 @@
 	import { authState } from '$lib/stores/auth.svelte';
 	import { authService } from '$lib/services/auth';
 	import EmailRequestListCard from '$lib/components/dashboard/EmailRequestListCard.svelte';
+	import DosenMataKuliahRequestCard from '$lib/components/dashboard/DosenMataKuliahRequestCard.svelte';
+	import AdminPengajuanCard from '$lib/components/dashboard/AdminPengajuanCard.svelte';
 
 	let loading = $state(true);
 	let error = $state('');
@@ -44,15 +46,11 @@
 			<div class="page-grid">
 				<EmailRequestListCard />
 			</div>
-		{:else if authState.profile.role === 'dosen'}
-			<div class="dosen-empty-state glass-panel animate-fade-in" style="animation-delay: 0.2s;">
-				<div class="empty-icon">
-					<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-color)"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-				</div>
-				<h3>Selamat Datang, Dosen {authState.profile.name}!</h3>
-				<p>Belum ada jadwal atau kelas yang ditugaskan kepada Anda saat ini.</p>
-				<button class="btn-primary empty-action-btn">Cek Notifikasi</button>
+			<div class="mt-6">
+				<AdminPengajuanCard />
 			</div>
+		{:else if authState.profile.role === 'dosen'}
+			<DosenMataKuliahRequestCard />
 		{/if}
 	{/if}
 </div>

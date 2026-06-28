@@ -2,7 +2,10 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"math/rand"
 	"net/http"
+	"time"
 	"github.com/google/uuid"
 	"modular-monolith/internal/modules/matakuliah/domain"
 	"modular-monolith/internal/shared/apperrors"
@@ -65,4 +68,98 @@ func (s *matakuliahService) DeleteMataKuliah(ctx context.Context, id string) err
 		return apperrors.NewInternal("Gagal menghapus mata kuliah", err.Error())
 	}
 	return nil
+}
+
+func (s *matakuliahService) RequestMataKuliah(ctx context.Context, dosenID string, req domain.RequestMataKuliahPayload) (*domain.PengajuanMataKuliah, error) {
+	// Cek apakah mata kuliah sudah diajukan/diambil
+	activeReqs, err := s.repo.GetActivePengajuanByMataKuliahID(ctx, req.MataKuliahID)
+	if err != nil {
+		return nil, apperrors.NewInternal("Gagal mengecek status mata kuliah", err.Error())
+	}
+	if len(activeReqs) > 0 {
+		if activeReqs[0].DosenID == dosenID {
+			return nil, apperrors.NewBadRequest("Anda sudah mengajukan mata kuliah ini")
+		}
+		return nil, apperrors.NewBadRequest("Mata kuliah ini sudah diajukan atau diambil oleh dosen lain")
+	}
+
+	// Generate 6-digit code
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	code := fmt.Sprintf("%06d", rng.Intn(1000000))
+
+	pengajuan := &domain.PengajuanMataKuliah{
+		ID:           uuid.New().String(),
+		DosenID:      dosenID,
+		MataKuliahID: req.MataKuliahID,
+		Status:       "pending",
+		Code:         code,
+	}
+
+	if err := s.repo.CreatePengajuan(ctx, pengajuan); err != nil {
+		return nil, apperrors.NewInternal("Gagal mengajukan mata kuliah", err.Error())
+	}
+
+	return pengajuan, nil
+}
+
+func (s *matakuliahService) ApprovePengajuan(ctx context.Context, id string) error {
+	p, err := s.repo.GetPengajuanByID(ctx, id)
+	if err != nil {
+		return apperrors.NewInternal("Gagal mengambil data pengajuan", err.Error())
+	}
+	if p == nil {
+		return apperrors.NewNotFound("Pengajuan tidak ditemukan")
+	}
+
+	if p.Status != "pending" {
+		return apperrors.NewBadRequest("Pengajuan sudah tidak dalam status pending")
+	}
+
+	p.Status = "approved"
+	if err := s.repo.UpdatePengajuan(ctx, p); err != nil {
+		return apperrors.NewInternal("Gagal menyetujui pengajuan", err.Error())
+	}
+	return nil
+}
+
+func (s *matakuliahService) RejectPengajuan(ctx context.Context, id string) error {
+	p, err := s.repo.GetPengajuanByID(ctx, id)
+	if err != nil {
+		return apperrors.NewInternal("Gagal mengambil data pengajuan", err.Error())
+	}
+	if p == nil {
+		return apperrors.NewNotFound("Pengajuan tidak ditemukan")
+	}
+
+	if p.Status != "pending" {
+		return apperrors.NewBadRequest("Pengajuan sudah tidak dalam status pending")
+	}
+
+	p.Status = "rejected"
+	if err := s.repo.UpdatePengajuan(ctx, p); err != nil {
+		return apperrors.NewInternal("Gagal menolak pengajuan", err.Error())
+	}
+	return nil
+}
+
+func (s *matakuliahService) GetMyPengajuan(ctx context.Context, dosenID string) ([]*domain.PengajuanMataKuliah, error) {
+	list, err := s.repo.GetPengajuanByDosenID(ctx, dosenID)
+	if err != nil {
+		return nil, apperrors.NewInternal("Gagal mengambil riwayat pengajuan", err.Error())
+	}
+	if list == nil {
+		list = []*domain.PengajuanMataKuliah{}
+	}
+	return list, nil
+}
+
+func (s *matakuliahService) GetAllPengajuan(ctx context.Context) ([]*domain.PengajuanMataKuliah, error) {
+	list, err := s.repo.GetAllPengajuan(ctx)
+	if err != nil {
+		return nil, apperrors.NewInternal("Gagal mengambil daftar pengajuan", err.Error())
+	}
+	if list == nil {
+		list = []*domain.PengajuanMataKuliah{}
+	}
+	return list, nil
 }

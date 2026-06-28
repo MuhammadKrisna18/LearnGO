@@ -58,6 +58,18 @@ export interface MataKuliah {
 	sks: number;
 	program_studi_id: string;
 	program_studi?: ProgramStudi;
+	pengajuan?: PengajuanMataKuliah[];
+	created_at: string;
+}
+
+export interface PengajuanMataKuliah {
+	id: string;
+	dosen_id: string;
+	dosen?: UserProfile;
+	mata_kuliah_id: string;
+	mata_kuliah?: MataKuliah;
+	status: 'pending' | 'approved' | 'rejected';
+	code: string;
 	created_at: string;
 }
 

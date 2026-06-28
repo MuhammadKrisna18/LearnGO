@@ -4,6 +4,7 @@
 	import { authState } from '$lib/stores/auth.svelte';
 	import MataKuliahRegisterCard from '$lib/components/dashboard/MataKuliahRegisterCard.svelte';
 	import MataKuliahListCard from '$lib/components/dashboard/MataKuliahListCard.svelte';
+	import AdminPengajuanCard from '$lib/components/dashboard/AdminPengajuanCard.svelte';
 
 	onMount(() => {
 		if (!authState.token) {
@@ -33,6 +34,10 @@
 		</div>
 	{/if}
 </div>
+
+{#if authState.role === 'admin'}
+	<AdminPengajuanCard />
+{/if}
 
 <style>
 	/* Custom widths for specific layout, overriding standard 1fr 1fr if needed */

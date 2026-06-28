@@ -33,7 +33,7 @@ func (r *pgMataKuliahRepository) GetByNameAndProdi(ctx context.Context, name str
 
 func (r *pgMataKuliahRepository) GetAll(ctx context.Context) ([]*domain.MataKuliah, error) {
 	var mkList []*domain.MataKuliah
-	err := r.db.WithContext(ctx).Preload("ProgramStudi").Order("created_at desc").Find(&mkList).Error
+	err := r.db.WithContext(ctx).Preload("ProgramStudi").Preload("Pengajuan").Preload("Pengajuan.Dosen").Order("created_at desc").Find(&mkList).Error
 	if err != nil {
 		return nil, err
 	}
@@ -42,4 +42,51 @@ func (r *pgMataKuliahRepository) GetAll(ctx context.Context) ([]*domain.MataKuli
 
 func (r *pgMataKuliahRepository) Delete(ctx context.Context, id string) error {
 	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&domain.MataKuliah{}).Error
+}
+
+func (r *pgMataKuliahRepository) CreatePengajuan(ctx context.Context, p *domain.PengajuanMataKuliah) error {
+	return r.db.WithContext(ctx).Create(p).Error
+}
+
+func (r *pgMataKuliahRepository) GetPengajuanByID(ctx context.Context, id string) (*domain.PengajuanMataKuliah, error) {
+	var p domain.PengajuanMataKuliah
+	err := r.db.WithContext(ctx).Preload("MataKuliah").Preload("Dosen").Where("id = ?", id).First(&p).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &p, nil
+}
+
+func (r *pgMataKuliahRepository) GetPengajuanByDosenID(ctx context.Context, dosenID string) ([]*domain.PengajuanMataKuliah, error) {
+	var list []*domain.PengajuanMataKuliah
+	err := r.db.WithContext(ctx).Preload("MataKuliah").Preload("Dosen").Where("dosen_id = ?", dosenID).Order("created_at desc").Find(&list).Error
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (r *pgMataKuliahRepository) GetActivePengajuanByMataKuliahID(ctx context.Context, mkID string) ([]*domain.PengajuanMataKuliah, error) {
+	var list []*domain.PengajuanMataKuliah
+	err := r.db.WithContext(ctx).Preload("Dosen").Where("mata_kuliah_id = ? AND status IN ('pending', 'approved')", mkID).Find(&list).Error
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (r *pgMataKuliahRepository) GetAllPengajuan(ctx context.Context) ([]*domain.PengajuanMataKuliah, error) {
+	var list []*domain.PengajuanMataKuliah
+	err := r.db.WithContext(ctx).Preload("MataKuliah").Preload("Dosen").Order("created_at desc").Find(&list).Error
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
+func (r *pgMataKuliahRepository) UpdatePengajuan(ctx context.Context, p *domain.PengajuanMataKuliah) error {
+	return r.db.WithContext(ctx).Save(p).Error
 }

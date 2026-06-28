@@ -1,5 +1,5 @@
 import { fetchApi } from './api';
-import type { ApiResponse, MataKuliah } from '$lib/types';
+import type { ApiResponse, MataKuliah, PengajuanMataKuliah } from '$lib/types';
 
 export const matakuliahService = {
 	async getList(): Promise<ApiResponse<MataKuliah[]>> {
@@ -18,6 +18,37 @@ export const matakuliahService = {
 	async delete(id: string): Promise<ApiResponse<null>> {
 		return await fetchApi<ApiResponse<null>>(`/matakuliah/${id}`, {
 			method: 'DELETE'
+		});
+	},
+
+	async requestMataKuliah(mata_kuliah_id: string): Promise<ApiResponse<PengajuanMataKuliah>> {
+		return await fetchApi<ApiResponse<PengajuanMataKuliah>>('/matakuliah/requests', {
+			method: 'POST',
+			body: JSON.stringify({ mata_kuliah_id })
+		});
+	},
+
+	async getMyRequests(): Promise<ApiResponse<PengajuanMataKuliah[]>> {
+		return await fetchApi<ApiResponse<PengajuanMataKuliah[]>>('/matakuliah/requests/my', {
+			method: 'GET'
+		});
+	},
+
+	async getAllRequests(): Promise<ApiResponse<PengajuanMataKuliah[]>> {
+		return await fetchApi<ApiResponse<PengajuanMataKuliah[]>>('/matakuliah/requests', {
+			method: 'GET'
+		});
+	},
+
+	async approveRequest(id: string): Promise<ApiResponse> {
+		return await fetchApi<ApiResponse>(`/matakuliah/requests/${id}/approve`, {
+			method: 'POST',
+		});
+	},
+
+	async rejectRequest(id: string): Promise<ApiResponse> {
+		return await fetchApi<ApiResponse>(`/matakuliah/requests/${id}/reject`, {
+			method: 'POST',
 		});
 	}
 };

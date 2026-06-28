@@ -1,5 +1,5 @@
 import { fetchApi } from './api';
-import type { ApiResponse, Dosen } from '$lib/types';
+import type { ApiResponse, Dosen, UserProfile } from '$lib/types';
 
 export const dosenService = {
 	async getList(): Promise<ApiResponse<Dosen[]>> {
