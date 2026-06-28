@@ -24,6 +24,46 @@ Sebuah sistem terintegrasi dengan arsitektur **Modular Monolith**, dikembangkan 
 
 ---
 
+## 🏗️ Arsitektur Sistem
+
+Sistem ini didesain menggunakan pola **Modular Monolith** dengan interaksi Frontend-Backend secara asinkron.
+
+```mermaid
+graph LR
+    %% Frontend
+    subgraph Frontend [SvelteKit Frontend]
+        UI[Svelte 5 UI Components]
+        Stores[Global State / Runes]
+        Services[API Services]
+    end
+
+    %% Backend
+    subgraph Backend [Go Fiber Backend]
+        App[Fiber App Router]
+        MAuth[Module: Auth]
+        MMK[Module: Mata Kuliah]
+        MProdi[Module: Program Studi]
+        MKelas[Module: Kelas]
+    end
+
+    %% Databases
+    subgraph Data [Data Storage]
+        PG[(PostgreSQL)]
+        Redis[(Redis Cache)]
+    end
+
+    %% Connections
+    UI <--> Stores
+    Stores <--> Services
+    Services -- HTTP/REST --> App
+    App --> MAuth & MMK & MProdi & MKelas
+    
+    MAuth & MMK & MProdi & MKelas -- GORM --> PG
+    MAuth & MMK & MProdi & MKelas --> Redis
+```
+
+---
+
 ## 🏆 Quality Attributes
 
 Sistem ini dibangun dengan memprioritaskan NFR (Non-Functional Requirements) berikut:
@@ -96,6 +136,26 @@ Sistem ini dibangun dengan memprioritaskan NFR (Non-Functional Requirements) ber
  ┣ 📂 repository          # Implementasi akses database (GORM/PostgreSQL)
  ┣ 📂 service             # Logika bisnis dan validasi
  ┗ 📂 delivery/http       # Handler HTTP dan routing (Fiber)
+```
+
+**Alur Aliran Data (Data Flow):**
+```mermaid
+sequenceDiagram
+    participant C as Client (Frontend)
+    participant H as HTTP Delivery (Handler)
+    participant S as Service Layer
+    participant R as Repository Layer
+    participant D as Database
+
+    C->>H: 1. Request API
+    H->>S: 2. Panggil fungsi Service (bawa struct domain)
+    S->>S: 3. Eksekusi Logika Bisnis & Validasi
+    S->>R: 4. Akses Data
+    R->>D: 5. Query / Command (SQL)
+    D-->>R: 6. Kembalikan Data Mentah
+    R-->>S: 7. Kembalikan Model Domain
+    S-->>H: 8. Kembalikan Response DTO
+    H-->>C: 9. HTTP Response (JSON)
 ```
 
 ---
