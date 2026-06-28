@@ -7,6 +7,7 @@
 	import DeleteConfirmModal from './DeleteConfirmModal.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import { toast } from '$lib/stores/toast.svelte';
 
 	let mkList: MataKuliah[] = $state([]);
 	let prodiList: ProgramStudi[] = $state([]);
@@ -21,7 +22,11 @@
 			]);
 			
 			if (resMk.success && resMk.data) {
-				mkList = resMk.data;
+				if (authState.role === 'admin') {
+					mkList = resMk.data;
+				} else {
+					mkList = resMk.data.filter((mk: MataKuliah) => !mk.pengajuan?.some(p => p.status === 'approved'));
+				}
 			} else {
 				error = resMk.message || 'Gagal mengambil daftar mata kuliah';
 			}
@@ -54,15 +59,32 @@
 	async function handleDelete() {
 		if (!selectedMK) return;
 		
+		const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
+		const code = prompt(`Untuk menghapus mata kuliah, masukkan kode berikut: ${randomCode}`);
+		
+		if (!code) {
+			selectedMK = null;
+			isDeleteModalOpen = false;
+			return;
+		}
+
+		if (code !== randomCode) {
+			toast.error('Kode tidak cocok. Aksi dibatalkan.');
+			selectedMK = null;
+			isDeleteModalOpen = false;
+			return;
+		}
+
 		try {
 			const res = await matakuliahService.delete(selectedMK.id);
 			if (res.success) {
+				toast.success('Mata kuliah berhasil dihapus');
 				mkList = mkList.filter(m => m.id !== selectedMK!.id);
 			} else {
-				alert(res.message || 'Gagal menghapus mata kuliah');
+				toast.error(res.message || 'Gagal menghapus mata kuliah');
 			}
 		} catch (err: any) {
-			alert(err.message || 'Gagal terhubung ke server');
+			toast.error(err.message || 'Gagal terhubung ke server');
 		} finally {
 			selectedMK = null;
 			isDeleteModalOpen = false;
@@ -72,19 +94,40 @@
 	async function handleLepas() {
 		if (!selectedMK) return;
 		
+		const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
+		const code = prompt(`Untuk melepas mata kuliah, masukkan kode berikut: ${randomCode}`);
+		
+		if (!code) {
+			selectedMK = null;
+			isLepasModalOpen = false;
+			return;
+		}
+
+		if (code !== randomCode) {
+			toast.error('Kode tidak cocok. Aksi dibatalkan.');
+			selectedMK = null;
+			isLepasModalOpen = false;
+			return;
+		}
+
 		try {
 			const res = await matakuliahService.lepasMataKuliah(selectedMK.id);
 			if (res.success) {
+				toast.success('Mata kuliah berhasil dilepas');
 				// Refresh data
 				const resMk = await matakuliahService.getList();
 				if (resMk.success && resMk.data) {
-					mkList = resMk.data;
+					if (authState.role === 'admin') {
+						mkList = resMk.data;
+					} else {
+						mkList = resMk.data.filter((mk: MataKuliah) => !mk.pengajuan?.some(p => p.status === 'approved'));
+					}
 				}
 			} else {
-				alert(res.message || 'Gagal melepas mata kuliah');
+				toast.error(res.message || 'Gagal melepas mata kuliah');
 			}
 		} catch (err: any) {
-			alert(err.message || 'Gagal terhubung ke server');
+			toast.error(err.message || 'Gagal terhubung ke server');
 		} finally {
 			selectedMK = null;
 			isLepasModalOpen = false;

@@ -3,6 +3,7 @@
 	import type { EmailChangeRequest } from '$lib/types';
 	import { onMount } from 'svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import { toast } from '$lib/stores/toast.svelte';
 
 	let requests = $state<EmailChangeRequest[]>([]);
 	let loading = $state(true);
@@ -35,13 +36,13 @@
 		try {
 			const res = await authService.reviewEmailRequest(id, approve);
 			if (res.success) {
-				successMsg = approve ? 'Permintaan disetujui, email telah diganti.' : 'Permintaan berhasil ditolak.';
+				toast.success(approve ? 'Permintaan disetujui, email telah diganti.' : 'Permintaan berhasil ditolak.');
 				fetchRequests();
 			} else {
-				error = res.message || 'Gagal memproses permintaan';
+				toast.error(res.message || 'Gagal memproses permintaan');
 			}
 		} catch (err) {
-			error = 'Terjadi kesalahan sistem';
+			toast.error('Terjadi kesalahan sistem');
 		}
 	}
 </script>

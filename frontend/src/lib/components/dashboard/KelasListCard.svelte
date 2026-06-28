@@ -4,6 +4,7 @@
 	import { authState } from '$lib/stores/auth.svelte';
 	import type { Kelas } from '$lib/types';
 	import DeleteConfirmModal from './DeleteConfirmModal.svelte';
+	import { toast } from '$lib/stores/toast.svelte';
 
 	let kelases = $state<Kelas[]>([]);
 	let loading = $state(true);
@@ -100,15 +101,33 @@
 
 	async function handleDelete() {
 		if (!selectedKelas) return;
+
+		const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
+		const code = prompt(`Untuk menghapus kelas, masukkan kode berikut: ${randomCode}`);
+		
+		if (!code) {
+			selectedKelas = null;
+			isDeleteModalOpen = false;
+			return;
+		}
+
+		if (code !== randomCode) {
+			toast.error('Kode tidak cocok. Aksi dibatalkan.');
+			selectedKelas = null;
+			isDeleteModalOpen = false;
+			return;
+		}
+
 		try {
 			const res = await kelasService.delete(selectedKelas.id);
 			if (res.success) {
+				toast.success('Kelas berhasil dihapus');
 				kelases = kelases.filter((k) => k.id !== selectedKelas!.id);
 			} else {
-				alert(res.message || 'Gagal menghapus kelas');
+				toast.error(res.message || 'Gagal menghapus kelas');
 			}
 		} catch (err) {
-			alert('Terjadi kesalahan saat menghapus kelas');
+			toast.error('Terjadi kesalahan saat menghapus kelas');
 		} finally {
 			isDeleteModalOpen = false;
 			selectedKelas = null;
@@ -204,8 +223,9 @@
 <DeleteConfirmModal
 	bind:isOpen={isDeleteModalOpen}
 	title="Hapus Kelas"
-	message="Apakah Anda yakin ingin menghapus kelas {selectedKelas?.name}? Tindakan ini tidak dapat dibatalkan."
+	itemName={selectedKelas?.name || 'kelas ini'}
 	onConfirm={handleDelete}
+	onCancel={() => { isDeleteModalOpen = false; selectedKelas = null; }}
 />
 
 <style>

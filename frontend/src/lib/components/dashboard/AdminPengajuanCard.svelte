@@ -4,6 +4,7 @@
 	import type { PengajuanMataKuliah } from '$lib/types';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import { toast } from '$lib/stores/toast.svelte';
 
 	let requests = $state<PengajuanMataKuliah[]>([]);
 	let loading = $state(true);
@@ -34,19 +35,20 @@
 		if (!code) return;
 		
 		if (code !== randomCode) {
-			alert('Kode tidak cocok. Aksi dibatalkan.');
+			toast.error('Kode tidak cocok. Aksi dibatalkan.');
 			return;
 		}
 
 		try {
 			const res = await matakuliahService.approveRequest(id);
 			if (res.success) {
+				toast.success('Pengajuan berhasil disetujui');
 				await loadRequests();
 			} else {
-				alert(res.message);
+				toast.error(res.message);
 			}
 		} catch (err: any) {
-			alert(err.message || 'Gagal menyetujui pengajuan');
+			toast.error(err.message || 'Gagal menyetujui pengajuan');
 		}
 	}
 
@@ -56,19 +58,20 @@
 		if (!code) return;
 
 		if (code !== randomCode) {
-			alert('Kode tidak cocok. Aksi dibatalkan.');
+			toast.error('Kode tidak cocok. Aksi dibatalkan.');
 			return;
 		}
 
 		try {
-			const res = await matakuliahService.rejectRequest(id);
+			const res = await matakuliahService.rejectPengajuan(id);
 			if (res.success) {
+				toast.success('Pengajuan berhasil ditolak');
 				await loadRequests();
 			} else {
-				alert(res.message);
+				toast.error(res.message);
 			}
 		} catch (err: any) {
-			alert(err.message || 'Gagal menolak pengajuan');
+			toast.error(err.message || 'Gagal menolak pengajuan');
 		}
 	}
 
@@ -117,7 +120,12 @@
 								<div class="txt-sm">{req.dosen?.email || ''}</div>
 							</td>
 							<td>
-								<div class="fw-medium">{req.mata_kuliah?.name || 'Unknown'}</div>
+								<div class="fw-medium">
+									{req.mata_kuliah?.name || 'Unknown'}
+									{#if req.dosen?.program_studi_id !== req.mata_kuliah?.program_studi_id}
+										<span class="lintas-badge">Lintas Prodi</span>
+									{/if}
+								</div>
 								<div class="txt-sm">{req.mata_kuliah?.sks || '-'} SKS</div>
 							</td>
 							<td>
@@ -197,5 +205,17 @@
 	.action-buttons {
 		display: flex;
 		gap: 8px;
+	}
+
+	.lintas-badge {
+		display: inline-block;
+		margin-left: 8px;
+		padding: 2px 6px;
+		background-color: #f3e8ff; /* purple-100 */
+		color: #7e22ce; /* purple-700 */
+		font-size: 0.7rem;
+		font-weight: 600;
+		border-radius: 4px;
+		vertical-align: middle;
 	}
 </style>

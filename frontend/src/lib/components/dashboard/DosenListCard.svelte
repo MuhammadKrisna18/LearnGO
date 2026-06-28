@@ -7,6 +7,7 @@
 	import DeleteConfirmModal from './DeleteConfirmModal.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Modal from '$lib/components/ui/Modal.svelte';
+	import { toast } from '$lib/stores/toast.svelte';
 
 	let dosenList: UserProfile[] = $state([]);
 	let prodiList: ProgramStudi[] = $state([]);
@@ -57,17 +58,33 @@
 	async function handleDelete() {
 		if (!selectedDosen) return;
 		
+		const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
+		const code = prompt(`Untuk menghapus akun dosen, masukkan kode berikut: ${randomCode}`);
+		
+		if (!code) {
+			selectedDosen = null;
+			isDeleteModalOpen = false;
+			return;
+		}
+
+		if (code !== randomCode) {
+			toast.error('Kode tidak cocok. Aksi dibatalkan.');
+			selectedDosen = null;
+			isDeleteModalOpen = false;
+			return;
+		}
+
 		try {
 			const res = await authService.deleteDosen(selectedDosen.id);
 			if (res.success) {
-
+				toast.success('Akun dosen berhasil dihapus');
 				dosenList = dosenList.filter(d => d.id !== selectedDosen!.id);
 				isDeleteModalOpen = false;
 			} else {
-				error = res.message || 'Gagal menghapus dosen';
+				toast.error(res.message || 'Gagal menghapus dosen');
 			}
 		} catch (err) {
-			error = 'Gagal terhubung ke server';
+			toast.error('Gagal terhubung ke server');
 		}
 	}
 

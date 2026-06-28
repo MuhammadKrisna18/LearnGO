@@ -3,6 +3,7 @@
 	import { matakuliahService } from '$lib/services/matakuliah';
 	import { authState } from '$lib/stores/auth.svelte';
 	import type { MataKuliah, PengajuanMataKuliah } from '$lib/types';
+	import { toast } from '$lib/stores/toast.svelte';
 
 	let mkList = $state<MataKuliah[]>([]);
 	let myRequests = $state<PengajuanMataKuliah[]>([]);
@@ -19,7 +20,7 @@
 			]);
 			
 			if (mkRes.success && mkRes.data) {
-				mkList = mkRes.data;
+				mkList = mkRes.data.filter((mk: MataKuliah) => !mk.pengajuan?.some(p => p.status === 'approved'));
 			}
 			if (reqRes.success && reqRes.data) {
 				myRequests = reqRes.data;
@@ -41,48 +42,66 @@
 		if (!userInput) return;
 		
 		if (userInput !== randomCode) {
-			alert('Kode tidak cocok. Pengajuan dibatalkan.');
+			toast.error('Kode tidak cocok. Pengajuan dibatalkan.');
 			return;
 		}
 
 		try {
 			const res = await matakuliahService.requestMataKuliah(mkId);
 			if (res.success) {
+				toast.success('Pengajuan berhasil');
 				await loadData();
 			} else {
-				alert(res.message);
+				toast.error(res.message);
 			}
 		} catch (err: any) {
-			alert(err.message || 'Gagal mengajukan mata kuliah');
+			toast.error(err.message || 'Gagal mengajukan mata kuliah');
 		}
 	}
 
 	async function acceptOffer(id: string) {
+		const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
+		const code = prompt(`Untuk menerima penawaran, masukkan kode berikut: ${randomCode}`);
+		if (!code) return;
+		if (code !== randomCode) {
+			toast.error('Kode tidak cocok. Aksi dibatalkan.');
+			return;
+		}
+
 		try {
 			const res = await matakuliahService.acceptOffer(id);
 			if (res.success) {
+				toast.success('Penawaran berhasil diterima');
 				await loadData();
 			} else {
-				alert(res.message);
+				toast.error(res.message);
 				await loadData(); // Reload to remove stale offer
 			}
 		} catch (err: any) {
-			alert(err.message || 'Gagal menerima penawaran');
+			toast.error(err.message || 'Gagal menerima penawaran');
 			await loadData();
 		}
 	}
 
 	async function rejectOffer(id: string) {
-		if (!confirm('Tolak penawaran mata kuliah ini?')) return;
+		const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
+		const code = prompt(`Untuk menolak penawaran, masukkan kode berikut: ${randomCode}`);
+		if (!code) return;
+		if (code !== randomCode) {
+			toast.error('Kode tidak cocok. Aksi dibatalkan.');
+			return;
+		}
+
 		try {
 			const res = await matakuliahService.rejectOffer(id);
 			if (res.success) {
+				toast.success('Penawaran berhasil ditolak');
 				await loadData();
 			} else {
-				alert(res.message);
+				toast.error(res.message);
 			}
 		} catch (err: any) {
-			alert(err.message || 'Gagal menolak penawaran');
+			toast.error(err.message || 'Gagal menolak penawaran');
 		}
 	}
 

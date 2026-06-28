@@ -3,6 +3,7 @@
 	import { dosenService } from '$lib/services/dosen';
 	import { programStudiService } from '$lib/services/programstudi';
 	import type { ProgramStudi } from '$lib/types';
+	import { toast } from '$lib/stores/toast.svelte';
 
 	let dosenName = $state('');
 	let dosenUsername = $state('');
@@ -34,7 +35,7 @@
 		registerError = '';
 		registerSuccess = '';
 		if (!dosenProdiId) {
-			registerError = 'Program Studi wajib dipilih';
+			toast.error('Program Studi wajib dipilih');
 			return;
 		}
 
@@ -44,16 +45,16 @@
 			const res = await dosenService.register(dosenName, dosenUsername, dosenPassword, dosenProdiId);
 
 			if (res.success) {
-				registerSuccess = `Berhasil membuat akun Dosen! Email: ${dosenUsername}@DosenGO.id`;
+				toast.success(`Berhasil membuat akun Dosen! Email: ${dosenUsername}@DosenGO.id`);
 				dosenName = '';
 				dosenUsername = '';
 				dosenPassword = '';
 				dosenProdiId = '';
 			} else {
-				registerError = res.message || 'Gagal membuat akun Dosen';
+				toast.error(res.message || 'Gagal membuat akun Dosen');
 			}
 		} catch (err) {
-			registerError = 'Gagal terhubung ke server';
+			toast.error('Gagal terhubung ke server');
 		} finally {
 			registerLoading = false;
 		}

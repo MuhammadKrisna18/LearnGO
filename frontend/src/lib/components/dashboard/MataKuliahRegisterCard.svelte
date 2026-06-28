@@ -3,6 +3,7 @@
 	import { matakuliahService } from '$lib/services/matakuliah';
 	import { programStudiService } from '$lib/services/programstudi';
 	import type { ProgramStudi } from '$lib/types';
+	import { toast } from '$lib/stores/toast.svelte';
 
 	let mkName = $state('');
 	let mkSks = $state<number | ''>('');
@@ -34,12 +35,12 @@
 		registerSuccess = '';
 		
 		if (typeof mkSks !== 'number' || mkSks < 1) {
-			registerError = 'SKS minimal adalah 1';
+			toast.error('SKS minimal adalah 1');
 			return;
 		}
 		
 		if (!mkProdiId) {
-			registerError = 'Program Studi wajib dipilih';
+			toast.error('Program Studi wajib dipilih');
 			return;
 		}
 		
@@ -49,15 +50,15 @@
 			const res = await matakuliahService.create(mkName, mkSks, mkProdiId);
 
 			if (res.success) {
-				registerSuccess = `Berhasil membuat Mata Kuliah baru: ${mkName} (${mkSks} SKS)`;
+				toast.success(`Berhasil membuat Mata Kuliah baru: ${mkName} (${mkSks} SKS)`);
 				mkName = '';
 				mkSks = '';
 				mkProdiId = '';
 			} else {
-				registerError = res.message || 'Gagal membuat Mata Kuliah';
+				toast.error(res.message || 'Gagal membuat Mata Kuliah');
 			}
 		} catch (err: any) {
-			registerError = err.message || 'Gagal terhubung ke server';
+			toast.error(err.message || 'Gagal terhubung ke server');
 		} finally {
 			registerLoading = false;
 		}

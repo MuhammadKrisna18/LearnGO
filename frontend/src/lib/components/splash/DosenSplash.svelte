@@ -90,7 +90,7 @@
 		height: 100%;
 		background: linear-gradient(90deg, var(--primary-color), #3b82f6);
 		border-radius: 10px;
-		animation: load 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+		animation: load 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 	}
 
 	@keyframes load {

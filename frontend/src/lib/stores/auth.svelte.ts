@@ -1,4 +1,4 @@
-import type { User } from '$lib/types';
+import type { UserProfile } from '$lib/types';
 
 function createAuthStore() {
 	// Only run localStorage logic if we're in the browser
@@ -6,7 +6,7 @@ function createAuthStore() {
 	
 	let token = $state(isBrowser ? localStorage.getItem('token') : null);
 	let role = $state(isBrowser ? localStorage.getItem('role') : null);
-	let profile = $state<User | null>(null);
+	let profile = $state<UserProfile | null>(null);
 
 	function setAuth(newToken: string, newRole: string) {
 		token = newToken;
@@ -17,7 +17,7 @@ function createAuthStore() {
 		}
 	}
 
-	function setProfile(newProfile: User) {
+	function setProfile(newProfile: UserProfile) {
 		profile = newProfile;
 	}
 

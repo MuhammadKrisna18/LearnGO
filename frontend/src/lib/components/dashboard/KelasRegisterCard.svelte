@@ -2,7 +2,8 @@
 	import { onMount } from 'svelte';
 	import { kelasService } from '$lib/services/kelas';
 	import { programStudiService } from '$lib/services/programstudi';
-	import type { ProgramStudi } from '$lib/types';
+	import type { ProgramStudi, Kelas } from '$lib/types';
+	import { toast } from '$lib/stores/toast.svelte';
 
 	let name = $state('');
 	let capacity = $state(25);
@@ -75,7 +76,7 @@
 			});
 
 			if (res.success) {
-				success = 'Berhasil menambahkan kelas';
+				toast.success('Berhasil menambahkan kelas');
 				name = '';
 				capacity = 25;
 				program_studi_id = '';
@@ -90,10 +91,10 @@
 				
 				window.dispatchEvent(new CustomEvent('kelasCreated'));
 			} else {
-				error = res.message || 'Gagal menambahkan kelas';
+				toast.error(res.message || 'Gagal menambahkan kelas');
 			}
 		} catch (err: any) {
-			error = err.message || 'Terjadi kesalahan sistem';
+			toast.error(err.message || 'Terjadi kesalahan sistem');
 		} finally {
 			loading = false;
 		}

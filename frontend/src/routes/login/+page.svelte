@@ -25,7 +25,7 @@
 				
 				setTimeout(() => {
 					goto('/dashboard');
-				}, 1500);
+				}, 1000);
 			} else {
 				error = res.message || 'Login failed. Please try again.';
 			}

@@ -57,7 +57,7 @@
 		height: 100%;
 		background: var(--primary-color);
 		width: 0%;
-		animation: load 1.5s ease-out forwards;
+		animation: load 1s ease-out forwards;
 	}
 
 	@keyframes pulse {

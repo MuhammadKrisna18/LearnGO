@@ -5,7 +5,7 @@ export interface ApiResponse<T = any> {
 }
 
 export interface User {
-	id: number;
+	id: string;
 	name: string;
 	email: string;
 	role: 'admin' | 'dosen';
@@ -35,7 +35,7 @@ export interface EmailChangeRequest {
 }
 
 export interface Dosen {
-	id: number;
+	id: string;
 	name: string;
 	email: string;
 	created_at: string;
@@ -68,7 +68,7 @@ export interface PengajuanMataKuliah {
 	dosen?: UserProfile;
 	mata_kuliah_id: string;
 	mata_kuliah?: MataKuliah;
-	status: 'pending' | 'approved' | 'rejected';
+	status: 'pending' | 'approved' | 'rejected' | 'offered';
 	code: string;
 	created_at: string;
 }

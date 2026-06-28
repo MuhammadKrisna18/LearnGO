@@ -16,8 +16,8 @@ export const authService = {
 		return data;
 	},
 
-	async getProfile(): Promise<ApiResponse<User>> {
-		const data = await fetchApi<ApiResponse<User>>('/auth/me', {
+	async getProfile(): Promise<ApiResponse<UserProfile>> {
+		const data = await fetchApi<ApiResponse<UserProfile>>('/auth/me', {
 			method: 'GET'
 		});
 		
