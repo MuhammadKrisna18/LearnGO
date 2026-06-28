@@ -4,27 +4,31 @@ Sebuah sistem terintegrasi dengan arsitektur **Modular Monolith**, dikembangkan 
 
 ## 🚀 Fitur Utama
 
-- **Modular Architecture**: Struktur backend dibagi berdasarkan modul (contoh: modul `auth` dan `matakuliah`) yang membuat kode lebih terisolasi dan mudah di-maintain.
+- **Modular Architecture**: Struktur backend dibagi berdasarkan modul (`auth`, `matakuliah`, `kelas`, `programstudi`) yang membuat kode lebih terisolasi dan mudah di-maintain. Setiap modul mengikuti pola **Clean Architecture** dengan 4 lapisan: `domain`, `repository`, `service`, dan `delivery/http`.
 - **Frontend Modular Design**: Pemisahan antarmuka (UI) menjadi komponen-komponen terisolasi di `src/lib/components` dipadukan dengan manajemen *Global State* Svelte 5 Runes untuk optimasi reaktivitas dan caching data.
 - **Modern Authentication**: Implementasi JWT (JSON Web Token) dengan kapabilitas *Role-based Access Control* (RBAC).
 - **Custom Performance Logger**: Middleware khusus untuk mengukur latensi eksekusi setiap request API, dikategorikan secara *real-time* ke dalam tiga level: `FAST`, `MODERATE`, dan `SLOW`.
 - **Role-based Dashboards**: Tampilan dashboard spesifik untuk masing-masing role dengan tata letak (layout) grid 2-kolom yang elegan. Sidebar menggunakan antarmuka *Glassmorphism* modern dengan ikon vektor (SVG) profesional.
-- **Admin Management**: Fitur khusus bagi admin untuk mendaftarkan akun baru (seperti akun dosen) serta mengelola **Permintaan Ganti Email** (Request Email).
+- **Admin Management**: Fitur khusus bagi admin untuk mendaftarkan akun baru (seperti akun dosen), mengelola **Permintaan Ganti Email** (Request Email), serta meninjau dan menyetujui/menolak **Pengajuan Mata Kuliah** dari dosen.
 - **Manajemen Kelas Dinamis**: Mendukung pembuatan jadwal kelas (*Multi-schedule*) yang fleksibel. Satu ruangan kelas fisik dapat digunakan untuk hari dan jam yang berbeda dengan sistem proteksi *conflict* (jadwal ganda) terintegrasi, serta tabel UI canggih yang secara otomatis dikelompokkan berdasarkan Program Studi, lengkap dengan fitur pencarian dan pengurutan (jam/hari/nama kelas).
+- **Sistem Pengajuan Mata Kuliah**: Dosen dapat mengajukan permintaan untuk mengampu mata kuliah melalui sistem pengajuan (*request*). Admin meninjau dan memberikan keputusan (*approve/reject*) secara langsung dari dashboard.
+- **Manajemen Program Studi**: Modul khusus untuk mengelola data Program Studi yang terintegrasi dengan modul Kelas dan Mata Kuliah.
 - **Sistem Profil & Keamanan**: Halaman profil terdedikasi (`/dashboard/profile`). Data vital seperti Nomor Induk Dosen (NID) bersifat permanen (tidak bisa diubah/dihapus), dan penggantian email memerlukan _approval_ Admin.
-- **Svelte 5 Runes**: Memanfaatkan fitur *reactivity* modern dari Svelte 5 (`$state`) yang membuat manajemen *state* frontend lebih efisien.
+- **Toast Notification System**: Sistem notifikasi *toast* global berbasis Svelte 5 Runes (`$state`) dengan dukungan tipe `success`, `error`, dan `info` serta *auto-dismiss* otomatis.
+- **Reusable UI Component Library**: Komponen antarmuka siap pakai (`Badge`, `Card`, `Modal`, `Toast`) yang terletak di `src/lib/components/ui` untuk menjaga konsistensi desain di seluruh aplikasi.
+- **Svelte 5 Runes**: Memanfaatkan fitur *reactivity* modern dari Svelte 5 (`$state`, `$derived`) yang membuat manajemen *state* frontend lebih efisien.
 - **Database & Cache**: Terhubung dengan **PostgreSQL** (melalui GORM) untuk database persisten dan **Redis** untuk manajemen *cache*.
-	- **Swagger Documentation**: Dokumentasi endpoint API otomatis yang dapat diakses dengan mudah untuk kebutuhan *development*.
+- **Swagger Documentation**: Dokumentasi endpoint API otomatis yang dapat diakses dengan mudah untuk kebutuhan *development*.
 
 ---
 
 ## 🏆 Quality Attributes
 
 Sistem ini dibangun dengan memprioritaskan NFR (Non-Functional Requirements) berikut:
-- **Maintainability (Keterpeliharaan)**: Diwujudkan melalui pemisahan domain pada *backend* (Modular Monolith) dan pemisahan komponen secara atomik pada *frontend* (SvelteKit).
+- **Maintainability (Keterpeliharaan)**: Diwujudkan melalui pemisahan domain pada *backend* (Modular Monolith dengan Clean Architecture: `domain` → `repository` → `service` → `delivery/http`) dan pemisahan komponen secara atomik pada *frontend* (SvelteKit).
 - **Performance (Kinerja)**: Backend Go Fiber sangat cepat dalam menangani *request* HTTP, didukung dengan *caching* Redis, serta manajemen *state* reaktif menggunakan *Runes* pada Svelte 5.
 - **Security (Keamanan)**: Diimplementasikan menggunakan autentikasi *stateless* (JWT), enkripsi *password* menggunakan Bcrypt, dan sistem RBAC (Role-Based Access Control) yang ketat di level API maupun UI.
-- **Usability (Kebergunaan)**: Pengalaman antarmuka (*User Experience*) difokuskan dengan desain visual *Glassmorphism*, transisi antar halaman instan (*Single Page Application* feel), serta *feedback* yang responsif (pesan sukses/error).
+- **Usability (Kebergunaan)**: Pengalaman antarmuka (*User Experience*) difokuskan dengan desain visual *Glassmorphism*, transisi antar halaman instan (*Single Page Application* feel), notifikasi *toast* yang informatif, serta *feedback* yang responsif.
 - **Scalability (Skalabilitas)**: Arsitektur *stateless* memungkinkan aplikasi untuk mudah di-*scale* (dikembangkan) ke depannya, baik dari sisi fungsionalitas (menambah modul baru) maupun dari sisi infrastruktur (menambah *instance* server).
 
 ---
@@ -51,19 +55,45 @@ Sistem ini dibangun dengan memprioritaskan NFR (Non-Functional Requirements) ber
 
 ```text
 📦 Project Root
- ┣ 📂 cmd/api          # Main entry point aplikasi Go
- ┣ 📂 config           # Konfigurasi environment (DB, Redis, JWT)
- ┣ 📂 docs             # Dokumentasi auto-generated (Swagger)
- ┣ 📂 frontend         # Direktori frontend SvelteKit
- ┃  ┣ 📂 src/lib       # Komponen reusable, API Services, dan Global Stores (Svelte 5 Runes)
- ┃  ┣ 📂 src/routes    # Halaman aplikasi dengan Layout Sidebar
- ┃  ┗ 📜 app.css       # File core CSS dengan variable desain
- ┣ 📂 internal         # Core logic dari backend Modular Monolith
- ┃  ┣ 📂 app           # Registrasi aplikasi dan middleware (Fiber)
- ┃  ┣ 📂 middleware    # Custom Middleware (Performance Logger, JWT)
- ┃  ┣ 📂 modules       # Folder modular domain (contoh: Auth module, Matakuliah module)
- ┃  ┗ 📂 shared        # Logic shared antar module (DB, Cache, Error Handler)
+ ┣ 📂 cmd/api              # Main entry point aplikasi Go
+ ┣ 📂 config               # Konfigurasi environment (DB, Redis, JWT)
+ ┣ 📂 docs                 # Dokumentasi auto-generated (Swagger)
+ ┣ 📂 frontend             # Direktori frontend SvelteKit
+ ┃  ┣ 📂 src/lib
+ ┃  ┃  ┣ 📂 components
+ ┃  ┃  ┃  ┣ 📂 dashboard   # Komponen halaman dashboard (13 komponen)
+ ┃  ┃  ┃  ┣ 📂 splash      # Komponen splash screen (Admin & Default)
+ ┃  ┃  ┃  ┗ 📂 ui          # Komponen reusable (Badge, Card, Modal, Toast)
+ ┃  ┃  ┣ 📂 services       # API Service layer (auth, kelas, matakuliah, dosen, programstudi)
+ ┃  ┃  ┣ 📂 stores         # Global State Svelte 5 Runes (auth, toast)
+ ┃  ┃  ┗ 📜 types.ts       # TypeScript type definitions
+ ┃  ┣ 📂 src/routes
+ ┃  ┃  ┣ 📂 dashboard      # Halaman dashboard dengan layout sidebar
+ ┃  ┃  ┃  ┣ 📂 dosen       # Halaman manajemen dosen
+ ┃  ┃  ┃  ┣ 📂 kelas       # Halaman manajemen kelas
+ ┃  ┃  ┃  ┣ 📂 matakuliah  # Halaman manajemen mata kuliah
+ ┃  ┃  ┃  ┗ 📂 profile     # Halaman profil pengguna
+ ┃  ┃  ┗ 📂 login          # Halaman login
+ ┃  ┗ 📜 app.css           # File core CSS dengan variable desain
+ ┣ 📂 internal             # Core logic dari backend Modular Monolith
+ ┃  ┣ 📂 app               # Registrasi aplikasi dan middleware (Fiber)
+ ┃  ┣ 📂 modules           # Modul domain (masing-masing berisi 4 lapisan Clean Architecture)
+ ┃  ┃  ┣ 📂 auth           # Modul autentikasi & manajemen pengguna
+ ┃  ┃  ┣ 📂 kelas          # Modul manajemen kelas & jadwal
+ ┃  ┃  ┣ 📂 matakuliah     # Modul manajemen mata kuliah & pengajuan
+ ┃  ┃  ┗ 📂 programstudi   # Modul manajemen program studi
+ ┃  ┗ 📂 shared            # Logic shared antar module (DB, Cache, Error Handler, Middleware, Response)
  ┗ 📜 README.md
+```
+
+### Arsitektur Setiap Modul Backend (Clean Architecture)
+
+```text
+📂 modules/<nama_modul>
+ ┣ 📂 domain              # Entitas, struct, dan interface (kontrak kerja)
+ ┣ 📂 repository          # Implementasi akses database (GORM/PostgreSQL)
+ ┣ 📂 service             # Logika bisnis dan validasi
+ ┗ 📂 delivery/http       # Handler HTTP dan routing (Fiber)
 ```
 
 ---
@@ -128,16 +158,20 @@ npm run dev
 6. **Redirect**: Setelah simulasi *loading* animasi (1.5 detik), pengguna otomatis diarahkan ke `http://localhost:5173/dashboard`.
 7. **Dashboard**: Mengambil data Profile ke API `/api/v1/auth/me` menggunakan token JWT (hasil di-_cache_ di Global Store Svelte 5 sehingga navigasi antar menu instan).
 8. **Role UI & Sidebar**: 
-   - Dashboard utama (`/dashboard`) hanya menampilkan informasi *overview* bersih. Untuk Admin, halaman ini digunakan untuk meninjau **Permintaan Ganti Email**.
+   - Dashboard utama (`/dashboard`) hanya menampilkan informasi *overview* bersih. Untuk Admin, halaman ini digunakan untuk meninjau **Pengajuan Mata Kuliah** dan **Permintaan Ganti Email** dari dosen.
    - Navigasi khusus Admin tersedia di *Sidebar* elegan (ikon vektor, tanpa list berantakan).
    - Pengaturan Profil terpisah secara rapi di halaman khusus (`/dashboard/profile`) yang dapat diakses dengan mengklik Avatar di pojok kanan atas.
    - Manajemen Dosen (`/dashboard/dosen`), Manajemen Mata Kuliah (`/dashboard/matakuliah`), dan Manajemen Kelas (`/dashboard/kelas`) menggunakan sistem Grid dua kolom, menyatukan formulir pendaftaran dan tabel daftar data dalam satu antarmuka yang bersih.
    - Pada halaman **Daftar Kelas**, data kelas secara cerdas dikelompokkan per Program Studi dan memiliki dukungan kolom pencarian manual dan opsi filter pengurutan (*Sorting* berdasarkan Hari, Jam, dan Kelas).
-   - Jika pengguna adalah Dosen, halaman dashboard utama menampilkan antarmuka bersih (Empty State).
+   - Jika pengguna adalah Dosen, dashboard utama menampilkan antarmuka **Pengajuan Mata Kuliah** untuk mengajukan permohonan mengampu mata kuliah.
 9. **Manajemen Akun Dosen**:
    - Dosen yang baru terdaftar memiliki NID (Nomor Induk Dosen) otomatis sepanjang 5 digit yang bersifat **permanen**.
    - Dosen yang ingin mengganti email harus mengirim permintaan melalui sistem (*Email Request System*) ke Admin dengan memasukkan *username* saja (sistem otomatis menambahkan `@DosenGO.id`).
-10. **Clean UI**: Semua instruksi di dalam file program bersifat bersih (telah di-*strip* dari semua komentar developer) sehingga *codebase* sangat *clean*.
+10. **Pengajuan Mata Kuliah**:
+    - Dosen dapat mengajukan permohonan untuk mengampu mata kuliah yang tersedia melalui halaman dashboard mereka.
+    - Admin menerima daftar pengajuan dan dapat melakukan *approve* atau *reject* secara langsung dari dashboard Admin.
+    - Setiap perubahan status pengajuan dikomunikasikan melalui **Toast Notification** global yang muncul secara otomatis.
+11. **Clean UI**: Semua instruksi di dalam file program bersifat bersih (telah di-*strip* dari semua komentar developer) sehingga *codebase* sangat *clean*.
 
 ---
 
