@@ -10,6 +10,8 @@
 	let isEditing = $state(false);
 	let isEmailModalOpen = $state(false);
 
+	let fileInput: HTMLInputElement;
+	let uploading = $state(false);
 
 	let editName = $state(profile.name);
 	let editNickname = $state(profile.nickname || '');
@@ -83,11 +85,66 @@
 			error = 'Terjadi kesalahan sistem';
 		}
 	}
+
+	async function handleFileChange(event: Event) {
+		const target = event.target as HTMLInputElement;
+		if (target.files && target.files.length > 0) {
+			const file = target.files[0];
+			if (file.size > 2 * 1024 * 1024) {
+				error = 'Ukuran file maksimal 2MB';
+				return;
+			}
+			
+			uploading = true;
+			try {
+				const res = await authService.uploadProfilePhoto(file);
+				if (res.success) {
+					success = 'Foto profil berhasil diperbarui';
+				} else {
+					error = res.message || 'Gagal mengunggah foto profil';
+				}
+			} catch (err: any) {
+				error = err.message || 'Gagal terhubung ke server';
+			} finally {
+				uploading = false;
+				target.value = ''; // Reset input
+			}
+		}
+	}
+
+	function triggerUpload() {
+		if (!uploading) {
+			fileInput.click();
+		}
+	}
 </script>
 
 <div class="dosen-profile-card glass-panel animate-fade-in">
 	<div class="profile-header">
-		<div class="avatar-large">{profile.name.charAt(0).toUpperCase()}</div>
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="avatar-large" class:uploading onclick={triggerUpload} title="Klik untuk mengubah foto profil">
+			{#if profile.photo_url}
+				<img src={`http://localhost:8080${profile.photo_url}`} alt={profile.name} class="avatar-img" />
+			{:else}
+				{profile.name.charAt(0).toUpperCase()}
+			{/if}
+			
+			<div class="avatar-overlay">
+				{#if uploading}
+					<span class="spinner-small"></span>
+				{:else}
+					<span>📷 UBAH</span>
+				{/if}
+			</div>
+		</div>
+		<input 
+			type="file" 
+			accept=".jpg,.jpeg,.png" 
+			bind:this={fileInput} 
+			onchange={handleFileChange} 
+			style="display: none;" 
+		/>
 		<div class="header-info">
 			<h2>{profile.name}</h2>
 			<div class="badges">
@@ -196,6 +253,53 @@
 		font-size: 2.5rem;
 		font-weight: 700;
 		box-shadow: 0 8px 16px rgba(37, 99, 235, 0.2);
+		position: relative;
+		overflow: hidden;
+		cursor: pointer;
+	}
+
+	.avatar-large.uploading {
+		opacity: 0.7;
+		pointer-events: none;
+	}
+
+	.avatar-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		aspect-ratio: 1/1;
+	}
+
+	.avatar-overlay {
+		position: absolute;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.5);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: 0;
+		transition: opacity 0.2s ease;
+		color: white;
+		font-size: 0.8rem;
+		font-weight: 600;
+		letter-spacing: 0.5px;
+	}
+
+	.avatar-large:hover .avatar-overlay {
+		opacity: 1;
+	}
+
+	.spinner-small {
+		width: 20px;
+		height: 20px;
+		border: 2px solid rgba(255,255,255,0.3);
+		border-top-color: white;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+		to { transform: rotate(360deg); }
 	}
 
 	.header-info {

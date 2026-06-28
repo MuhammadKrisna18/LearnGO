@@ -64,6 +64,9 @@ func (a *App) Start() error {
 	
 	a.fiber.Use(middleware.PerformanceLogger())
 
+	// Serve static files for uploads
+	a.fiber.Static("/uploads", "./uploads")
+
 	a.fiber.Get("/", func(c *fiber.Ctx) error {
 		return response.Success(c, fiber.StatusOK, "System is healthy", fiber.Map{
 			"env":   a.cfg.Env,

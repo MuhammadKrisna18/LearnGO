@@ -13,7 +13,9 @@ Sebuah sistem terintegrasi dengan arsitektur **Modular Monolith**, dikembangkan 
 - **Manajemen Kelas Dinamis**: Mendukung pembuatan jadwal kelas (*Multi-schedule*) yang fleksibel. Satu ruangan kelas fisik dapat digunakan untuk hari dan jam yang berbeda dengan sistem proteksi *conflict* (jadwal ganda) terintegrasi, serta tabel UI canggih yang secara otomatis dikelompokkan berdasarkan Program Studi, lengkap dengan fitur pencarian dan pengurutan (jam/hari/nama kelas).
 - **Sistem Pengajuan Mata Kuliah**: Dosen dapat mengajukan permintaan untuk mengampu mata kuliah melalui sistem pengajuan (*request*). Admin meninjau dan memberikan keputusan (*approve/reject*) secara langsung dari dashboard.
 - **Manajemen Program Studi**: Modul khusus untuk mengelola data Program Studi yang terintegrasi dengan modul Kelas dan Mata Kuliah.
-- **Sistem Profil & Keamanan**: Halaman profil terdedikasi (`/dashboard/profile`). Data vital seperti Nomor Induk Dosen (NID) bersifat permanen (tidak bisa diubah/dihapus), dan penggantian email memerlukan _approval_ Admin.
+- **Sistem Profil & Keamanan**: Halaman profil terdedikasi (`/dashboard/profile`). Data vital seperti Nomor Induk Dosen (NID) bersifat permanen (tidak bisa diubah/dihapus), dan penggantian email memerlukan _approval_ Admin. Pengguna juga dapat mengunggah **Foto Profil** yang otomatis di-_crop_ (rasio 1:1) dan akan ditampilkan pada *Navbar* serta tabel antarmuka lintas-role secara publik (misal pada Daftar Akun Dosen).
+- **Laporan & Evaluasi Akademik**: Halaman khusus Admin (`/dashboard/evaluasi`) yang merangkum data krusial: Mata Kuliah yang belum memiliki dosen pengampu, Dosen yang belum mengampu mata kuliah sama sekali, serta Kelas yang belum terutilisasi.
+- **Visualisasi Indikator Prodi**: Pada daftar Mata Kuliah, terdapat _Badge_ indikator visual cerdas ("Sesuai Prodi" vs "Lintas Jurusan") untuk mengetahui apakah dosen pengampu mengajar sesuai asal jurusannya atau tidak.
 - **Toast Notification System**: Sistem notifikasi *toast* global berbasis Svelte 5 Runes (`$state`) dengan dukungan tipe `success`, `error`, dan `info` serta *auto-dismiss* otomatis.
 - **Reusable UI Component Library**: Komponen antarmuka siap pakai (`Badge`, `Card`, `Modal`, `Toast`) yang terletak di `src/lib/components/ui` untuk menjaga konsistensi desain di seluruh aplikasi.
 - **Svelte 5 Runes**: Memanfaatkan fitur *reactivity* modern dari Svelte 5 (`$state`, `$derived`) yang membuat manajemen *state* frontend lebih efisien.
@@ -163,6 +165,7 @@ npm run dev
    - Pengaturan Profil terpisah secara rapi di halaman khusus (`/dashboard/profile`) yang dapat diakses dengan mengklik Avatar di pojok kanan atas.
    - Manajemen Dosen (`/dashboard/dosen`), Manajemen Mata Kuliah (`/dashboard/matakuliah`), dan Manajemen Kelas (`/dashboard/kelas`) menggunakan sistem Grid dua kolom, menyatukan formulir pendaftaran dan tabel daftar data dalam satu antarmuka yang bersih.
    - Pada halaman **Daftar Kelas**, data kelas secara cerdas dikelompokkan per Program Studi dan memiliki dukungan kolom pencarian manual dan opsi filter pengurutan (*Sorting* berdasarkan Hari, Jam, dan Kelas).
+   - Pada halaman **Laporan & Evaluasi**, Admin dapat memantau utilisasi akademik secara *real-time* (Dosen nganggur, MK kosong, dsb).
    - Jika pengguna adalah Dosen, dashboard utama menampilkan antarmuka **Pengajuan Mata Kuliah** untuk mengajukan permohonan mengampu mata kuliah.
 9. **Manajemen Akun Dosen**:
    - Dosen yang baru terdaftar memiliki NID (Nomor Induk Dosen) otomatis sepanjang 5 digit yang bersifat **permanen**.

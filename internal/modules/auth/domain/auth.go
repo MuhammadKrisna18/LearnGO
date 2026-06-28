@@ -17,6 +17,7 @@ type User struct {
 	Role           string                `json:"role" gorm:"type:varchar(50);not null;default:'user'"`
 	ProgramStudiID *string               `json:"program_studi_id" gorm:"type:varchar(255)"`
 	ProgramStudi   *psDomain.ProgramStudi `json:"program_studi,omitempty" gorm:"foreignKey:ProgramStudiID"`
+	PhotoURL       *string               `json:"photo_url" gorm:"type:varchar(255)"`
 	CreatedAt      time.Time             `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt      time.Time             `json:"updated_at" gorm:"autoUpdateTime"`
 }
@@ -68,6 +69,7 @@ type UserProfileResponse struct {
 	ProgramStudiID *string               `json:"program_studi_id,omitempty"`
 	ProgramStudi   *psDomain.ProgramStudi `json:"program_studi,omitempty"`
 	PendingEmail   *string               `json:"pending_email,omitempty"`
+	PhotoURL       *string               `json:"photo_url,omitempty"`
 	CreatedAt      time.Time             `json:"created_at"`
 }
 
@@ -94,6 +96,7 @@ type AuthService interface {
 	GetDosenList(ctx context.Context) ([]*UserProfileResponse, error)
 	DeleteDosen(ctx context.Context, id string) error
 	UpdateProfile(ctx context.Context, id string, req UpdateProfileRequest) (*UserProfileResponse, error)
+	UpdateProfilePhoto(ctx context.Context, id string, photoURL string) (*UserProfileResponse, error)
 	
 	// Email Change Requests
 	RequestEmailChange(ctx context.Context, userID string, req EmailChangeRequestPayload) error

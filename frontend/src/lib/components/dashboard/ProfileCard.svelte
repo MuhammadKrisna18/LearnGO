@@ -1,13 +1,71 @@
 <script lang="ts">
-	import type { User } from '$lib/types';
-	let { profile } = $props<{ profile: User }>();
+	import { authService } from '$lib/services/auth';
+	import { toast } from '$lib/stores/toast.svelte';
+	import type { UserProfile } from '$lib/types';
+	let { profile } = $props<{ profile: UserProfile }>();
+
+	let fileInput: HTMLInputElement;
+	let uploading = $state(false);
+
+	async function handleFileChange(event: Event) {
+		const target = event.target as HTMLInputElement;
+		if (target.files && target.files.length > 0) {
+			const file = target.files[0];
+			if (file.size > 2 * 1024 * 1024) {
+				toast.error('Ukuran file maksimal 2MB');
+				return;
+			}
+			
+			uploading = true;
+			try {
+				const res = await authService.uploadProfilePhoto(file);
+				if (res.success) {
+					toast.success('Foto profil berhasil diperbarui');
+				} else {
+					toast.error(res.message || 'Gagal mengunggah foto profil');
+				}
+			} catch (err: any) {
+				toast.error(err.message || 'Gagal terhubung ke server');
+			} finally {
+				uploading = false;
+				target.value = ''; // Reset input
+			}
+		}
+	}
+
+	function triggerUpload() {
+		if (!uploading) {
+			fileInput.click();
+		}
+	}
 </script>
 
 <div class="profile-card glass-panel animate-fade-in" style="animation-delay: 0.1s;">
 	<div class="profile-header">
-		<div class="avatar">
-			{profile.name.charAt(0).toUpperCase()}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="avatar" class:uploading onclick={triggerUpload} title="Klik untuk mengubah foto profil">
+			{#if profile.photo_url}
+				<img src={`http://localhost:8080${profile.photo_url}`} alt={profile.name} class="avatar-img" />
+			{:else}
+				{profile.name.charAt(0).toUpperCase()}
+			{/if}
+			
+			<div class="avatar-overlay">
+				{#if uploading}
+					<span class="spinner-small"></span>
+				{:else}
+					<span>📷 UBAH</span>
+				{/if}
+			</div>
 		</div>
+		<input 
+			type="file" 
+			accept=".jpg,.jpeg,.png" 
+			bind:this={fileInput} 
+			onchange={handleFileChange} 
+			style="display: none;" 
+		/>
 		<div class="profile-title">
 			<h2>{profile.name}</h2>
 			<span class="badge {profile.role}">{profile.role.toUpperCase()}</span>
@@ -57,6 +115,53 @@
 		font-size: 24px;
 		font-weight: 700;
 		box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+		position: relative;
+		overflow: hidden;
+		cursor: pointer;
+	}
+
+	.avatar.uploading {
+		opacity: 0.7;
+		pointer-events: none;
+	}
+
+	.avatar-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		aspect-ratio: 1/1;
+	}
+
+	.avatar-overlay {
+		position: absolute;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.5);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: 0;
+		transition: opacity 0.2s ease;
+		color: white;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.5px;
+	}
+
+	.avatar:hover .avatar-overlay {
+		opacity: 1;
+	}
+
+	.spinner-small {
+		width: 20px;
+		height: 20px;
+		border: 2px solid rgba(255,255,255,0.3);
+		border-top-color: white;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+		to { transform: rotate(360deg); }
 	}
 
 	.profile-title h2 {

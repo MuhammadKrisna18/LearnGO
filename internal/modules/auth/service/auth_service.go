@@ -78,6 +78,7 @@ func (s *authService) GetProfile(ctx context.Context, id string) (*domain.UserPr
 		ProgramStudiID: user.ProgramStudiID,
 		ProgramStudi:   user.ProgramStudi,
 		PendingEmail:   pendingEmail,
+		PhotoURL:       user.PhotoURL,
 		CreatedAt:      user.CreatedAt,
 	}, nil
 }
@@ -140,6 +141,7 @@ func (s *authService) GetDosenList(ctx context.Context) ([]*domain.UserProfileRe
 			Role:           u.Role,
 			ProgramStudiID: u.ProgramStudiID,
 			ProgramStudi:   u.ProgramStudi,
+			PhotoURL:       u.PhotoURL,
 			CreatedAt:      u.CreatedAt,
 		})
 	}
@@ -176,6 +178,21 @@ func (s *authService) UpdateProfile(ctx context.Context, id string, req domain.U
 
 	if err := s.repo.Update(ctx, user); err != nil {
 		return nil, apperrors.NewInternal("Gagal mengupdate profil", err.Error())
+	}
+
+	return s.GetProfile(ctx, id)
+}
+
+func (s *authService) UpdateProfilePhoto(ctx context.Context, id string, photoURL string) (*domain.UserProfileResponse, error) {
+	user, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, apperrors.NewNotFound("Akun tidak ditemukan", err.Error())
+	}
+
+	user.PhotoURL = &photoURL
+
+	if err := s.repo.Update(ctx, user); err != nil {
+		return nil, apperrors.NewInternal("Gagal mengupdate foto profil", err.Error())
 	}
 
 	return s.GetProfile(ctx, id)

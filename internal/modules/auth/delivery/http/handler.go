@@ -1,6 +1,12 @@
 package http
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"modular-monolith/internal/middleware"
 	"modular-monolith/internal/modules/auth/domain"
@@ -21,6 +27,7 @@ func (h *AuthHandler) RegisterRoutes(router fiber.Router, jwtSecret string) {
 	authGroup.Post("/login", h.Login)
 	authGroup.Get("/me", middleware.Protected(jwtSecret), h.Me)
 	authGroup.Put("/me", middleware.Protected(jwtSecret), h.UpdateProfile)
+	authGroup.Post("/profile/photo", middleware.Protected(jwtSecret), h.UploadPhoto)
 	
 	authGroup.Post("/email-request", middleware.Protected(jwtSecret), h.RequestEmailChange)
 	authGroup.Get("/email-request", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.GetEmailRequests)
@@ -183,4 +190,50 @@ func (h *AuthHandler) DeleteDosen(c *fiber.Ctx) error {
 	}
 
 	return response.Success(c, fiber.StatusOK, "Berhasil menghapus akun dosen", nil)
+}
+
+func (h *AuthHandler) UploadPhoto(c *fiber.Ctx) error {
+	userID, ok := c.Locals("userID").(string)
+	if !ok || userID == "" {
+		return apperrors.NewUnauthorized("unauthorized")
+	}
+
+	file, err := c.FormFile("photo")
+	if err != nil {
+		return apperrors.NewBadRequest("Foto tidak ditemukan", err.Error())
+	}
+
+	// Validate extension
+	ext := strings.ToLower(filepath.Ext(file.Filename))
+	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
+		return apperrors.NewBadRequest("Format file tidak didukung. Gunakan JPG atau PNG.")
+	}
+
+	// Validate size (max 2MB)
+	if file.Size > 2*1024*1024 {
+		return apperrors.NewBadRequest("Ukuran file maksimal 2MB")
+	}
+
+	// Create directory if not exists
+	uploadDir := "./uploads/profiles"
+	if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+		return apperrors.NewInternal("Gagal membuat direktori upload", err.Error())
+	}
+
+	// Save file with unique name
+	fileName := fmt.Sprintf("%s_%d%s", userID, time.Now().Unix(), ext)
+	filePath := filepath.Join(uploadDir, fileName)
+
+	if err := c.SaveFile(file, filePath); err != nil {
+		return apperrors.NewInternal("Gagal menyimpan file", err.Error())
+	}
+
+	// Update photo URL in database
+	photoURL := fmt.Sprintf("/uploads/profiles/%s", fileName)
+	res, err := h.service.UpdateProfilePhoto(c.UserContext(), userID, photoURL)
+	if err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusOK, "Foto profil berhasil diperbarui", res)
 }

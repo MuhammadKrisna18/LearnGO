@@ -165,7 +165,14 @@
 												{#if mk.pengajuan && mk.pengajuan.some(p => p.status === 'approved')}
 													{@const approvedP = mk.pengajuan.find(p => p.status === 'approved')}
 													<div class="dosen-info">
-														<span class="dosen-name">{approvedP?.dosen?.name || 'Unknown'}</span>
+														<div class="dosen-name-wrapper">
+															<span class="dosen-name">{approvedP?.dosen?.name || 'Unknown'}</span>
+															{#if approvedP?.dosen?.program_studi_id === mk.program_studi_id}
+																<Badge type="success">Sesuai Prodi</Badge>
+															{:else if approvedP?.dosen}
+																<Badge type="warning">Lintas Jurusan</Badge>
+															{/if}
+														</div>
 														{#if approvedP?.dosen?.email}
 															<span class="dosen-email">{approvedP.dosen.email}</span>
 														{/if}
@@ -262,6 +269,14 @@
 	.dosen-info {
 		display: flex;
 		flex-direction: column;
+		gap: 2px;
+	}
+	
+	.dosen-name-wrapper {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		flex-wrap: wrap;
 	}
 	
 	.dosen-name {

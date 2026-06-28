@@ -9,6 +9,7 @@ export interface User {
 	name: string;
 	email: string;
 	role: 'admin' | 'dosen';
+	photo_url?: string;
 	created_at: string;
 }
 
@@ -22,6 +23,7 @@ export interface UserProfile {
 	program_studi_id?: string;
 	program_studi?: ProgramStudi;
 	pending_email?: string;
+	photo_url?: string;
 	created_at: string;
 }
 

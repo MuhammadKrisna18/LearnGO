@@ -125,7 +125,13 @@
 									<tr>
 										<td>
 											<div class="dosen-info">
-												<div class="avatar">{dosen.name.charAt(0).toUpperCase()}</div>
+												<div class="avatar">
+													{#if dosen.photo_url}
+														<img src={`http://localhost:8080${dosen.photo_url}`} alt={dosen.name} class="avatar-img-small" />
+													{:else}
+														{dosen.name.charAt(0).toUpperCase()}
+													{/if}
+												</div>
 												<span class="font-medium">{dosen.name}</span>
 											</div>
 										</td>
@@ -169,7 +175,13 @@
 								<tr>
 									<td>
 										<div class="dosen-info">
-											<div class="avatar">{dosen.name.charAt(0).toUpperCase()}</div>
+											<div class="avatar">
+												{#if dosen.photo_url}
+													<img src={`http://localhost:8080${dosen.photo_url}`} alt={dosen.name} class="avatar-img-small" />
+												{:else}
+													{dosen.name.charAt(0).toUpperCase()}
+												{/if}
+											</div>
 											<span class="font-medium">{dosen.name}</span>
 										</div>
 									</td>
@@ -207,7 +219,11 @@
 {#if isDetailModalOpen && detailDosen}
 	<Modal bind:isOpen={isDetailModalOpen} title="Detail Profil Dosen">
 		<div class="detail-avatar">
-			{detailDosen.name.charAt(0).toUpperCase()}
+			{#if detailDosen.photo_url}
+				<img src={`http://localhost:8080${detailDosen.photo_url}`} alt={detailDosen.name} class="avatar-img-large" />
+			{:else}
+				{detailDosen.name.charAt(0).toUpperCase()}
+			{/if}
 		</div>
 		<div class="detail-group">
 			<span class="detail-label">Nama Lengkap</span>
@@ -299,6 +315,14 @@
 		justify-content: center;
 		font-weight: 600;
 		font-size: 0.85rem;
+		overflow: hidden;
+	}
+
+	.avatar-img-small {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		aspect-ratio: 1/1;
 	}
 
 	/* Modal Styles */
@@ -315,6 +339,14 @@
 		font-size: 1.75rem;
 		margin: 0 auto 16px auto;
 		box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+		overflow: hidden;
+	}
+
+	.avatar-img-large {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		aspect-ratio: 1/1;
 	}
 
 	.detail-group {

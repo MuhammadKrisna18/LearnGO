@@ -53,6 +53,22 @@ export const authService = {
 		return res;
 	},
 
+	async uploadProfilePhoto(file: File): Promise<ApiResponse<UserProfile>> {
+		const formData = new FormData();
+		formData.append('photo', file);
+
+		const res = await fetchApi<ApiResponse<UserProfile>>('/auth/profile/photo', {
+			method: 'POST',
+			body: formData
+		});
+
+		if (res.success && res.data) {
+			authState.setProfile(res.data as any);
+		}
+
+		return res;
+	},
+
 	async requestEmailChange(new_email: string): Promise<ApiResponse<null>> {
 		const res = await fetchApi<ApiResponse<null>>('/auth/email-request', {
 			method: 'POST',
