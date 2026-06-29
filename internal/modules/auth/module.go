@@ -3,10 +3,10 @@ package auth
 import (
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
-	"modular-monolith/config"
-	"modular-monolith/internal/modules/auth/delivery/http"
-	"modular-monolith/internal/modules/auth/repository"
-	"modular-monolith/internal/modules/auth/service"
+	"siakad-pro/config"
+	"siakad-pro/internal/modules/auth/delivery/http"
+	"siakad-pro/internal/modules/auth/repository"
+	"siakad-pro/internal/modules/auth/service"
 )
 
 type Module struct {

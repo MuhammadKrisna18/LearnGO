@@ -3,10 +3,10 @@ package kelas
 import (
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
-	"modular-monolith/config"
-	"modular-monolith/internal/modules/kelas/delivery/http"
-	"modular-monolith/internal/modules/kelas/repository"
-	"modular-monolith/internal/modules/kelas/service"
+	"siakad-pro/config"
+	"siakad-pro/internal/modules/kelas/delivery/http"
+	"siakad-pro/internal/modules/kelas/repository"
+	"siakad-pro/internal/modules/kelas/service"
 )
 
 type KelasModule struct {

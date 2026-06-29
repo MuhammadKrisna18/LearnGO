@@ -21,6 +21,9 @@
 			const res = await authService.login(email, password);
 
 			if (res.success) {
+				// Fetch profile so that the splash screen can display the user's name
+				await authService.getProfile();
+
 				showSplash = true;
 				
 				setTimeout(() => {
@@ -38,7 +41,7 @@
 </script>
 
 <svelte:head>
-	<title>Login - Modular Monolith</title>
+	<title>Login - SIAKAD Pro</title>
 </svelte:head>
 
 <main class="login-container">

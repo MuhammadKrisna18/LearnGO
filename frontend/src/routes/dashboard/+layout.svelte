@@ -26,8 +26,8 @@
 				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
 			</div>
 			<div class="brand-text">
-				<h1>Modular</h1>
-				<p>Monolith</p>
+				<h1>SIAKAD</h1>
+				<p>Pro</p>
 			</div>
 		</div>
 
@@ -111,26 +111,19 @@
 	.layout-wrapper {
 		display: flex;
 		min-height: 100vh;
-		background: 
-			radial-gradient(circle at 0% 0%, rgba(79, 70, 229, 0.08), transparent 40%),
-			radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.08), transparent 40%);
-		background-attachment: fixed;
+		background: var(--bg-color);
 	}
 
-	/* Sidebar */
 	.sidebar {
-		width: 280px;
+		width: 260px;
 		display: flex;
 		flex-direction: column;
-		border-radius: 0;
-		border-top: none;
-		border-bottom: none;
-		border-left: none;
+		background: #f9fafb;
+		border-right: 1px solid var(--surface-border);
 		position: sticky;
 		top: 0;
 		height: 100vh;
 		z-index: 40;
-		background: rgba(255, 255, 255, 0.7);
 	}
 
 	.sidebar-brand {
@@ -141,15 +134,14 @@
 	}
 
 	.brand-logo {
-		width: 44px;
-		height: 44px;
-		background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
-		border-radius: 12px;
+		width: 32px;
+		height: 32px;
+		background: #000;
+		border-radius: 8px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		color: white;
-		box-shadow: 0 8px 16px rgba(79, 70, 229, 0.3);
 	}
 
 	.brand-text h1 {
@@ -190,22 +182,23 @@
 		display: flex;
 		align-items: center;
 		gap: 12px;
-		padding: 12px 16px;
-		border-radius: var(--radius-md);
+		padding: 8px 12px;
+		border-radius: var(--radius-sm);
 		color: var(--text-muted);
 		text-decoration: none;
 		font-weight: 500;
+		font-size: 0.9rem;
 		transition: all 0.2s ease;
 	}
 
 	.nav-item:hover {
-		background: rgba(79, 70, 229, 0.05);
-		color: var(--primary-color);
+		background: rgba(0, 0, 0, 0.04);
+		color: var(--text-main);
 	}
 
 	.nav-item.active {
-		background: rgba(79, 70, 229, 0.1);
-		color: var(--primary-color);
+		background: rgba(0, 0, 0, 0.04);
+		color: var(--text-main);
 		font-weight: 600;
 	}
 
@@ -237,29 +230,28 @@
 		border-color: rgba(239, 68, 68, 0.2);
 	}
 
-	/* Main Area */
 	.main-wrapper {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
-		min-width: 0; /* Important for flex children overflow */
+		min-width: 0;
+		background: var(--surface-color);
 	}
 
 	/* Top Header */
 	.top-header {
-		height: 72px;
+		height: 64px;
 		padding: 0 40px;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		border-radius: 0;
-		border-top: none;
-		border-right: none;
-		border-left: none;
+		border-bottom: 1px solid var(--surface-border);
 		position: sticky;
 		top: 0;
 		z-index: 30;
-		background: rgba(255, 255, 255, 0.6);
+		background: rgba(255, 255, 255, 0.8);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
 	}
 
 	.header-breadcrumb {
@@ -295,27 +287,26 @@
 	}
 
 	.user-role-badge {
-		font-size: 0.75rem;
-		font-weight: 700;
-		color: var(--primary-color);
-		background: rgba(79, 70, 229, 0.1);
-		padding: 4px 12px;
+		font-size: 0.7rem;
+		font-weight: 600;
+		color: var(--text-main);
+		background: #f3f4f6;
+		padding: 4px 10px;
 		border-radius: var(--radius-full);
 		letter-spacing: 0.05em;
 	}
 
 	.user-avatar {
-		width: 40px;
-		height: 40px;
+		width: 32px;
+		height: 32px;
 		border-radius: 50%;
-		background: linear-gradient(135deg, var(--text-main), var(--text-muted));
+		background: #111827;
 		color: white;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-weight: 600;
-		font-size: 1.1rem;
-		box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+		font-weight: 500;
+		font-size: 0.9rem;
 		overflow: hidden;
 	}
 
@@ -326,12 +317,9 @@
 		aspect-ratio: 1/1;
 	}
 
-	/* Content Area */
 	.content-area {
 		flex: 1;
-		padding: 40px;
-		max-width: 1200px;
+		padding: 32px;
 		width: 100%;
-		margin: 0 auto;
 	}
 </style>

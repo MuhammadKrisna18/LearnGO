@@ -3,9 +3,9 @@ package http
 import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"modular-monolith/internal/modules/kelas/domain"
-	"modular-monolith/internal/shared/apperrors"
-	"modular-monolith/internal/shared/response"
+	"siakad-pro/internal/modules/kelas/domain"
+	"siakad-pro/internal/shared/apperrors"
+	"siakad-pro/internal/shared/response"
 )
 
 type KelasHandler struct {

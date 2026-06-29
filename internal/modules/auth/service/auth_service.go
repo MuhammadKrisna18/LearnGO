@@ -10,9 +10,9 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
-	"modular-monolith/config"
-	"modular-monolith/internal/modules/auth/domain"
-	"modular-monolith/internal/shared/apperrors"
+	"siakad-pro/config"
+	"siakad-pro/internal/modules/auth/domain"
+	"siakad-pro/internal/shared/apperrors"
 )
 
 type authService struct {

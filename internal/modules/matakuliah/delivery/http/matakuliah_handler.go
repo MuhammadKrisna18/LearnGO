@@ -1,9 +1,9 @@
 package http
 
 import (
-	"modular-monolith/internal/middleware"
-	"modular-monolith/internal/modules/matakuliah/domain"
-	"modular-monolith/internal/shared/response"
+	"siakad-pro/internal/middleware"
+	"siakad-pro/internal/modules/matakuliah/domain"
+	"siakad-pro/internal/shared/response"
 
 	"github.com/gofiber/fiber/v2"
 )

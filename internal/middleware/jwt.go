@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-	"modular-monolith/internal/shared/apperrors"
+	"siakad-pro/internal/shared/apperrors"
 )
 
 func Protected(secret string) fiber.Handler {

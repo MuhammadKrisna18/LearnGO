@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"gorm.io/gorm"
-	"modular-monolith/internal/modules/matakuliah/domain"
+	"siakad-pro/internal/modules/matakuliah/domain"
 )
 
 type pgMataKuliahRepository struct {

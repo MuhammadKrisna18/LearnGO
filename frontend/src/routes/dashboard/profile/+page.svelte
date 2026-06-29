@@ -22,7 +22,7 @@
 </script>
 
 <svelte:head>
-	<title>Profil Anda - Modular Monolith</title>
+	<title>Profil Anda - SIAKAD Pro</title>
 </svelte:head>
 
 <div class="page-header">

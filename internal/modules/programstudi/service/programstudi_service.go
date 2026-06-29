@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	"modular-monolith/internal/modules/programstudi/domain"
-	"modular-monolith/internal/shared/apperrors"
+	"siakad-pro/internal/modules/programstudi/domain"
+	"siakad-pro/internal/shared/apperrors"
 )
 
 type programStudiService struct {

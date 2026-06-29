@@ -13,7 +13,7 @@
 </script>
 
 <svelte:head>
-	<title>Manajemen Dosen - Modular Monolith</title>
+	<title>Manajemen Dosen - SIAKAD Pro</title>
 </svelte:head>
 
 <div class="page-header">

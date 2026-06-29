@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"modular-monolith/internal/modules/kelas/domain"
-	"modular-monolith/internal/shared/apperrors"
+	"siakad-pro/internal/modules/kelas/domain"
+	"siakad-pro/internal/shared/apperrors"
 )
 
 type kelasService struct {

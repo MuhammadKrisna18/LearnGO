@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { authState } from '$lib/stores/auth.svelte';
 
 	let visible = $state(false);
+	
+	let lecturerName = $derived(authState.profile?.name?.split(' ')[0] || 'Dosen');
 
 	onMount(() => {
 		setTimeout(() => {
@@ -14,8 +17,8 @@
 	<div class="icon-container">
 		<span class="dosen-icon">🎓</span>
 	</div>
-	<h2>Portal Dosen</h2>
-	<p>Menyiapkan ruang kerja Anda...</p>
+	<h2>Selamat Datang, {lecturerName}</h2>
+	<p>Menyiapkan portal kelas Anda...</p>
 	<div class="progress-bar">
 		<div class="progress-fill"></div>
 	</div>

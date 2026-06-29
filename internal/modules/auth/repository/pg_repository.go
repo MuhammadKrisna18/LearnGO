@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"gorm.io/gorm"
-	"modular-monolith/internal/modules/auth/domain"
+	"siakad-pro/internal/modules/auth/domain"
 )
 
 type pgAuthRepository struct {

@@ -15,17 +15,17 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/gofiber/swagger"
 	"gorm.io/gorm"
-	"modular-monolith/config"
-	_ "modular-monolith/docs"
-	"modular-monolith/internal/modules/auth"
-	"modular-monolith/internal/modules/kelas"
-	"modular-monolith/internal/modules/matakuliah"
-	"modular-monolith/internal/modules/programstudi"
-	"modular-monolith/internal/shared/apperrors"
-	"modular-monolith/internal/shared/cache"
-	"modular-monolith/internal/shared/database"
-	"modular-monolith/internal/shared/response"
-	"modular-monolith/internal/middleware"
+	"siakad-pro/config"
+	_ "siakad-pro/docs"
+	"siakad-pro/internal/modules/auth"
+	"siakad-pro/internal/modules/kelas"
+	"siakad-pro/internal/modules/matakuliah"
+	"siakad-pro/internal/modules/programstudi"
+	"siakad-pro/internal/shared/apperrors"
+	"siakad-pro/internal/shared/cache"
+	"siakad-pro/internal/shared/database"
+	"siakad-pro/internal/shared/response"
+	"siakad-pro/internal/middleware"
 )
 
 type App struct {
@@ -55,7 +55,7 @@ func (a *App) Start() error {
 	}
 
 	a.fiber = fiber.New(fiber.Config{
-		AppName:      "Modular Monolith API v1.0",
+		AppName:      "SIAKAD Pro API v1.0",
 		ErrorHandler: globalErrorHandler,
 	})
 

@@ -15,7 +15,7 @@
 </script>
 
 <svelte:head>
-	<title>Manajemen Kelas - Modular Monolith</title>
+	<title>Manajemen Kelas - SIAKAD Pro</title>
 </svelte:head>
 
 <div class="page-header">

@@ -1,6 +1,6 @@
-# Modular Monolith System
+# SIAKAD Pro System
 
-Sebuah sistem terintegrasi dengan arsitektur **Modular Monolith**, dikembangkan menggunakan **Go (Fiber)** di sisi backend dan **SvelteKit (Svelte 5 Runes)** di sisi frontend. Proyek ini dirancang untuk memberikan performa yang tinggi, struktur kode yang bersih, serta desain antarmuka pengguna (UI) modern berbasis *Glassmorphism*.
+Sebuah sistem terintegrasi dengan arsitektur **SIAKAD Pro**, dikembangkan menggunakan **Go (Fiber)** di sisi backend dan **SvelteKit (Svelte 5 Runes)** di sisi frontend. Proyek ini dirancang untuk memberikan performa yang tinggi, struktur kode yang bersih, serta desain antarmuka pengguna (UI) modern berbasis *Glassmorphism*.
 
 ## 🚀 Fitur Utama
 
@@ -28,7 +28,7 @@ Sebuah sistem terintegrasi dengan arsitektur **Modular Monolith**, dikembangkan 
 
 ## 🏗️ Arsitektur Sistem
 
-Sistem ini didesain menggunakan pola **Modular Monolith** dengan interaksi Frontend-Backend secara asinkron.
+Sistem ini didesain menggunakan pola **SIAKAD Pro** dengan interaksi Frontend-Backend secara asinkron.
 
 ```mermaid
 graph LR
@@ -69,7 +69,7 @@ graph LR
 ## 🏆 Quality Attributes
 
 Sistem ini dibangun dengan memprioritaskan NFR (Non-Functional Requirements) berikut:
-- **Maintainability (Keterpeliharaan)**: Diwujudkan melalui pemisahan domain pada *backend* (Modular Monolith dengan Clean Architecture: `domain` → `repository` → `service` → `delivery/http`) dan pemisahan komponen secara atomik pada *frontend* (SvelteKit).
+- **Maintainability (Keterpeliharaan)**: Diwujudkan melalui pemisahan domain pada *backend* (SIAKAD Pro dengan Clean Architecture: `domain` → `repository` → `service` → `delivery/http`) dan pemisahan komponen secara atomik pada *frontend* (SvelteKit).
 - **Performance (Kinerja)**: Backend Go Fiber sangat cepat dalam menangani *request* HTTP, didukung dengan *caching* Redis, serta manajemen *state* reaktif menggunakan *Runes* pada Svelte 5.
 - **Security (Keamanan)**: Diimplementasikan menggunakan autentikasi *stateless* (JWT), enkripsi *password* menggunakan Bcrypt, dan sistem RBAC (Role-Based Access Control) yang ketat di level API maupun UI.
 - **Usability (Kebergunaan)**: Pengalaman antarmuka (*User Experience*) difokuskan dengan desain visual *Glassmorphism*, transisi antar halaman instan (*Single Page Application* feel), notifikasi *toast* yang informatif, serta *feedback* yang responsif.
@@ -119,7 +119,7 @@ Sistem ini dibangun dengan memprioritaskan NFR (Non-Functional Requirements) ber
  ┃  ┃  ┃  ┗ 📂 profile     # Halaman profil pengguna
  ┃  ┃  ┗ 📂 login          # Halaman login
  ┃  ┗ 📜 app.css           # File core CSS dengan variable desain
- ┣ 📂 internal             # Core logic dari backend Modular Monolith
+ ┣ 📂 internal             # Core logic dari backend SIAKAD Pro
  ┃  ┣ 📂 app               # Registrasi aplikasi dan middleware (Fiber)
  ┃  ┣ 📂 modules           # Modul domain (masing-masing berisi 4 lapisan Clean Architecture)
  ┃  ┃  ┣ 📂 auth           # Modul autentikasi & manajemen pengguna
@@ -308,4 +308,4 @@ npm run dev
 ---
 
 ## 📜 Lisensi
-Aplikasi ini dikembangkan sebagai contoh penerapan arsitektur *Modular Monolith* tingkat lanjut dipadukan dengan standar *web development* yang estetik dan cepat.
+Aplikasi ini dikembangkan sebagai contoh penerapan arsitektur *SIAKAD Pro* tingkat lanjut dipadukan dengan standar *web development* yang estetik dan cepat.

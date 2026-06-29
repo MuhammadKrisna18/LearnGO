@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"gorm.io/gorm"
-	"modular-monolith/internal/modules/programstudi/domain"
+	"siakad-pro/internal/modules/programstudi/domain"
 	"github.com/google/uuid"
 )
 

@@ -2,7 +2,7 @@ package http
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"modular-monolith/internal/middleware"
+	"siakad-pro/internal/middleware"
 )
 
 func RegisterRoutes(router fiber.Router, handler *KelasHandler, jwtSecret string) {

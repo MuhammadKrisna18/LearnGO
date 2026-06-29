@@ -27,7 +27,7 @@
 </script>
 
 <svelte:head>
-	<title>Dashboard - Modular Monolith</title>
+	<title>Dashboard - SIAKAD Pro</title>
 </svelte:head>
 
 <div class="page-header">

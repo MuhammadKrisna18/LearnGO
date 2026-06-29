@@ -14,7 +14,7 @@
 </script>
 
 <svelte:head>
-	<title>Mata Kuliah - Modular Monolith</title>
+	<title>Mata Kuliah - SIAKAD Pro</title>
 </svelte:head>
 
 <div class="page-header">

@@ -34,7 +34,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/modular-monolith_internal_modules_auth_domain.LoginRequest"
+                            "$ref": "#/definitions/siakad-pro_internal_modules_auth_domain.LoginRequest"
                         }
                     }
                 ],
@@ -44,13 +44,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/modular-monolith_internal_shared_response.APIResponse"
+                                    "$ref": "#/definitions/siakad-pro_internal_shared_response.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/modular-monolith_internal_modules_auth_domain.LoginResponse"
+                                            "$ref": "#/definitions/siakad-pro_internal_modules_auth_domain.LoginResponse"
                                         }
                                     }
                                 }
@@ -60,19 +60,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/modular-monolith_internal_shared_response.APIResponse"
+                            "$ref": "#/definitions/siakad-pro_internal_shared_response.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/modular-monolith_internal_shared_response.APIResponse"
+                            "$ref": "#/definitions/siakad-pro_internal_shared_response.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/modular-monolith_internal_shared_response.APIResponse"
+                            "$ref": "#/definitions/siakad-pro_internal_shared_response.APIResponse"
                         }
                     }
                 }
@@ -102,13 +102,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/modular-monolith_internal_shared_response.APIResponse"
+                                    "$ref": "#/definitions/siakad-pro_internal_shared_response.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/modular-monolith_internal_modules_auth_domain.UserProfileResponse"
+                                            "$ref": "#/definitions/siakad-pro_internal_modules_auth_domain.UserProfileResponse"
                                         }
                                     }
                                 }
@@ -118,13 +118,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/modular-monolith_internal_shared_response.APIResponse"
+                            "$ref": "#/definitions/siakad-pro_internal_shared_response.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/modular-monolith_internal_shared_response.APIResponse"
+                            "$ref": "#/definitions/siakad-pro_internal_shared_response.APIResponse"
                         }
                     }
                 }
@@ -132,7 +132,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "modular-monolith_internal_modules_auth_domain.LoginRequest": {
+        "siakad-pro_internal_modules_auth_domain.LoginRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -147,7 +147,7 @@ const docTemplate = `{
                 }
             }
         },
-        "modular-monolith_internal_modules_auth_domain.LoginResponse": {
+        "siakad-pro_internal_modules_auth_domain.LoginResponse": {
             "type": "object",
             "properties": {
                 "role": {
@@ -158,7 +158,7 @@ const docTemplate = `{
                 }
             }
         },
-        "modular-monolith_internal_modules_auth_domain.UserProfileResponse": {
+        "siakad-pro_internal_modules_auth_domain.UserProfileResponse": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -178,7 +178,7 @@ const docTemplate = `{
                 }
             }
         },
-        "modular-monolith_internal_shared_response.APIResponse": {
+        "siakad-pro_internal_shared_response.APIResponse": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -206,8 +206,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
-	Title:            "Modular Monolith API",
-	Description:      "This is a sample API for a Modular Monolith built with Go Fiber.",
+	Title:            "SIAKAD Pro API",
+	Description:      "This is a sample API for a SIAKAD Pro built with Go Fiber.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

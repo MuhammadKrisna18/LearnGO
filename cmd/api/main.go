@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"modular-monolith/config"
-	"modular-monolith/internal/app"
+	"siakad-pro/config"
+	"siakad-pro/internal/app"
 )
 
 func main() {

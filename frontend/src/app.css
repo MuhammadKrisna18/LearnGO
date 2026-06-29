@@ -1,25 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --bg-color: #f1f5f9;
+  --bg-color: #ffffff;
   --surface-color: #ffffff;
-  --surface-border: #e2e8f0;
-  --primary-color: #4f46e5;
-  --primary-hover: #4338ca;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
+  --surface-border: #eaeaea;
+  --primary-color: #000000;
+  --primary-hover: #333333;
+  --text-main: #111827;
+  --text-muted: #6b7280;
   --error-color: #ef4444;
   --success-color: #10b981;
   --warning-color: #f59e0b;
   
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
   --radius-full: 9999px;
   
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.02);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.03), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
 }
 
 * {
@@ -41,11 +41,18 @@ body {
 }
 
 .glass-panel {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: var(--shadow-md);
+  background: var(--surface-color);
+  border: 1px solid var(--surface-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.hover-lift {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 30px -10px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .form-group {
@@ -121,15 +128,15 @@ body {
 }
 
 .page-header h1 {
-  font-size: 1.875rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--text-main);
-  letter-spacing: -0.025em;
+  letter-spacing: -0.04em;
 }
 
 .page-header p {
   color: var(--text-muted);
-  margin-top: 4px;
+  margin-top: 6px;
   font-size: 1rem;
 }
 
@@ -147,35 +154,35 @@ body {
   }
 }
 
-/* Base Table Styles */
 .data-table-container {
   overflow-x: auto;
-  border: 1px solid var(--surface-border);
   border-radius: var(--radius-md);
   margin-top: 12px;
+  border: 1px solid var(--surface-border);
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
+  background: white;
 }
 
 .data-table th {
-  background: rgba(241, 245, 249, 0.5);
-  padding: 16px;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  background: #fafafa;
+  padding: 12px 16px;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--text-muted);
   border-bottom: 1px solid var(--surface-border);
 }
 
 .data-table td {
-  padding: 16px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--surface-border);
   font-size: 0.95rem;
   vertical-align: middle;
+  transition: background-color 0.2s ease;
 }
 
 .data-table tr:last-child td {

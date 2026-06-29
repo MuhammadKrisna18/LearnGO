@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"gorm.io/gorm"
-	"modular-monolith/internal/modules/kelas/domain"
+	"siakad-pro/internal/modules/kelas/domain"
 )
 
 type pgKelasRepository struct {

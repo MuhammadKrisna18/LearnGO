@@ -3,8 +3,8 @@ package http
 import (
 	"context"
 	"github.com/gofiber/fiber/v2"
-	"modular-monolith/internal/modules/programstudi/domain"
-	"modular-monolith/internal/shared/response"
+	"siakad-pro/internal/modules/programstudi/domain"
+	"siakad-pro/internal/shared/response"
 )
 
 type ProgramStudiHandler struct {

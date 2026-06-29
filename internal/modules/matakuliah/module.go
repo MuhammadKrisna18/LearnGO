@@ -3,10 +3,10 @@ package matakuliah
 import (
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
-	"modular-monolith/config"
-	"modular-monolith/internal/modules/matakuliah/delivery/http"
-	"modular-monolith/internal/modules/matakuliah/repository"
-	"modular-monolith/internal/modules/matakuliah/service"
+	"siakad-pro/config"
+	"siakad-pro/internal/modules/matakuliah/delivery/http"
+	"siakad-pro/internal/modules/matakuliah/repository"
+	"siakad-pro/internal/modules/matakuliah/service"
 )
 
 type Module struct {

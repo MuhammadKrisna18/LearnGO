@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	authDomain "modular-monolith/internal/modules/auth/domain"
-	mkDomain "modular-monolith/internal/modules/matakuliah/domain"
-	psDomain "modular-monolith/internal/modules/programstudi/domain"
+	authDomain "siakad-pro/internal/modules/auth/domain"
+	mkDomain "siakad-pro/internal/modules/matakuliah/domain"
+	psDomain "siakad-pro/internal/modules/programstudi/domain"
 )
 
 type Kelas struct {

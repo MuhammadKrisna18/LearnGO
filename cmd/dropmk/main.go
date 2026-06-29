@@ -5,8 +5,8 @@ import (
 	"log"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"modular-monolith/config"
-	mkDomain "modular-monolith/internal/modules/matakuliah/domain"
+	"siakad-pro/config"
+	mkDomain "siakad-pro/internal/modules/matakuliah/domain"
 )
 
 func main() {

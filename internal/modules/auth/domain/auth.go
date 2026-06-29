@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	psDomain "modular-monolith/internal/modules/programstudi/domain"
+	psDomain "siakad-pro/internal/modules/programstudi/domain"
 )
 
 type User struct {

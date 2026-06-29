@@ -9,11 +9,11 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"
-	"modular-monolith/config"
-	"modular-monolith/internal/modules/auth/domain"
-	kelasDomain "modular-monolith/internal/modules/kelas/domain"
-	mkDomain "modular-monolith/internal/modules/matakuliah/domain"
-	psDomain "modular-monolith/internal/modules/programstudi/domain"
+	"siakad-pro/config"
+	"siakad-pro/internal/modules/auth/domain"
+	kelasDomain "siakad-pro/internal/modules/kelas/domain"
+	mkDomain "siakad-pro/internal/modules/matakuliah/domain"
+	psDomain "siakad-pro/internal/modules/programstudi/domain"
 )
 
 func NewPostgresConnection(cfg *config.Config) (*gorm.DB, error) {

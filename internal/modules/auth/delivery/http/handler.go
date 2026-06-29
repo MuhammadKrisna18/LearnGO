@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"modular-monolith/internal/middleware"
-	"modular-monolith/internal/modules/auth/domain"
-	"modular-monolith/internal/shared/apperrors"
-	"modular-monolith/internal/shared/response"
+	"siakad-pro/internal/middleware"
+	"siakad-pro/internal/modules/auth/domain"
+	"siakad-pro/internal/shared/apperrors"
+	"siakad-pro/internal/shared/response"
 )
 
 type AuthHandler struct {

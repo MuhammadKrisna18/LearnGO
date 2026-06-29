@@ -4,10 +4,10 @@ import (
 	"context"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
-	"modular-monolith/config"
-	"modular-monolith/internal/modules/programstudi/delivery/http"
-	"modular-monolith/internal/modules/programstudi/repository"
-	"modular-monolith/internal/modules/programstudi/service"
+	"siakad-pro/config"
+	"siakad-pro/internal/modules/programstudi/delivery/http"
+	"siakad-pro/internal/modules/programstudi/repository"
+	"siakad-pro/internal/modules/programstudi/service"
 )
 
 type ProgramStudiModule struct {

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/redis/go-redis/v9"
-	"modular-monolith/config"
+	"siakad-pro/config"
 )
 
 func NewRedisClient(cfg *config.Config) (*redis.Client, error) {

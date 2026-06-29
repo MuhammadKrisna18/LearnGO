@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	authDomain "modular-monolith/internal/modules/auth/domain"
-	psDomain "modular-monolith/internal/modules/programstudi/domain"
+	authDomain "siakad-pro/internal/modules/auth/domain"
+	psDomain "siakad-pro/internal/modules/programstudi/domain"
 )
 
 type MataKuliah struct {
