@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { semesterService } from '$lib/services/semester';
-	import { mkService } from '$lib/services/matakuliah';
+	import { matakuliahService } from '$lib/services/matakuliah';
 	import type { Semester, MataKuliah } from '$lib/types';
 	import { toast } from '$lib/stores/toast.svelte';
 	import { authState } from '$lib/stores/auth.svelte';
@@ -27,7 +27,7 @@
 		try {
 			const [semRes, mkRes] = await Promise.all([
 				semesterService.getAll(),
-				mkService.getAll()
+				matakuliahService.getList()
 			]);
 			if (semRes.success && semRes.data) semesters = semRes.data;
 			if (mkRes.success && mkRes.data) allMataKuliah = mkRes.data;
