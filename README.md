@@ -225,6 +225,25 @@ flowchart TD
 
 ---
 
+## 🏗️ Konstruksi Perangkat Lunak (Software Construction)
+
+Proses pengembangan dan perancangan aplikasi **SIAKAD Pro** ini mematuhi standar *Software Construction* modern untuk menghasilkan sistem yang tangguh, mudah dipelihara (*maintainable*), dan berkinerja tinggi.
+
+### 1. Praktik Pemrograman (Coding Practices)
+- **Clean Architecture**: Seluruh *backend* mematuhi pembagian lapisan yang ketat (`domain`, `repository`, `service`, `delivery/http`). Lapisan bisnis (*service*) tidak bergantung pada implementasi database (*repository*), melainkan berkomunikasi melalui *interface*. Hal ini memudahkan *Unit Testing*.
+- **State Management Deklaratif (Svelte 5 Runes)**: Pada *frontend*, alih-alih memanipulasi DOM secara manual, pengelolaan data dilakukan secara reaktif menggunakan fitur Svelte 5 Runes (`$state`, `$derived`, `$effect`). Perubahan data di *stores* otomatis memicu render ulang secara parsial dan efisien pada UI (tanpa konsep *Virtual DOM* yang berat).
+- **Global Error & Response Handling**: Backend menggunakan *middleware* untuk standardisasi respon API, sehingga error (baik sistemik maupun *business logic*) selalu dikembalikan dalam format struktur JSON standar (memuat field `success`, `message`, `data`).
+
+### 2. Standar Antarmuka & Eksekusi CSS (Aesthetics & Performance)
+- **Edge-to-Edge Minimalist**: Menghindari properti berat seperti `backdrop-filter` atau berlapis bayangan (shadow) demi performa render *browser* maksimal (tanpa nge-lag). Komponen-komponen merentang secara *fluid* sebesar 100% menggunakan *CSS Flexbox*.
+- **No-Comment Policy**: Keseluruhan basis kode telah dioptimasi dengan menghapus komentar bawaan (developer comments) secara total setelah logika teruji dengan stabil. Ini memperkecil ukuran *file* mentah (*source code footprint*) dan meningkatkan keterbacaan murni (*clean code*).
+
+### 3. Otomatisasi & Pengelolaan Basis Data (Data Integrity)
+- **Auto Migration & Seeding**: Saat aplikasi backend pertama kali berjalan, GORM bertugas memeriksa struktur tabel di PostgreSQL dan menyesuaikannya (*Auto-migrate*). Skema *database* tidak memerlukan modifikasi manual di terminal SQL, melainkan cukup mendefinisikan *struct* `domain` di Golang.
+- **Transaksional (ACID Compliance)**: Aksi krusial yang melibatkan perubahan berlapis dalam satu waktu dijaga secara transaksional di level *repository* (misal: pendaftaran mata kuliah ke kelas) untuk mencegah anomali data jika terjadi kendala putus koneksi di tengah-tengah pemrosesan.
+
+---
+
 ## 💻 Cara Menjalankan Aplikasi (Local Development)
 
 ### 1. Persyaratan Sistem
