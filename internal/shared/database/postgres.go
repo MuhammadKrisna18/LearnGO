@@ -14,6 +14,7 @@ import (
 	kelasDomain "siakad-pro/internal/modules/kelas/domain"
 	mkDomain "siakad-pro/internal/modules/matakuliah/domain"
 	psDomain "siakad-pro/internal/modules/programstudi/domain"
+	semDomain "siakad-pro/internal/modules/semester/domain"
 )
 
 func NewPostgresConnection(cfg *config.Config) (*gorm.DB, error) {
@@ -59,13 +60,38 @@ func NewPostgresConnection(cfg *config.Config) (*gorm.DB, error) {
 		&kelasDomain.Kelas{},
 		&kelasDomain.PengajuanKelas{},
 		&mkDomain.PengajuanMataKuliah{},
+		&semDomain.Semester{},
+		&semDomain.SemesterMataKuliah{},
+		&semDomain.Pertemuan{},
 	); err != nil {
 		log.Printf("AutoMigrate failed: %v", err)
 	}
 
 	seedAdmin(db)
+	seedSemesters(db)
 
 	return db, nil
+}
+
+func seedSemesters(db *gorm.DB) {
+	var count int64
+	db.Model(&semDomain.Semester{}).Count(&count)
+	if count == 0 {
+		log.Println("Seeding semesters 1-8...")
+		for i := 1; i <= 8; i++ {
+			sem := semDomain.Semester{
+				ID:       fmt.Sprintf("semester-seed-%d", i),
+				Nomor:    i,
+				MinSKS:   18,
+				MaxSKS:   24,
+				IsActive: i == 1, // Semester 1 is active by default
+			}
+			if err := db.Create(&sem).Error; err != nil {
+				log.Printf("Failed to seed semester %d: %v", i, err)
+			}
+		}
+		log.Println("Successfully seeded semesters.")
+	}
 }
 
 func seedAdmin(db *gorm.DB) {

@@ -110,3 +110,33 @@ export interface CreateKelasPayload {
 	jam_selesai: string;
 	program_studi_id: string;
 }
+
+export interface Semester {
+	id: string;
+	nomor: number;
+	min_sks: number;
+	max_sks: number;
+	is_active: boolean;
+	mata_kuliah?: SemesterMataKuliah[];
+	created_at: string;
+}
+
+export interface SemesterMataKuliah {
+	id: string;
+	semester_id: string;
+	mata_kuliah_id: string;
+	mata_kuliah?: MataKuliah;
+	created_at: string;
+}
+
+export interface Pertemuan {
+	id: string;
+	semester_id: string;
+	kelas_id: string;
+	dosen_id: string;
+	nomor_pertemuan: number;
+	topik: string;
+	status: 'belum' | 'selesai';
+	tanggal_selesai?: string;
+	created_at: string;
+}

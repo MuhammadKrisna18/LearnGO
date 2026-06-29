@@ -77,3 +77,15 @@ func NewInternal(message string, details ...interface{}) *AppError {
 		Details: detail,
 	}
 }
+
+func NewConflict(message string, details ...interface{}) *AppError {
+	var detail interface{}
+	if len(details) > 0 {
+		detail = details[0]
+	}
+	return &AppError{
+		Code:    http.StatusConflict,
+		Message: message,
+		Details: detail,
+	}
+}
