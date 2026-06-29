@@ -23,7 +23,7 @@
 				kelasInfo = res.data;
 				
 				if (kelasInfo.pengajuan) {
-					// Find the approved pengajuan to get the dosen and matkul info
+
 					const approved = kelasInfo.pengajuan.find(p => p.status === 'approved');
 					if (approved) {
 						pengajuan = approved;
@@ -56,7 +56,7 @@
 			<a href="/dashboard" class="btn-secondary" style="margin-top: 16px;">Kembali ke Dashboard</a>
 		</div>
 	{:else if kelasInfo}
-		<!-- Header / Banner -->
+
 		<div class="kelas-banner">
 			<div class="banner-content">
 				<a href="/dashboard" class="back-link">← Kembali ke Dashboard</a>
@@ -89,7 +89,6 @@
 			<div class="banner-decoration"></div>
 		</div>
 
-		<!-- Navigation Tabs -->
 		<div class="tabs-container">
 			<button class="tab-btn" class:active={activeTab === 'mahasiswa'} onclick={() => activeTab = 'mahasiswa'}>
 				Daftar Mahasiswa
@@ -105,7 +104,6 @@
 			</button>
 		</div>
 
-		<!-- Main Content Area -->
 		<div class="content-area">
 			<Card style="padding: 24px;">
 				{#if activeTab === 'mahasiswa'}

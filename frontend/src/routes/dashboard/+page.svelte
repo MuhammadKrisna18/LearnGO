@@ -92,42 +92,6 @@
 		text-align: center;
 	}
 
-	.dosen-empty-state {
-		padding: 48px 32px;
-		text-align: center;
-		border-radius: var(--radius-lg);
-		background: linear-gradient(135deg, rgba(79, 70, 229, 0.03), rgba(16, 185, 129, 0.03));
-	}
-
-	.empty-icon {
-		margin-bottom: 20px;
-		display: flex;
-		justify-content: center;
-		filter: drop-shadow(0 4px 12px rgba(79, 70, 229, 0.2));
-	}
-
-	.dosen-empty-state h3 {
-		font-size: 1.5rem;
-		color: var(--text-main);
-		margin-bottom: 12px;
-		font-weight: 700;
-		letter-spacing: -0.025em;
-	}
-
-	.dosen-empty-state p {
-		color: var(--text-muted);
-		margin-bottom: 24px;
-		max-width: 400px;
-		margin-left: auto;
-		margin-right: auto;
-	}
-
-	.empty-action-btn {
-		width: auto;
-		padding: 10px 24px;
-		border-radius: var(--radius-full);
-	}
-
 	@keyframes spin {
 		to {
 			transform: rotate(360deg);

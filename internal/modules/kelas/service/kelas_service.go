@@ -26,23 +26,19 @@ func (s *kelasService) Create(ctx context.Context, req domain.CreateKelasRequest
 		return nil, apperrors.NewBadRequest("Format nama kelas tidak valid (contoh yang benar: IF-101 s/d IF-107, IF-201 s/d IF-207, IF-301 s/d IF-307)")
 	}
 
-
 	if req.Capacity < 25 || req.Capacity > 50 {
 		return nil, apperrors.NewBadRequest("Kapasitas kelas harus antara 25 dan 50")
 	}
-
 
 	conflict, _ := s.repo.CheckScheduleConflict(ctx, req.Name, req.Hari, req.JamMulai)
 	if conflict {
 		return nil, apperrors.NewBadRequest("Kelas tersebut sudah terdaftar pada hari dan jam yang sama")
 	}
 
-
 	validHari := map[string]bool{"Senin": true, "Selasa": true, "Rabu": true, "Kamis": true, "Jumat": true}
 	if !validHari[req.Hari] {
 		return nil, apperrors.NewBadRequest("Hari harus antara Senin sampai Jumat")
 	}
-
 
 	if req.JamMulai == "" || req.JamSelesai == "" {
 		return nil, apperrors.NewBadRequest("Jam mulai dan selesai harus diisi")
@@ -91,7 +87,6 @@ func (s *kelasService) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-// RequestKelas
 func (s *kelasService) RequestKelas(ctx context.Context, dosenID string, req domain.RequestKelasPayload) (*domain.PengajuanKelas, error) {
 	log.Printf("[RequestKelas] dosenID=%s, kelasID=%s, mataKuliahID=%s", dosenID, req.KelasID, req.MataKuliahID)
 
@@ -126,7 +121,6 @@ func (s *kelasService) RequestKelas(ctx context.Context, dosenID string, req dom
 		}
 	}
 
-	// Validasi bentrok jadwal dosen
 	dosenPengajuan, err := s.repo.GetPengajuanByDosenID(ctx, dosenID)
 	if err == nil {
 		for _, dp := range dosenPengajuan {
@@ -169,7 +163,6 @@ func (s *kelasService) ApprovePengajuan(ctx context.Context, id string) error {
 		return apperrors.NewBadRequest("Hanya pengajuan berstatus pending yang dapat disetujui")
 	}
 
-	// Cek apakah sudah ada yang di-approve untuk kelas yang sama
 	activePengajuan, err := s.repo.GetActivePengajuanByKelasID(ctx, p.KelasID)
 	if err != nil {
 		return apperrors.NewInternal("Gagal mengecek status kelas", err.Error())
@@ -186,7 +179,6 @@ func (s *kelasService) ApprovePengajuan(ctx context.Context, id string) error {
 		return apperrors.NewInternal("Gagal menyetujui pengajuan", err.Error())
 	}
 
-	// Reject others
 	for _, ap := range activePengajuan {
 		if ap.ID != id && ap.Status == domain.StatusPending {
 			ap.Status = domain.StatusRejected
@@ -223,7 +215,6 @@ func (s *kelasService) GetAllPengajuan(ctx context.Context) ([]*domain.Pengajuan
 	return s.repo.GetAllPengajuan(ctx)
 }
 
-// Helper to generate a random 6-character alphanumeric code
 func generateRandomCode() string {
 	b := make([]byte, 6)
 	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -236,7 +227,6 @@ func generateRandomCode() string {
 }
 
 var fastRand = func() int {
-	// using time.Now().UnixNano() directly to avoid importing math/rand or crypto/rand for simplicity if not already imported.
-	// We'll use a simple approach with crypto/rand for real scenarios, but we can import math/rand locally.
+
 	return int(time.Now().UnixNano())
 }

@@ -203,24 +203,20 @@ func (h *AuthHandler) UploadPhoto(c *fiber.Ctx) error {
 		return apperrors.NewBadRequest("Foto tidak ditemukan", err.Error())
 	}
 
-	// Validate extension
 	ext := strings.ToLower(filepath.Ext(file.Filename))
 	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
 		return apperrors.NewBadRequest("Format file tidak didukung. Gunakan JPG atau PNG.")
 	}
 
-	// Validate size (max 2MB)
 	if file.Size > 2*1024*1024 {
 		return apperrors.NewBadRequest("Ukuran file maksimal 2MB")
 	}
 
-	// Create directory if not exists
 	uploadDir := "./uploads/profiles"
 	if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
 		return apperrors.NewInternal("Gagal membuat direktori upload", err.Error())
 	}
 
-	// Save file with unique name
 	fileName := fmt.Sprintf("%s_%d%s", userID, time.Now().Unix(), ext)
 	filePath := filepath.Join(uploadDir, fileName)
 
@@ -228,7 +224,6 @@ func (h *AuthHandler) UploadPhoto(c *fiber.Ctx) error {
 		return apperrors.NewInternal("Gagal menyimpan file", err.Error())
 	}
 
-	// Update photo URL in database
 	photoURL := fmt.Sprintf("/uploads/profiles/%s", fileName)
 	res, err := h.service.UpdateProfilePhoto(c.UserContext(), userID, photoURL)
 	if err != nil {

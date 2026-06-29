@@ -8,7 +8,6 @@ import (
 func RegisterRoutes(router fiber.Router, handler *KelasHandler, jwtSecret string) {
 	kelas := router.Group("/kelas")
 
-
 	kelas.Use(middleware.Protected(jwtSecret))
 	kelas.Get("/", handler.GetAll)
 

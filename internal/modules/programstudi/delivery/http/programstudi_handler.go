@@ -11,7 +11,6 @@ type ProgramStudiHandler struct {
 	service *ServiceWrapper
 }
 
-// Since we only have a small method, let's wrap it inline or define an interface
 type ProgramStudiServiceInterface interface {
 	GetAll(ctx context.Context) ([]*domain.ProgramStudi, error)
 }

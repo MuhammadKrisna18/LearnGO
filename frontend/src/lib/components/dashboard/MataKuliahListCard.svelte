@@ -237,10 +237,6 @@
 		color: var(--text-muted);
 	}
 
-	.prodi-section {
-		border-radius: var(--radius-lg);
-	}
-
 	.prodi-header {
 		display: flex;
 		justify-content: space-between;

@@ -19,7 +19,7 @@
 </script>
 
 <div class="layout-wrapper">
-	<!-- Sidebar -->
+
 	<aside class="sidebar glass-panel">
 		<div class="sidebar-brand">
 			<div class="brand-logo">
@@ -68,9 +68,8 @@
 		</div>
 	</aside>
 
-	<!-- Main Content Area -->
 	<div class="main-wrapper">
-		<!-- Top Header -->
+
 		<header class="top-header glass-panel">
 			<div class="header-breadcrumb">
 				<span class="text-muted">Home</span>
@@ -102,7 +101,6 @@
 			</a>
 		</header>
 
-		<!-- Main Content Slot -->
 		<main class="content-area">
 			{@render children()}
 		</main>

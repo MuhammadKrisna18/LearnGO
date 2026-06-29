@@ -22,7 +22,6 @@
 		{ label: '19:00 - 21:00', start: '19:00', end: '21:00' }
 	];
 
-
 	const nameOptions: string[] = [];
 	for (let i = 1; i <= 3; i++) {
 		for (let j = 1; j <= 7; j++) {
@@ -82,7 +81,6 @@
 				program_studi_id = '';
 				hari = '';
 				waktu = '';
-				
 
 				const resKelas = await kelasService.getList();
 				if (resKelas.success && resKelas.data) {

@@ -28,7 +28,6 @@ func (h *MataKuliahHandler) RegisterRoutes(router fiber.Router, jwtSecret string
 	mkGroup.Delete("/:id", middleware.RequireRole("admin"), h.DeleteMataKuliah)
 	mkGroup.Post("/:id/lepas", middleware.RequireRole("admin"), h.LepasMataKuliah)
 
-	// Pengajuan & Penawaran routes
 	mkGroup.Post("/requests", middleware.RequireRole("dosen"), h.RequestMataKuliah)
 	mkGroup.Post("/requests/:id/accept-offer", middleware.RequireRole("dosen"), h.AcceptOffer)
 	mkGroup.Post("/requests/:id/reject-offer", middleware.RequireRole("dosen"), h.RejectOffer)

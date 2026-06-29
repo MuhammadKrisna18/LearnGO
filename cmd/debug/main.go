@@ -31,7 +31,6 @@ func main() {
 		log.Fatal("Failed to connect:", err)
 	}
 
-	// Simulate what the my-requests endpoint returns
 	var list []PengajuanMataKuliah
 	err = db.Preload("MataKuliah").Where("status = 'approved'").Order("created_at desc").Find(&list).Error
 	if err != nil {

@@ -149,7 +149,7 @@ func (s *authService) GetDosenList(ctx context.Context) ([]*domain.UserProfileRe
 }
 
 func (s *authService) DeleteDosen(ctx context.Context, id string) error {
-	// Optional: verify if user exists and is a dosen
+
 	user, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return apperrors.NewNotFound("Akun dosen tidak ditemukan", err.Error())
@@ -165,9 +165,6 @@ func (s *authService) UpdateProfile(ctx context.Context, id string, req domain.U
 	if err != nil {
 		return nil, apperrors.NewNotFound("Akun tidak ditemukan", err.Error())
 	}
-
-	// Email update is now handled via EmailChangeRequest
-	// So we don't update email here directly anymore
 
 	if req.Name != "" {
 		user.Name = req.Name
@@ -215,7 +212,7 @@ func (s *authService) RequestEmailChange(ctx context.Context, userID string, req
 
 	existingReq, err := s.repo.GetPendingEmailRequestByUserID(ctx, userID)
 	if err == nil && existingReq != nil {
-		// Update existing pending request
+
 		existingReq.NewEmail = req.NewEmail
 		return s.repo.UpdateEmailChangeRequest(ctx, existingReq)
 	}

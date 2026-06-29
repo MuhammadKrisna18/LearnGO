@@ -45,7 +45,6 @@ func NewPostgresConnection(cfg *config.Config) (*gorm.DB, error) {
 	log.Println("Successfully connected to PostgreSQL database via GORM")
 
 	log.Println("Running AutoMigrate...")
-	
 
 	if db.Migrator().HasIndex(&kelasDomain.Kelas{}, "idx_kelas_name") {
 		log.Println("Dropping old unique index idx_kelas_name...")

@@ -142,7 +142,7 @@
 	{#if loading}
 		<div style="text-align: center; padding: 20px;">Memuat data...</div>
 	{:else}
-		<!-- Mata Kuliah yang Sudah Diambil -->
+
 		<div class="mk-diampu-section">
 			<h3>Mata Kuliah Yang Diampu</h3>
 			{#if myRequests.filter(req => req.status === 'approved').length === 0}
@@ -165,7 +165,6 @@
 
 		<hr class="section-divider" />
 
-		<!-- Penawaran Mata Kuliah Prodi Anda -->
 		<div class="mk-diampu-section">
 			<h3>Penawaran Mata Kuliah Prodi Anda</h3>
 			{#if myRequests.filter(req => req.status === 'offered').length === 0}
@@ -195,7 +194,7 @@
 		<hr class="section-divider" />
 
 		<div class="grid-container">
-			<!-- Available Lintas Prodi MKs -->
+
 			<div class="grid-column">
 				<h3>Mata Kuliah Tersedia (Lintas Prodi)</h3>
 				{#if mkList.filter(mk => mk.program_studi_id !== authState.profile?.program_studi_id).length === 0}
@@ -229,7 +228,6 @@
 				{/if}
 			</div>
 
-			<!-- My Requests (Pending/Rejected) -->
 			<div class="grid-column">
 				<h3>Riwayat Pengajuan Lintas Prodi</h3>
 				{#if myRequests.filter(req => req.status === 'pending' || req.status === 'rejected').length === 0}

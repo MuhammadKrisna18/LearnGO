@@ -27,7 +27,7 @@ type EmailChangeRequest struct {
 	UserID    string    `json:"user_id" gorm:"type:varchar(255);not null"`
 	User      *User     `json:"user,omitempty" gorm:"foreignKey:UserID"`
 	NewEmail  string    `json:"new_email" gorm:"type:varchar(255);not null"`
-	Status    string    `json:"status" gorm:"type:varchar(50);not null;default:'pending'"` // pending, approved, rejected
+	Status    string    `json:"status" gorm:"type:varchar(50);not null;default:'pending'"`
 	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }
@@ -81,7 +81,6 @@ type AuthRepository interface {
 	Create(ctx context.Context, user *User) error
 	Update(ctx context.Context, user *User) error
 
-	// Email Change Requests
 	CreateEmailChangeRequest(ctx context.Context, req *EmailChangeRequest) error
 	GetPendingEmailRequestByUserID(ctx context.Context, userID string) (*EmailChangeRequest, error)
 	GetAllPendingEmailRequests(ctx context.Context) ([]*EmailChangeRequest, error)
@@ -97,8 +96,7 @@ type AuthService interface {
 	DeleteDosen(ctx context.Context, id string) error
 	UpdateProfile(ctx context.Context, id string, req UpdateProfileRequest) (*UserProfileResponse, error)
 	UpdateProfilePhoto(ctx context.Context, id string, photoURL string) (*UserProfileResponse, error)
-	
-	// Email Change Requests
+
 	RequestEmailChange(ctx context.Context, userID string, req EmailChangeRequestPayload) error
 	GetPendingEmailRequests(ctx context.Context) ([]*EmailChangeRequest, error)
 	ReviewEmailRequest(ctx context.Context, requestID string, approve bool) error

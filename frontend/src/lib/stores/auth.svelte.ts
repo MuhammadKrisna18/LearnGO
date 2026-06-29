@@ -1,7 +1,7 @@
 import type { UserProfile } from '$lib/types';
 
 function createAuthStore() {
-	// Only run localStorage logic if we're in the browser
+
 	const isBrowser = typeof window !== 'undefined';
 	
 	let token = $state(isBrowser ? localStorage.getItem('token') : null);

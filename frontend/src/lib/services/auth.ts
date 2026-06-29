@@ -75,7 +75,7 @@ export const authService = {
 			body: JSON.stringify({ new_email })
 		});
 		if (res.success) {
-			// refresh profile to show pending email
+
 			await this.getProfile();
 		}
 		return res;

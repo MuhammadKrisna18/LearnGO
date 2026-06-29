@@ -54,7 +54,6 @@ type MataKuliahService interface {
 	DeleteMataKuliah(ctx context.Context, id string) error
 	LepasMataKuliah(ctx context.Context, mkID string) error
 
-	// Pengajuan & Penawaran
 	RequestMataKuliah(ctx context.Context, dosenID string, req RequestMataKuliahPayload) (*PengajuanMataKuliah, error)
 	ApprovePengajuan(ctx context.Context, id string) error
 	RejectPengajuan(ctx context.Context, id string) error

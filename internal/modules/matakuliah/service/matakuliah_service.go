@@ -26,7 +26,6 @@ func (s *matakuliahService) CreateMataKuliah(ctx context.Context, req domain.Cre
 		return nil, apperrors.NewBadRequest("Program Studi wajib diisi")
 	}
 
-	// 1. Cek apakah mata kuliah dengan nama tersebut sudah ada di Program Studi ini
 	existing, err := s.repo.GetByNameAndProdi(ctx, req.Name, req.ProgramStudiID)
 	if err != nil {
 		return nil, apperrors.NewInternal("Gagal mengecek mata kuliah", err.Error())
@@ -47,7 +46,6 @@ func (s *matakuliahService) CreateMataKuliah(ctx context.Context, req domain.Cre
 		return nil, apperrors.NewInternal("Gagal menyimpan mata kuliah", err.Error())
 	}
 
-	// Otomatis tawarkan ke semua dosen di prodi yang sama
 	dosenIDs, err := s.repo.GetDosenIDsByProdi(ctx, req.ProgramStudiID)
 	if err == nil && len(dosenIDs) > 0 {
 		for _, dID := range dosenIDs {
@@ -56,7 +54,7 @@ func (s *matakuliahService) CreateMataKuliah(ctx context.Context, req domain.Cre
 				DosenID:      dID,
 				MataKuliahID: newMk.ID,
 				Status:       domain.StatusOffered,
-				Code:         "", // tidak butuh code untuk offered
+				Code:         "",
 			}
 			s.repo.CreatePengajuan(ctx, pengajuan)
 		}
@@ -79,7 +77,7 @@ func (s *matakuliahService) GetMataKuliahList(ctx context.Context) ([]*domain.Ma
 }
 
 func (s *matakuliahService) DeleteMataKuliah(ctx context.Context, id string) error {
-	// Check if there are any pengajuan for this mata kuliah
+
 	activeReqs, err := s.repo.GetActivePengajuanByMataKuliahID(ctx, id)
 	if err != nil {
 		return apperrors.NewInternal("Gagal mengecek status mata kuliah", err.Error())
@@ -110,7 +108,7 @@ func (s *matakuliahService) LepasMataKuliah(ctx context.Context, mkID string) er
 }
 
 func (s *matakuliahService) RequestMataKuliah(ctx context.Context, dosenID string, req domain.RequestMataKuliahPayload) (*domain.PengajuanMataKuliah, error) {
-	// Cek apakah mata kuliah sudah diajukan/diambil
+
 	activeReqs, err := s.repo.GetActivePengajuanByMataKuliahID(ctx, req.MataKuliahID)
 	if err != nil {
 		return nil, apperrors.NewInternal("Gagal mengecek status mata kuliah", err.Error())
@@ -122,7 +120,6 @@ func (s *matakuliahService) RequestMataKuliah(ctx context.Context, dosenID strin
 		return nil, apperrors.NewBadRequest("Mata kuliah ini sudah diajukan atau diambil oleh dosen lain")
 	}
 
-	// Generate 6-digit code
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 	code := fmt.Sprintf("%06d", rng.Intn(1000000))
 
@@ -198,11 +195,10 @@ func (s *matakuliahService) AcceptOffer(ctx context.Context, id string, dosenID 
 		return apperrors.NewBadRequest("Penawaran sudah tidak valid")
 	}
 
-	// Cek apakah mata kuliah sudah diambil dosen lain
 	activeReqs, _ := s.repo.GetActivePengajuanByMataKuliahID(ctx, p.MataKuliahID)
 	for _, req := range activeReqs {
 		if req.Status == domain.StatusApproved {
-			// Self-heal: hapus penawaran usang ini agar tidak muncul lagi
+
 			s.repo.DeletePengajuan(ctx, p.ID)
 			return apperrors.NewBadRequest("Mata kuliah ini sudah diambil oleh dosen lain")
 		}
@@ -213,7 +209,6 @@ func (s *matakuliahService) AcceptOffer(ctx context.Context, id string, dosenID 
 		return apperrors.NewInternal("Gagal menyetujui penawaran", err.Error())
 	}
 
-	// Hapus penawaran (offered) lainnya untuk mata kuliah ini
 	if allReqs, err := s.repo.GetAllPengajuan(ctx); err == nil {
 		for _, req := range allReqs {
 			if req.MataKuliahID == p.MataKuliahID && req.ID != p.ID && req.Status == domain.StatusOffered {
@@ -242,7 +237,6 @@ func (s *matakuliahService) RejectOffer(ctx context.Context, id string, dosenID 
 		return apperrors.NewBadRequest("Penawaran sudah tidak valid")
 	}
 
-	// Hapus pengajuan karena ditolak (agar tidak penuhi riwayat)
 	if err := s.repo.DeletePengajuan(ctx, id); err != nil {
 		return apperrors.NewInternal("Gagal menolak penawaran", err.Error())
 	}

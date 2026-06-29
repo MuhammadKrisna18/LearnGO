@@ -33,7 +33,6 @@
 	{/if}
 </div>
 
-
 <style>
 	/* Custom widths for specific layout, overriding standard 1fr 1fr if needed */
 	@media (min-width: 1024px) {

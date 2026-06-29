@@ -18,7 +18,7 @@
 	onMount(async () => {
 		try {
 			loading = true;
-			// Fetch all data
+
 			const [resMk, resDosen, resKelas] = await Promise.all([
 				matakuliahService.getList(),
 				dosenService.getList(),
@@ -33,13 +33,11 @@
 			const allDosen = resDosen.data || [];
 			const allKelas = resKelas.data || [];
 
-			// 1. Mata Kuliah Kosong (tidak ada pengajuan dengan status approved)
 			mkKosong = allMk.filter((mk: MataKuliah) => {
 				if (!mk.pengajuan || mk.pengajuan.length === 0) return true;
 				return !mk.pengajuan.some(p => p.status === 'approved');
 			});
 
-			// 2. Dosen Belum Ambil MK Sama Sekali (ID dosen tidak ada di pengajuan manapun yang approved)
 			const dosenWithApprovedMk = new Set<string>();
 			for (const mk of allMk) {
 				if (mk.pengajuan) {
@@ -52,7 +50,6 @@
 			}
 			dosenNganggur = allDosen.filter((d: UserProfile) => !dosenWithApprovedMk.has(d.id));
 
-			// 3. Kelas Masih Kosong
 			kelasKosong = allKelas.filter((k: Kelas) => {
 				if (!k.pengajuan || k.pengajuan.length === 0) return true;
 				return !k.pengajuan.some(p => p.status === 'approved');
@@ -81,7 +78,7 @@
 		<Card class="state-container state-error">{error}</Card>
 	{:else}
 		<div class="eval-grid">
-			<!-- Section 1: Mata Kuliah Kosong -->
+
 			<Card class="eval-card">
 				<div class="eval-card-header">
 					<h3>Mata Kuliah Belum Diambil</h3>
@@ -106,7 +103,6 @@
 				</div>
 			</Card>
 
-			<!-- Section 2: Dosen Tanpa Mata Kuliah -->
 			<Card class="eval-card">
 				<div class="eval-card-header">
 					<h3>Dosen Belum Mengambil MK</h3>
@@ -139,7 +135,6 @@
 				</div>
 			</Card>
 
-			<!-- Section 3: Kelas Kosong -->
 			<Card class="eval-card">
 				<div class="eval-card-header">
 					<h3>Kelas Belum Digunakan</h3>

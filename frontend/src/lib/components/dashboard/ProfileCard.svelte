@@ -42,8 +42,7 @@
 
 <div class="profile-card glass-panel animate-fade-in" style="animation-delay: 0.1s;">
 	<div class="profile-header">
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
+
 		<div class="avatar" class:uploading onclick={triggerUpload} title="Klik untuk mengubah foto profil">
 			{#if profile.photo_url}
 				<img src={`http://localhost:8080${profile.photo_url}`} alt={profile.name} class="avatar-img" />

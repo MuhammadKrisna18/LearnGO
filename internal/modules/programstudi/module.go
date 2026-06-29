@@ -19,7 +19,6 @@ func NewProgramStudiModule(db *gorm.DB, cfg *config.Config) *ProgramStudiModule 
 	svc := service.NewProgramStudiService(repo)
 	handler := http.NewProgramStudiHandler(svc)
 
-	// Seeding data on init
 	_ = repo.Seed(context.Background())
 
 	return &ProgramStudiModule{
