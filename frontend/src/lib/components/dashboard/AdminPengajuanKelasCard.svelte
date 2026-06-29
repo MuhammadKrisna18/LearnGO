@@ -24,7 +24,7 @@
 		try {
 			const res = await kelasService.getAllPengajuan();
 			if (res.success && res.data) {
-				requests = res.data;
+				requests = res.data.filter((r: PengajuanKelas) => r.status === 'pending');
 			}
 		} catch (err: any) {
 			error = err.message || 'Gagal memuat pengajuan';
@@ -112,7 +112,7 @@
 	{#if loading}
 		<div class="state-container">Memuat data...</div>
 	{:else if requests.length === 0}
-		<div class="state-container">Belum ada pengajuan kelas.</div>
+		<div class="state-container">Tidak ada pengajuan kelas yang menunggu persetujuan.</div>
 	{:else}
 		<div class="data-table-container">
 			<table class="data-table">
@@ -148,14 +148,10 @@
 							</td>
 							<td>{new Date(req.created_at).toLocaleDateString('id-ID')}</td>
 							<td>
-								{#if req.status === 'pending'}
-									<div class="action-buttons">
-										<button class="btn-approve" onclick={() => openApprovePrompt(req.id)}>Terima</button>
-										<button class="btn-reject" onclick={() => openRejectPrompt(req.id)}>Tolak</button>
-									</div>
-								{:else}
-									<span class="txt-sm">Selesai</span>
-								{/if}
+								<div class="action-buttons">
+									<button class="btn-approve" onclick={() => openApprovePrompt(req.id)}>Terima</button>
+									<button class="btn-reject" onclick={() => openRejectPrompt(req.id)}>Tolak</button>
+								</div>
 							</td>
 						</tr>
 					{/each}

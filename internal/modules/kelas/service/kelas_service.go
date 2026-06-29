@@ -85,15 +85,21 @@ func (s *kelasService) Delete(ctx context.Context, id string) error {
 
 // RequestKelas
 func (s *kelasService) RequestKelas(ctx context.Context, dosenID string, req domain.RequestKelasPayload) (*domain.PengajuanKelas, error) {
+	log.Printf("[RequestKelas] dosenID=%s, kelasID=%s, mataKuliahID=%s", dosenID, req.KelasID, req.MataKuliahID)
+
 	kelas, err := s.repo.GetByID(ctx, req.KelasID)
 	if err != nil {
+		log.Printf("[RequestKelas] ERROR: kelas not found: %v", err)
 		return nil, apperrors.NewNotFound("Kelas tidak ditemukan")
 	}
+	log.Printf("[RequestKelas] Kelas found: %s, ProdiID: %s", kelas.Name, kelas.ProgramStudiID)
 
 	hasMK, err := s.repo.IsMataKuliahValidForKelas(ctx, dosenID, req.MataKuliahID, kelas.ProgramStudiID)
 	if err != nil {
+		log.Printf("[RequestKelas] ERROR: IsMataKuliahValidForKelas failed: %v", err)
 		return nil, apperrors.NewInternal("Gagal memvalidasi mata kuliah dosen", err.Error())
 	}
+	log.Printf("[RequestKelas] IsMataKuliahValidForKelas result: %v", hasMK)
 	if !hasMK {
 		return nil, apperrors.NewBadRequest("Mata kuliah yang dipilih tidak valid atau bukan berasal dari program studi kelas ini.")
 	}
@@ -117,10 +123,7 @@ func (s *kelasService) RequestKelas(ctx context.Context, dosenID string, req dom
 	if err == nil {
 		for _, dp := range dosenPengajuan {
 			if dp.Status != domain.StatusRejected && dp.Kelas != nil {
-				// Cek bentrok hari dan jam
 				if dp.Kelas.Hari == kelas.Hari {
-					// Pengecekan overlap waktu (format HH:MM)
-					// Overlap terjadi jika: Mulai1 < Selesai2 && Mulai2 < Selesai1
 					if kelas.JamMulai < dp.Kelas.JamSelesai && dp.Kelas.JamMulai < kelas.JamSelesai {
 						return nil, apperrors.NewBadRequest("Jadwal kelas bentrok dengan kelas lain yang sudah Anda ajukan/ambil (" + dp.Kelas.Name + ")")
 					}
@@ -139,9 +142,11 @@ func (s *kelasService) RequestKelas(ctx context.Context, dosenID string, req dom
 	}
 
 	if err := s.repo.CreatePengajuan(ctx, pengajuan); err != nil {
+		log.Printf("[RequestKelas] ERROR: CreatePengajuan failed: %v", err)
 		return nil, apperrors.NewInternal("Gagal mengajukan kelas", err.Error())
 	}
 
+	log.Printf("[RequestKelas] SUCCESS: pengajuan created with ID=%s", pengajuan.ID)
 	pengajuan.Kelas = kelas
 	return pengajuan, nil
 }

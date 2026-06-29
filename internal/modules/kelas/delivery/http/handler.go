@@ -61,7 +61,7 @@ func (h *KelasHandler) Delete(c *fiber.Ctx) error {
 }
 
 func (h *KelasHandler) RequestKelas(c *fiber.Ctx) error {
-	dosenID := c.Locals("user_id").(string)
+	dosenID := c.Locals("userID").(string)
 
 	var req domain.RequestKelasPayload
 	if err := c.BodyParser(&req); err != nil {
@@ -81,7 +81,7 @@ func (h *KelasHandler) RequestKelas(c *fiber.Ctx) error {
 }
 
 func (h *KelasHandler) GetMyPengajuan(c *fiber.Ctx) error {
-	dosenID := c.Locals("user_id").(string)
+	dosenID := c.Locals("userID").(string)
 
 	list, err := h.service.GetMyPengajuan(c.Context(), dosenID)
 	if err != nil {
