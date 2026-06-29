@@ -4,12 +4,12 @@
 	import { matakuliahService } from '$lib/services/matakuliah';
 	import { dosenService } from '$lib/services/dosen';
 	import { kelasService } from '$lib/services/kelas';
-	import type { MataKuliah, UserProfile, Kelas } from '$lib/types';
+	import type { MataKuliah, UserProfile, Kelas, Dosen } from '$lib/types';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 
 	let mkKosong: MataKuliah[] = $state([]);
-	let dosenNganggur: UserProfile[] = $state([]);
+	let dosenNganggur: Dosen[] = $state([]);
 	let kelasKosong: Kelas[] = $state([]);
 	
 	let loading = $state(true);
@@ -48,7 +48,7 @@
 					}
 				}
 			}
-			dosenNganggur = allDosen.filter((d: UserProfile) => !dosenWithApprovedMk.has(d.id));
+			dosenNganggur = allDosen.filter((d: Dosen) => !dosenWithApprovedMk.has(d.id));
 
 			kelasKosong = allKelas.filter((k: Kelas) => {
 				if (!k.pengajuan || k.pengajuan.length === 0) return true;

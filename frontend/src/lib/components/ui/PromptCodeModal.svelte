@@ -1,5 +1,17 @@
 <script lang="ts">
 	import Modal from '$lib/components/ui/Modal.svelte';
+	import type { Snippet } from 'svelte';
+
+	interface Props {
+		isOpen?: boolean;
+		title?: string;
+		message?: string;
+		expectedCode?: string;
+		disableConfirm?: boolean;
+		onConfirm: (code: string) => Promise<void> | void;
+		onCancel?: () => void;
+		children?: Snippet;
+	}
 
 	let {
 		isOpen = $bindable(false),
@@ -10,7 +22,7 @@
 		onConfirm,
 		onCancel,
 		children
-	} = $props();
+	}: Props = $props();
 
 	let inputCode = $state("");
 	let loading = $state(false);
