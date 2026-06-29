@@ -6,8 +6,10 @@
 		title = "Konfirmasi Tindakan",
 		message = "Masukkan kode berikut:",
 		expectedCode = "",
+		disableConfirm = false,
 		onConfirm,
-		onCancel
+		onCancel,
+		children
 	} = $props();
 
 	let inputCode = $state("");
@@ -41,6 +43,10 @@
 			{message} <strong class="expected-code">{expectedCode}</strong>
 		</p>
 		
+		{#if children}
+			{@render children()}
+		{/if}
+
 		<div class="form-group">
 			<input 
 				type="text" 
@@ -57,7 +63,7 @@
 			<button type="button" class="btn-secondary" onclick={handleCancel} disabled={loading}>
 				Batal
 			</button>
-			<button type="submit" class="btn-primary" disabled={inputCode !== expectedCode || loading}>
+			<button type="submit" class="btn-primary" disabled={disableConfirm || inputCode !== expectedCode || loading}>
 				{#if loading}Memproses...{:else}Konfirmasi{/if}
 			</button>
 		</div>

@@ -84,6 +84,20 @@ export interface Kelas {
 	jam_selesai: string;
 	program_studi_id: string;
 	program_studi?: ProgramStudi;
+	pengajuan?: PengajuanKelas[];
+	created_at: string;
+}
+
+export interface PengajuanKelas {
+	id: string;
+	dosen_id: string;
+	dosen?: UserProfile;
+	kelas_id: string;
+	kelas?: Kelas;
+	mata_kuliah_id: string;
+	mata_kuliah?: MataKuliah;
+	status: 'pending' | 'approved' | 'rejected';
+	code: string;
 	created_at: string;
 }
 

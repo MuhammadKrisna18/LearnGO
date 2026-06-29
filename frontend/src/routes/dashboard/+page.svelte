@@ -5,6 +5,7 @@
 	import EmailRequestListCard from '$lib/components/dashboard/EmailRequestListCard.svelte';
 	import DosenMataKuliahRequestCard from '$lib/components/dashboard/DosenMataKuliahRequestCard.svelte';
 	import AdminPengajuanCard from '$lib/components/dashboard/AdminPengajuanCard.svelte';
+	import AdminPengajuanKelasCard from '$lib/components/dashboard/AdminPengajuanKelasCard.svelte';
 
 	let loading = $state(true);
 	let error = $state('');
@@ -46,6 +47,7 @@
 			<div class="page-grid">
 				<EmailRequestListCard />
 				<AdminPengajuanCard />
+				<AdminPengajuanKelasCard />
 			</div>
 		{:else if authState.profile.role === 'dosen'}
 			<DosenMataKuliahRequestCard />

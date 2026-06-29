@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { kelasService } from '$lib/services/kelas';
+	import { matakuliahService } from '$lib/services/matakuliah';
 	import { authState } from '$lib/stores/auth.svelte';
-	import type { Kelas } from '$lib/types';
+	import type { Kelas, PengajuanMataKuliah } from '$lib/types';
 	import PromptCodeModal from '$lib/components/ui/PromptCodeModal.svelte';
 	import { toast } from '$lib/stores/toast.svelte';
 
@@ -13,6 +14,11 @@
 	let isPromptOpen = $state(false);
 	let selectedKelas = $state<Kelas | null>(null);
 	let expectedCode = $state("");
+	let promptAction = $state<'delete' | 'request'>('delete');
+	
+	let myApprovedMataKuliah = $state<PengajuanMataKuliah[]>([]);
+	let availableMataKuliahForKelas = $state<PengajuanMataKuliah[]>([]);
+	let selectedMataKuliahId = $state("");
 
 	let searchQuery = $state('');
 	let sortBy = $state('kelas');
@@ -79,6 +85,13 @@
 			} else {
 				error = res.message || 'Gagal mengambil data kelas';
 			}
+			
+			if (authState.role === 'dosen') {
+				const mkRes = await matakuliahService.getMyRequests();
+				if (mkRes.success && mkRes.data) {
+					myApprovedMataKuliah = mkRes.data.filter(p => p.status === 'approved');
+				}
+			}
 		} catch (err: any) {
 			error = err.message || 'Terjadi kesalahan sistem';
 		} finally {
@@ -98,7 +111,57 @@
 	function promptDelete(k: Kelas) {
 		selectedKelas = k;
 		expectedCode = Math.floor(100000 + Math.random() * 900000).toString();
+		promptAction = 'delete';
 		isPromptOpen = true;
+	}
+
+	function promptRequest(k: Kelas) {
+		selectedKelas = k;
+		expectedCode = Math.floor(100000 + Math.random() * 900000).toString();
+		promptAction = 'request';
+		
+		availableMataKuliahForKelas = myApprovedMataKuliah.filter(mk => mk.mata_kuliah?.program_studi_id === k.program_studi_id);
+		if (availableMataKuliahForKelas.length > 0) {
+			selectedMataKuliahId = availableMataKuliahForKelas[0].mata_kuliah_id;
+		} else {
+			selectedMataKuliahId = "";
+		}
+
+		isPromptOpen = true;
+	}
+
+	async function handleConfirmCode(code: string) {
+		if (promptAction === 'delete') {
+			await handleDelete(code);
+		} else if (promptAction === 'request') {
+			await handleRequest(code);
+		}
+	}
+
+	async function handleRequest(code: string) {
+		if (!selectedKelas) return;
+
+		if (code !== expectedCode) {
+			toast.error('Kode tidak cocok. Aksi dibatalkan.');
+			selectedKelas = null;
+			isPromptOpen = false;
+			return;
+		}
+
+		try {
+			const res = await kelasService.requestKelas(selectedKelas.id, selectedMataKuliahId);
+			if (res.success) {
+				toast.success('Berhasil mengajukan request kelas');
+				fetchKelases();
+			} else {
+				toast.error(res.message || 'Gagal mengajukan kelas');
+			}
+		} catch (err: any) {
+			toast.error(err.message || 'Terjadi kesalahan saat mengajukan kelas');
+		} finally {
+			isPromptOpen = false;
+			selectedKelas = null;
+		}
 	}
 
 	async function handleDelete(code: string) {
@@ -119,8 +182,8 @@
 			} else {
 				toast.error(res.message || 'Gagal menghapus kelas');
 			}
-		} catch (err) {
-			toast.error('Terjadi kesalahan saat menghapus kelas');
+		} catch (err: any) {
+			toast.error(err.message || 'Terjadi kesalahan saat menghapus kelas');
 		} finally {
 			isPromptOpen = false;
 			selectedKelas = null;
@@ -170,7 +233,8 @@
 									<th>Nama Kelas</th>
 									<th>Kapasitas</th>
 									<th>Jadwal</th>
-									{#if authState.role === 'admin'}
+									<th>Status</th>
+									{#if authState.role === 'admin' || authState.role === 'dosen'}
 										<th>Aksi</th>
 									{/if}
 								</tr>
@@ -190,11 +254,43 @@
 												<span class="jam">{k.jam_mulai} - {k.jam_selesai}</span>
 											</div>
 										</td>
+										<td>
+											{#if k.pengajuan && k.pengajuan.some(p => p.status === 'approved')}
+												{@const approvedP = k.pengajuan.find(p => p.status === 'approved')}
+												<span class="badge" style="background: rgba(239, 68, 68, 0.1); color: var(--error-color);">
+													Diambil oleh {approvedP?.dosen?.name || 'Dosen'}
+												</span>
+											{:else if authState.role === 'dosen' && k.pengajuan && k.pengajuan.some(p => p.status === 'pending' && p.dosen_id === authState.profile?.id)}
+												<span class="badge" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+													Menunggu Persetujuan
+												</span>
+											{:else}
+												<span class="badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+													Tersedia
+												</span>
+											{/if}
+										</td>
 										{#if authState.role === 'admin'}
 											<td>
 												<button class="btn-delete" aria-label="Hapus Kelas" onclick={() => promptDelete(k)}>
 													Hapus
 												</button>
+											</td>
+										{:else if authState.role === 'dosen'}
+											<td>
+												{#if k.pengajuan && k.pengajuan.some(p => p.status === 'approved')}
+													<button class="btn-request disabled" disabled>
+														Tidak Tersedia
+													</button>
+												{:else if k.pengajuan && k.pengajuan.some(p => p.status === 'pending' && p.dosen_id === authState.profile?.id)}
+													<button class="btn-request disabled" disabled>
+														Requested
+													</button>
+												{:else}
+													<button class="btn-request" onclick={() => promptRequest(k)}>
+														Request
+													</button>
+												{/if}
 											</td>
 										{/if}
 									</tr>
@@ -215,14 +311,45 @@
 
 <PromptCodeModal
 	bind:isOpen={isPromptOpen}
-	title="Hapus Kelas"
-	message={`Untuk menghapus kelas ${selectedKelas?.name || 'ini'}, masukkan kode berikut:`}
+	title={promptAction === 'delete' ? "Hapus Kelas" : "Request Kelas"}
+	message={promptAction === 'delete' ? `Untuk menghapus kelas ${selectedKelas?.name || 'ini'}, masukkan kode berikut:` : `Masukkan kode berikut untuk mengajukan request kelas ${selectedKelas?.name || ''}:`}
 	{expectedCode}
-	onConfirm={handleDelete}
+	disableConfirm={promptAction === 'request' && availableMataKuliahForKelas.length === 0}
+	onConfirm={handleConfirmCode}
 	onCancel={() => { isPromptOpen = false; selectedKelas = null; }}
-/>
+>
+	{#snippet children()}
+		{#if promptAction === 'request'}
+			<div class="mk-selector">
+				<label for="mk-select">Pilih Mata Kuliah:</label>
+				{#if availableMataKuliahForKelas.length > 0}
+					<select id="mk-select" bind:value={selectedMataKuliahId} class="form-input">
+						{#each availableMataKuliahForKelas as mk}
+							<option value={mk.mata_kuliah_id}>{mk.mata_kuliah?.name}</option>
+						{/each}
+					</select>
+				{:else}
+					<div style="color: var(--error-color); font-size: 0.9rem; margin-top: 4px;">
+						Anda tidak memiliki mata kuliah yang disetujui di program studi kelas ini.
+					</div>
+				{/if}
+			</div>
+		{/if}
+	{/snippet}
+</PromptCodeModal>
 
 <style>
+	.mk-selector {
+		margin-bottom: 16px;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+	.mk-selector label {
+		font-size: 0.9rem;
+		font-weight: 500;
+		color: var(--text-main);
+	}
 	.card {
 		background: var(--surface-light);
 		border-radius: var(--radius-lg);
@@ -379,6 +506,29 @@
 
 	.btn-delete:hover {
 		background: rgba(239, 68, 68, 0.2);
+	}
+
+	.btn-request {
+		background: rgba(79, 70, 229, 0.1);
+		color: var(--primary-color);
+		border: 1px solid rgba(79, 70, 229, 0.2);
+		padding: 6px 12px;
+		border-radius: var(--radius-sm);
+		cursor: pointer;
+		font-size: 0.85rem;
+		font-weight: 500;
+		transition: all 0.2s;
+	}
+
+	.btn-request:hover {
+		background: rgba(79, 70, 229, 0.2);
+	}
+
+	.btn-request.disabled {
+		background: rgba(0, 0, 0, 0.05);
+		color: var(--text-muted);
+		border-color: transparent;
+		cursor: not-allowed;
 	}
 
 	.loading-state,

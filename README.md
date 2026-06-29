@@ -160,6 +160,56 @@ sequenceDiagram
 
 ---
 
+## ⚖️ Aturan Bisnis (Business Rules)
+
+Berikut adalah visualisasi aturan dan alur bisnis utama dalam platform ini:
+
+```mermaid
+flowchart TD
+    %% Roles
+    Dosen([Dosen])
+    Admin([Admin])
+
+    %% Business Entities & Actions
+    subgraph Pengajuan Mata Kuliah
+        ReqMK(Dosen mengajukan Mata Kuliah)
+        CheckMK{Status MK?}
+        StatusPending(Status: Pending)
+        ApproveMK(Admin Approve)
+        RejectMK(Admin Reject)
+        MKTaken(MK Menjadi Milik Dosen)
+    end
+
+    subgraph Manajemen Akun
+        RegDosen(Registrasi Akun Baru)
+        GenNID(NID 5-Digit Permanen Dibuat)
+        ReqEmail(Dosen Request Ganti Email)
+        ApproveEmail(Admin Approve Request)
+    end
+
+    %% Flows
+    Dosen --> RegDosen
+    RegDosen --> GenNID
+    Dosen --> ReqEmail
+    ReqEmail --> ApproveEmail
+    Admin --> ApproveEmail
+
+    Dosen --> ReqMK
+    ReqMK --> CheckMK
+    CheckMK -- Belum Diambil --> StatusPending
+    CheckMK -- Sudah Diambil --> RejectSystem(Ditolak Sistem)
+    StatusPending --> Admin
+    Admin -- Setuju --> ApproveMK
+    Admin -- Tolak --> RejectMK
+    ApproveMK --> MKTaken
+
+    style GenNID fill:#dcfce7,stroke:#166534
+    style MKTaken fill:#dcfce7,stroke:#166534
+    style RejectSystem fill:#fee2e2,stroke:#991b1b
+```
+
+---
+
 ## 💻 Cara Menjalankan Aplikasi (Local Development)
 
 ### 1. Persyaratan Sistem

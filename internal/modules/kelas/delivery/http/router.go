@@ -12,6 +12,12 @@ func RegisterRoutes(router fiber.Router, handler *KelasHandler, jwtSecret string
 	kelas.Use(middleware.Protected(jwtSecret))
 	kelas.Get("/", handler.GetAll)
 
+	kelas.Post("/request", middleware.RequireRole("dosen"), handler.RequestKelas)
+	kelas.Get("/pengajuan/me", middleware.RequireRole("dosen"), handler.GetMyPengajuan)
+
+	kelas.Get("/pengajuan", middleware.RequireRole("admin"), handler.GetAllPengajuan)
+	kelas.Post("/pengajuan/:id/approve", middleware.RequireRole("admin"), handler.ApprovePengajuan)
+	kelas.Post("/pengajuan/:id/reject", middleware.RequireRole("admin"), handler.RejectPengajuan)
 
 	kelas.Post("/", middleware.RequireRole("admin"), handler.Create)
 	kelas.Delete("/:id", middleware.RequireRole("admin"), handler.Delete)
