@@ -8,6 +8,12 @@ export const kelasService = {
 		});
 	},
 
+	async getById(id: string): Promise<ApiResponse<Kelas>> {
+		return await fetchApi<ApiResponse<Kelas>>(`/kelas/${id}`, {
+			method: 'GET'
+		});
+	},
+
 	async create(payload: CreateKelasPayload): Promise<ApiResponse<Kelas>> {
 		return await fetchApi<ApiResponse<Kelas>>('/kelas', {
 			method: 'POST',

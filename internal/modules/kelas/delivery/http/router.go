@@ -21,4 +21,5 @@ func RegisterRoutes(router fiber.Router, handler *KelasHandler, jwtSecret string
 
 	kelas.Post("/", middleware.RequireRole("admin"), handler.Create)
 	kelas.Delete("/:id", middleware.RequireRole("admin"), handler.Delete)
+	kelas.Get("/:id", handler.GetByID)
 }

@@ -70,6 +70,14 @@ func (s *kelasService) GetAll(ctx context.Context) ([]*domain.Kelas, error) {
 	return s.repo.GetAll(ctx)
 }
 
+func (s *kelasService) GetByID(ctx context.Context, id string) (*domain.Kelas, error) {
+	kelas, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, apperrors.NewNotFound("Kelas tidak ditemukan")
+	}
+	return kelas, nil
+}
+
 func (s *kelasService) Delete(ctx context.Context, id string) error {
 	_, err := s.repo.GetByID(ctx, id)
 	if err != nil {

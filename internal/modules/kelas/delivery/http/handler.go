@@ -47,6 +47,20 @@ func (h *KelasHandler) GetAll(c *fiber.Ctx) error {
 	return response.Success(c, fiber.StatusOK, "Berhasil mengambil data kelas", kelases)
 }
 
+func (h *KelasHandler) GetByID(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return apperrors.NewBadRequest("ID kelas diperlukan")
+	}
+
+	kelas, err := h.service.GetByID(c.Context(), id)
+	if err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusOK, "Berhasil mengambil detail kelas", kelas)
+}
+
 func (h *KelasHandler) Delete(c *fiber.Ctx) error {
 	id := c.Params("id")
 	if id == "" {

@@ -76,6 +76,11 @@
 						<span class="info-icon">👥</span>
 						<span class="info-text">Kapasitas: {req.kelas?.capacity || 0} Mahasiswa</span>
 					</div>
+					<div class="action-row">
+						<a href={`/dashboard/kelas/${req.kelas?.id}`} class="btn-masuk">
+							Masuk Kelas →
+						</a>
+					</div>
 				</div>
 			</div>
 		{/each}
@@ -172,5 +177,30 @@
 
 	.info-text strong {
 		color: var(--text-main);
+	}
+
+	.action-row {
+		margin-top: 12px;
+		padding-top: 12px;
+		border-top: 1px dashed rgba(0,0,0,0.05);
+	}
+
+	.btn-masuk {
+		display: inline-block;
+		width: 100%;
+		text-align: center;
+		background: var(--primary-color);
+		color: white;
+		text-decoration: none;
+		padding: 10px;
+		border-radius: var(--radius-sm);
+		font-size: 0.9rem;
+		font-weight: 600;
+		transition: background 0.2s, transform 0.1s;
+	}
+
+	.btn-masuk:hover {
+		background: var(--primary-hover);
+		transform: translateY(-1px);
 	}
 </style>

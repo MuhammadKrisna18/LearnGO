@@ -11,7 +11,9 @@ Sebuah sistem terintegrasi dengan arsitektur **Modular Monolith**, dikembangkan 
 - **Role-based Dashboards**: Tampilan dashboard spesifik untuk masing-masing role dengan tata letak (layout) grid 2-kolom yang elegan. Sidebar menggunakan antarmuka *Glassmorphism* modern dengan ikon vektor (SVG) profesional.
 - **Admin Management**: Fitur khusus bagi admin untuk mendaftarkan akun baru (seperti akun dosen), mengelola **Permintaan Ganti Email** (Request Email), serta meninjau dan menyetujui/menolak **Pengajuan Mata Kuliah** dari dosen.
 - **Manajemen Kelas Dinamis**: Mendukung pembuatan jadwal kelas (*Multi-schedule*) yang fleksibel. Satu ruangan kelas fisik dapat digunakan untuk hari dan jam yang berbeda dengan sistem proteksi *conflict* (jadwal ganda) terintegrasi, serta tabel UI canggih yang secara otomatis dikelompokkan berdasarkan Program Studi, lengkap dengan fitur pencarian dan pengurutan (jam/hari/nama kelas).
-- **Sistem Pengajuan Mata Kuliah**: Dosen dapat mengajukan permintaan untuk mengampu mata kuliah melalui sistem pengajuan (*request*). Admin meninjau dan memberikan keputusan (*approve/reject*) secara langsung dari dashboard.
+- **Sistem Pengajuan Mata Kuliah**: Dosen dapat mengajukan permintaan untuk mengampu mata kuliah. Admin meninjau dan memberikan keputusan (*approve/reject*).
+- **Sistem Pengajuan Kelas & Validasi Jadwal**: Setelah memiliki mata kuliah, dosen dapat memilih dan mengajukan kelas fisik yang ingin diajar. Sistem memvalidasi kesesuaian Program Studi, mencegah bentrok jadwal kelas bagi dosen yang sama, dan membatasi jumlah kelas sesuai jumlah mata kuliah yang diampu.
+- **Portal Kelas Khusus**: Dosen yang telah disetujui untuk mengajar kelas tertentu mendapatkan akses fitur "Masuk Kelas", sebuah portal kelas khusus (dilengkapi tab Daftar Mahasiswa, Materi, Tugas, dan Pengumuman) untuk mengelola aktivitas belajar mengajar secara mendetail.
 - **Manajemen Program Studi**: Modul khusus untuk mengelola data Program Studi yang terintegrasi dengan modul Kelas dan Mata Kuliah.
 - **Sistem Profil & Keamanan**: Halaman profil terdedikasi (`/dashboard/profile`). Data vital seperti Nomor Induk Dosen (NID) bersifat permanen (tidak bisa diubah/dihapus), dan penggantian email memerlukan _approval_ Admin. Pengguna juga dapat mengunggah **Foto Profil** yang otomatis di-_crop_ (rasio 1:1) dan akan ditampilkan pada *Navbar* serta tabel antarmuka lintas-role secara publik (misal pada Daftar Akun Dosen).
 - **Laporan & Evaluasi Akademik**: Halaman khusus Admin (`/dashboard/evaluasi`) yang merangkum data krusial: Mata Kuliah yang belum memiliki dosen pengampu, Dosen yang belum mengampu mata kuliah sama sekali, serta Kelas yang belum terutilisasi.
@@ -171,13 +173,18 @@ flowchart TD
     Admin([Admin])
 
     %% Business Entities & Actions
-    subgraph Pengajuan Mata Kuliah
+    subgraph Pengajuan Mata Kuliah & Kelas
         ReqMK(Dosen mengajukan Mata Kuliah)
         CheckMK{Status MK?}
-        StatusPending(Status: Pending)
-        ApproveMK(Admin Approve)
-        RejectMK(Admin Reject)
+        StatusPendingMK(Status MK: Pending)
+        ApproveMK(Admin Approve MK)
         MKTaken(MK Menjadi Milik Dosen)
+        
+        ReqKelas(Dosen mengajukan Kelas)
+        CheckKelas{Jadwal & Prodi Valid?}
+        StatusPendingKelas(Status Kelas: Pending)
+        ApproveKelas(Admin Approve Kelas)
+        KelasTaken(Portal Kelas Terbuka)
     end
 
     subgraph Manajemen Akun
@@ -196,15 +203,23 @@ flowchart TD
 
     Dosen --> ReqMK
     ReqMK --> CheckMK
-    CheckMK -- Belum Diambil --> StatusPending
+    CheckMK -- Belum Diambil --> StatusPendingMK
     CheckMK -- Sudah Diambil --> RejectSystem(Ditolak Sistem)
-    StatusPending --> Admin
+    StatusPendingMK --> Admin
     Admin -- Setuju --> ApproveMK
-    Admin -- Tolak --> RejectMK
     ApproveMK --> MKTaken
+
+    MKTaken --> ReqKelas
+    ReqKelas --> CheckKelas
+    CheckKelas -- Valid --> StatusPendingKelas
+    CheckKelas -- Bentrok/Prodi Beda --> RejectSystem
+    StatusPendingKelas --> Admin
+    Admin -- Setuju --> ApproveKelas
+    ApproveKelas --> KelasTaken
 
     style GenNID fill:#dcfce7,stroke:#166534
     style MKTaken fill:#dcfce7,stroke:#166534
+    style KelasTaken fill:#dcfce7,stroke:#166534
     style RejectSystem fill:#fee2e2,stroke:#991b1b
 ```
 
@@ -280,11 +295,15 @@ npm run dev
 9. **Manajemen Akun Dosen**:
    - Dosen yang baru terdaftar memiliki NID (Nomor Induk Dosen) otomatis sepanjang 5 digit yang bersifat **permanen**.
    - Dosen yang ingin mengganti email harus mengirim permintaan melalui sistem (*Email Request System*) ke Admin dengan memasukkan *username* saja (sistem otomatis menambahkan `@DosenGO.id`).
-10. **Pengajuan Mata Kuliah**:
-    - Dosen dapat mengajukan permohonan untuk mengampu mata kuliah yang tersedia melalui halaman dashboard mereka.
-    - Admin menerima daftar pengajuan dan dapat melakukan *approve* atau *reject* secara langsung dari dashboard Admin.
-    - Setiap perubahan status pengajuan dikomunikasikan melalui **Toast Notification** global yang muncul secara otomatis.
-11. **Clean UI**: Semua instruksi di dalam file program bersifat bersih (telah di-*strip* dari semua komentar developer) sehingga *codebase* sangat *clean*.
+10. **Pengajuan Mata Kuliah & Kelas**:
+    - Dosen dapat mengajukan permohonan untuk mengampu mata kuliah yang tersedia.
+    - Setelah disetujui, dosen dapat memilih kelas fisik sesuai jadwal. Sistem otomatis memvalidasi kesesuaian Program Studi dan memastikan tidak ada jadwal yang bentrok.
+    - Admin meninjau dan memberikan keputusan (*approve/reject*) atas kelas tersebut.
+    - Setiap perubahan status pengajuan dikomunikasikan melalui **Toast Notification**.
+11. **Portal Kelas (Masuk Kelas)**:
+    - Kelas yang berhasil didapatkan akan muncul di bagian "Kelas Saya" milik Dosen. Dosen dapat menekan tombol "Masuk Kelas" untuk memasuki portal kelas.
+    - Portal dilengkapi *placeholder* fitur e-learning: Daftar Mahasiswa, Materi, Tugas, dan Pengumuman.
+12. **Clean UI**: Semua instruksi di dalam file program bersifat bersih (telah di-*strip* dari semua komentar developer) sehingga *codebase* sangat *clean*.
 
 ---
 

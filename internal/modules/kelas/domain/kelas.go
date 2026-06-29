@@ -60,6 +60,7 @@ type KelasRepository interface {
 type KelasService interface {
 	Create(ctx context.Context, req CreateKelasRequest) (*Kelas, error)
 	GetAll(ctx context.Context) ([]*Kelas, error)
+	GetByID(ctx context.Context, id string) (*Kelas, error)
 	Delete(ctx context.Context, id string) error
 
 	RequestKelas(ctx context.Context, dosenID string, req RequestKelasPayload) (*PengajuanKelas, error)
