@@ -8,6 +8,7 @@
 	import AdminPengajuanKelasCard from '$lib/components/dashboard/AdminPengajuanKelasCard.svelte';
 	import AdminDosenKelasListCard from '$lib/components/dashboard/AdminDosenKelasListCard.svelte';
 	import DosenPengajuanKelasCard from '$lib/components/dashboard/DosenPengajuanKelasCard.svelte';
+	import DosenKelasSayaCard from '$lib/components/dashboard/DosenKelasSayaCard.svelte';
 
 	let loading = $state(true);
 	let error = $state('');
@@ -53,6 +54,7 @@
 				<AdminDosenKelasListCard />
 			</div>
 		{:else if authState.profile.role === 'dosen'}
+			<DosenKelasSayaCard />
 			<DosenMataKuliahRequestCard />
 			<DosenPengajuanKelasCard />
 		{/if}
