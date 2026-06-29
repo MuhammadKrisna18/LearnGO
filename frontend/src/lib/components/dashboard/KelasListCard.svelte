@@ -17,6 +17,7 @@
 	let promptAction = $state<'delete' | 'request'>('delete');
 	
 	let myApprovedMataKuliah = $state<PengajuanMataKuliah[]>([]);
+	let myActiveKelasCount = $state(0);
 	let availableMataKuliahForKelas = $state<PengajuanMataKuliah[]>([]);
 	let selectedMataKuliahId = $state("");
 
@@ -87,9 +88,17 @@
 			}
 			
 			if (authState.role === 'dosen') {
-				const mkRes = await matakuliahService.getMyRequests();
+				const [mkRes, kelasReqRes] = await Promise.all([
+					matakuliahService.getMyRequests(),
+					kelasService.getMyPengajuan()
+				]);
+				
 				if (mkRes.success && mkRes.data) {
-					myApprovedMataKuliah = mkRes.data.filter(p => p.status === 'approved');
+					myApprovedMataKuliah = mkRes.data.filter((p: any) => p.status === 'approved');
+				}
+				
+				if (kelasReqRes.success && kelasReqRes.data) {
+					myActiveKelasCount = kelasReqRes.data.filter((p: any) => p.status === 'approved' || p.status === 'pending').length;
 				}
 			}
 		} catch (err: any) {
@@ -285,6 +294,10 @@
 												{:else if k.pengajuan && k.pengajuan.some(p => p.status === 'pending' && p.dosen_id === authState.profile?.id)}
 													<button class="btn-request disabled" disabled>
 														Requested
+													</button>
+												{:else if myActiveKelasCount >= myApprovedMataKuliah.length}
+													<button class="btn-request disabled" disabled title="Batas pengambilan kelas telah tercapai">
+														Limit Tercapai
 													</button>
 												{:else}
 													<button class="btn-request" onclick={() => promptRequest(k)}>

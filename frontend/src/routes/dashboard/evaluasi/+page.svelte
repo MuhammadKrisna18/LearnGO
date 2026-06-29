@@ -53,8 +53,10 @@
 			dosenNganggur = allDosen.filter((d: UserProfile) => !dosenWithApprovedMk.has(d.id));
 
 			// 3. Kelas Masih Kosong
-			// Secara struktural saat ini semua kelas tidak ada foreign key ke MK/Dosen
-			kelasKosong = allKelas;
+			kelasKosong = allKelas.filter((k: Kelas) => {
+				if (!k.pengajuan || k.pengajuan.length === 0) return true;
+				return !k.pengajuan.some(p => p.status === 'approved');
+			});
 
 		} catch (err: any) {
 			error = err.message || 'Terjadi kesalahan sistem';
@@ -144,9 +146,6 @@
 					<Badge type="info">{kelasKosong.length} Kelas</Badge>
 				</div>
 				<div class="eval-card-body">
-					<div class="alert-info">
-						<strong>Catatan:</strong> Saat ini sistem belum memiliki relasi kelas ke jadwal MK, sehingga semua kelas terdaftar di sini.
-					</div>
 					{#if kelasKosong.length === 0}
 						<div class="empty-list">Belum ada kelas yang dibuat.</div>
 					{:else}
