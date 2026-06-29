@@ -7,6 +7,8 @@
 	import type { MataKuliah, UserProfile, Kelas, Dosen } from '$lib/types';
 	import Card from '$lib/components/ui/Card.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import EmptyState from '$lib/components/ui/EmptyState.svelte';
+	import Skeleton from '$lib/components/ui/Skeleton.svelte';
 
 	let mkKosong: MataKuliah[] = $state([]);
 	let dosenNganggur: Dosen[] = $state([]);
@@ -70,10 +72,7 @@
 	</div>
 
 	{#if loading}
-		<Card class="state-container">
-			<div class="spinner"></div>
-			<p>Menganalisis data...</p>
-		</Card>
+		<Skeleton />
 	{:else if error}
 		<Card class="state-container state-error">{error}</Card>
 	{:else}
@@ -86,7 +85,7 @@
 				</div>
 				<div class="eval-card-body">
 					{#if mkKosong.length === 0}
-						<div class="empty-list">Semua mata kuliah sudah memiliki pengampu.</div>
+					<EmptyState message="Semua mata kuliah sudah memiliki pengampu." />
 					{:else}
 						<ul class="item-list">
 							{#each mkKosong as mk}
@@ -110,7 +109,7 @@
 				</div>
 				<div class="eval-card-body">
 					{#if dosenNganggur.length === 0}
-						<div class="empty-list">Semua dosen sudah memiliki mata kuliah.</div>
+					<EmptyState message="Semua dosen sudah memiliki mata kuliah." />
 					{:else}
 						<ul class="item-list">
 							{#each dosenNganggur as dosen}
@@ -142,7 +141,7 @@
 				</div>
 				<div class="eval-card-body">
 					{#if kelasKosong.length === 0}
-						<div class="empty-list">Belum ada kelas yang dibuat.</div>
+					<EmptyState message="Semua kelas sudah digunakan." />
 					{:else}
 						<ul class="item-list">
 							{#each kelasKosong as k}

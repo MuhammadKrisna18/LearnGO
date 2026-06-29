@@ -61,6 +61,19 @@
 		</nav>
 
 		<div class="sidebar-footer">
+			<div class="sidebar-user-info">
+				<div class="sidebar-user-avatar">
+					{#if authState.profile?.photo_url}
+						<img src={`http://localhost:8080${authState.profile.photo_url}`} alt="Avatar" class="sidebar-avatar-img" />
+					{:else}
+						{authState.profile?.name?.charAt(0).toUpperCase() || 'U'}
+					{/if}
+				</div>
+				<div class="sidebar-user-details">
+					<span class="sidebar-user-name">{authState.profile?.name || 'User'}</span>
+					<span class="sidebar-user-role">{authState.role?.toUpperCase() || 'USER'}</span>
+				</div>
+			</div>
 			<button class="btn-logout" onclick={handleLogout}>
 				<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
 				<span>Log out</span>
@@ -83,6 +96,10 @@
 						Evaluasi Akademik
 					{:else if $page.url.pathname.includes('/dashboard/matakuliah')}
 						Mata Kuliah
+					{:else if $page.url.pathname.includes('/dashboard/kelas')}
+						Kelas
+					{:else if $page.url.pathname.includes('/dashboard/profile')}
+						Profil
 					{/if}
 				</span>
 			</div>
@@ -203,7 +220,61 @@
 	}
 
 	.sidebar-footer {
-		padding: 24px;
+		padding: 16px;
+		border-top: 1px solid var(--surface-border);
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.sidebar-user-info {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 8px;
+	}
+
+	.sidebar-user-avatar {
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		background: #111827;
+		color: white;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: 600;
+		font-size: 0.85rem;
+		overflow: hidden;
+		flex-shrink: 0;
+	}
+
+	.sidebar-avatar-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.sidebar-user-details {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	.sidebar-user-name {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--text-main);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.sidebar-user-role {
+		font-size: 0.7rem;
+		font-weight: 500;
+		color: var(--text-muted);
+		letter-spacing: 0.05em;
 	}
 
 	.btn-logout {

@@ -4,6 +4,7 @@
 	import { authService } from '$lib/services/auth';
 	import ProfileCard from '$lib/components/dashboard/ProfileCard.svelte';
 	import DosenProfileCard from '$lib/components/dashboard/DosenProfileCard.svelte';
+	import Skeleton from '$lib/components/ui/Skeleton.svelte';
 
 	let loading = $state(true);
 	let error = $state('');
@@ -32,10 +33,7 @@
 
 <div class="page-grid">
 	{#if loading}
-		<div class="loading-state glass-panel animate-fade-in">
-			<div class="spinner"></div>
-			<p>Loading your profile...</p>
-		</div>
+		<Skeleton />
 	{:else if error}
 		<div class="error-message animate-fade-in">
 			{error}

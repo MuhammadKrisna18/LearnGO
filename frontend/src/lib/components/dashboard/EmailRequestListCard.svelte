@@ -3,6 +3,9 @@
 	import type { EmailChangeRequest } from '$lib/types';
 	import { onMount } from 'svelte';
 	import Card from '$lib/components/ui/Card.svelte';
+	import ConfirmModal from '$lib/components/ui/ConfirmModal.svelte';
+	import EmptyState from '$lib/components/ui/EmptyState.svelte';
+	import Skeleton from '$lib/components/ui/Skeleton.svelte';
 	import { toast } from '$lib/stores/toast.svelte';
 
 	let requests = $state<EmailChangeRequest[]>([]);
@@ -29,6 +32,26 @@
 	onMount(() => {
 		fetchRequests();
 	});
+
+	let confirmOpen = $state(false);
+	let confirmAction = $state<() => void>(() => {});
+	let confirmTitle = $state('');
+	let confirmMessage = $state('');
+	let confirmVariant = $state<'danger' | 'warning'>('danger');
+
+	function openConfirm(id: string, approve: boolean) {
+		if (approve) {
+			confirmTitle = 'Setujui Permintaan';
+			confirmMessage = 'Email pengguna ini akan langsung diganti. Lanjutkan?';
+			confirmVariant = 'warning';
+		} else {
+			confirmTitle = 'Tolak Permintaan';
+			confirmMessage = 'Permintaan ganti email ini akan ditolak. Lanjutkan?';
+			confirmVariant = 'danger';
+		}
+		confirmAction = () => handleReview(id, approve);
+		confirmOpen = true;
+	}
 
 	async function handleReview(id: string, approve: boolean) {
 		error = '';
@@ -64,14 +87,9 @@
 
 	<div class="data-table-container">
 		{#if loading && requests.length === 0}
-			<div class="state-container">
-				<div class="spinner"></div>
-				<p>Memuat daftar permintaan...</p>
-			</div>
+			<Skeleton />
 		{:else if requests.length === 0}
-			<div class="state-container">
-				<p>🎉 Tidak ada permintaan ganti email saat ini.</p>
-			</div>
+			<EmptyState message="Tidak ada permintaan ganti email saat ini." />
 		{:else}
 			<table class="data-table">
 				<thead>
@@ -91,10 +109,10 @@
 							<td class="text-muted">{req.user?.email || '-'}</td>
 							<td class="font-medium highlight">{req.new_email}</td>
 							<td class="actions-col">
-								<button class="btn-icon btn-approve" onclick={() => handleReview(req.id, true)} title="Setujui">
+								<button class="btn-icon btn-approve" onclick={() => openConfirm(req.id, true)} title="Setujui">
 									✅
 								</button>
-								<button class="btn-icon btn-reject" onclick={() => handleReview(req.id, false)} title="Tolak">
+								<button class="btn-icon btn-reject" onclick={() => openConfirm(req.id, false)} title="Tolak">
 									❌
 								</button>
 							</td>
@@ -105,6 +123,15 @@
 		{/if}
 	</div>
 </Card>
+
+<ConfirmModal
+	bind:isOpen={confirmOpen}
+	title={confirmTitle}
+	message={confirmMessage}
+	variant={confirmVariant}
+	confirmText="Ya, Lanjutkan"
+	onConfirm={confirmAction}
+/>
 
 <style>
 	.card-header {
@@ -173,17 +200,4 @@
 		transform: translateY(-2px);
 	}
 
-	.spinner {
-		width: 24px;
-		height: 24px;
-		border: 3px solid rgba(0,0,0,0.1);
-		border-top-color: var(--primary-color);
-		border-radius: 50%;
-		animation: spin 1s linear infinite;
-		margin: 0 auto 16px;
-	}
-
-	@keyframes spin {
-		to { transform: rotate(360deg); }
-	}
 </style>
