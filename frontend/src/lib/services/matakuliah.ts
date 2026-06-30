@@ -8,6 +8,12 @@ export const matakuliahService = {
 		});
 	},
 
+	async getMahasiswaMataKuliah(): Promise<ApiResponse<MataKuliah[]>> {
+		return await fetchApi<ApiResponse<MataKuliah[]>>('/matakuliah/mahasiswa', {
+			method: 'GET'
+		});
+	},
+
 	async create(name: string, sks: number, program_studi_id: string): Promise<ApiResponse<MataKuliah>> {
 		return await fetchApi<ApiResponse<MataKuliah>>('/matakuliah', {
 			method: 'POST',

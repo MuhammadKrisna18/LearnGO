@@ -76,6 +76,22 @@ func (s *matakuliahService) GetMataKuliahList(ctx context.Context) ([]*domain.Ma
 	return mkList, nil
 }
 
+func (s *matakuliahService) GetMataKuliahForMahasiswa(ctx context.Context, userID string) ([]*domain.MataKuliah, error) {
+	prodiID, err := s.repo.GetUserProdiID(ctx, userID)
+	if err != nil {
+		return nil, apperrors.NewInternal("Gagal mengambil data prodi mahasiswa", err.Error())
+	}
+	if prodiID == nil || *prodiID == "" {
+		return nil, apperrors.NewBadRequest("Mahasiswa belum memiliki Program Studi")
+	}
+
+	mkList, err := s.repo.GetByProdi(ctx, *prodiID)
+	if err != nil {
+		return nil, apperrors.NewInternal("Gagal mengambil daftar mata kuliah", err.Error())
+	}
+	return mkList, nil
+}
+
 func (s *matakuliahService) DeleteMataKuliah(ctx context.Context, id string) error {
 
 	activeReqs, err := s.repo.GetActivePengajuanByMataKuliahID(ctx, id)

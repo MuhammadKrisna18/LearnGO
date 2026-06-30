@@ -36,6 +36,8 @@ type MataKuliahRepository interface {
 	Create(ctx context.Context, mk *MataKuliah) error
 	GetByNameAndProdi(ctx context.Context, name string, prodiID string) (*MataKuliah, error)
 	GetAll(ctx context.Context) ([]*MataKuliah, error)
+	GetByProdi(ctx context.Context, prodiID string) ([]*MataKuliah, error)
+	GetUserProdiID(ctx context.Context, userID string) (*string, error)
 	Delete(ctx context.Context, id string) error
 
 	CreatePengajuan(ctx context.Context, p *PengajuanMataKuliah) error
@@ -51,6 +53,7 @@ type MataKuliahRepository interface {
 type MataKuliahService interface {
 	CreateMataKuliah(ctx context.Context, req CreateMataKuliahRequest) (*MataKuliah, error)
 	GetMataKuliahList(ctx context.Context) ([]*MataKuliah, error)
+	GetMataKuliahForMahasiswa(ctx context.Context, userID string) ([]*MataKuliah, error)
 	DeleteMataKuliah(ctx context.Context, id string) error
 	LepasMataKuliah(ctx context.Context, mkID string) error
 

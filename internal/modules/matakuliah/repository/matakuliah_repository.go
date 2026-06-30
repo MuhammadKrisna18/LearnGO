@@ -40,6 +40,21 @@ func (r *pgMataKuliahRepository) GetAll(ctx context.Context) ([]*domain.MataKuli
 	return mkList, nil
 }
 
+func (r *pgMataKuliahRepository) GetByProdi(ctx context.Context, prodiID string) ([]*domain.MataKuliah, error) {
+	var mkList []*domain.MataKuliah
+	err := r.db.WithContext(ctx).Preload("ProgramStudi").Preload("Pengajuan").Preload("Pengajuan.Dosen").Where("program_studi_id = ?", prodiID).Order("created_at desc").Find(&mkList).Error
+	if err != nil {
+		return nil, err
+	}
+	return mkList, nil
+}
+
+func (r *pgMataKuliahRepository) GetUserProdiID(ctx context.Context, userID string) (*string, error) {
+	var prodiID *string
+	err := r.db.WithContext(ctx).Table("users").Select("program_studi_id").Where("id = ?", userID).Scan(&prodiID).Error
+	return prodiID, err
+}
+
 func (r *pgMataKuliahRepository) Delete(ctx context.Context, id string) error {
 	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&domain.MataKuliah{}).Error
 }

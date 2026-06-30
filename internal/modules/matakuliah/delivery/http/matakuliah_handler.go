@@ -24,6 +24,7 @@ func (h *MataKuliahHandler) RegisterRoutes(router fiber.Router, jwtSecret string
 	mkGroup.Use(middleware.Protected(jwtSecret))
 
 	mkGroup.Get("/", h.GetMataKuliahList)
+	mkGroup.Get("/mahasiswa", middleware.RequireRole("mahasiswa"), h.GetMataKuliahForMahasiswa)
 	mkGroup.Post("/", middleware.RequireRole("admin"), h.CreateMataKuliah)
 	mkGroup.Delete("/:id", middleware.RequireRole("admin"), h.DeleteMataKuliah)
 	mkGroup.Post("/:id/lepas", middleware.RequireRole("admin"), h.LepasMataKuliah)
@@ -58,6 +59,20 @@ func (h *MataKuliahHandler) CreateMataKuliah(c *fiber.Ctx) error {
 
 func (h *MataKuliahHandler) GetMataKuliahList(c *fiber.Ctx) error {
 	mkList, err := h.service.GetMataKuliahList(c.Context())
+	if err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusOK, "Berhasil mengambil daftar mata kuliah", mkList)
+}
+
+func (h *MataKuliahHandler) GetMataKuliahForMahasiswa(c *fiber.Ctx) error {
+	userID, ok := c.Locals("userID").(string)
+	if !ok || userID == "" {
+		return response.Error(c, fiber.StatusUnauthorized, "User ID tidak ditemukan", nil)
+	}
+
+	mkList, err := h.service.GetMataKuliahForMahasiswa(c.Context(), userID)
 	if err != nil {
 		return err
 	}
