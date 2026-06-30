@@ -172,3 +172,163 @@ func (h *KelasHandler) GetMyJadwal(c *fiber.Ctx) error {
 
 	return response.Success(c, fiber.StatusOK, "Berhasil mengambil jadwal kelas", list)
 }
+
+func (h *KelasHandler) MulaiPertemuan(c *fiber.Ctx) error {
+	var payload struct {
+		PengajuanID string `json:"pengajuan_id" validate:"required"`
+		Judul       string `json:"judul" validate:"required"`
+	}
+	if err := c.BodyParser(&payload); err != nil {
+		return apperrors.NewBadRequest("Format request tidak valid")
+	}
+
+	p, err := h.service.MulaiPertemuan(c.Context(), payload.PengajuanID, payload.Judul)
+	if err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusCreated, "Berhasil memulai pertemuan", p)
+}
+
+func (h *KelasHandler) AkhiriPertemuan(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return apperrors.NewBadRequest("ID Pertemuan diperlukan")
+	}
+	if err := h.service.AkhiriPertemuan(c.Context(), id); err != nil {
+		return err
+	}
+	return response.Success(c, fiber.StatusOK, "Berhasil mengakhiri pertemuan", nil)
+}
+
+func (h *KelasHandler) GetPertemuanByPengajuan(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return apperrors.NewBadRequest("ID Pengajuan diperlukan")
+	}
+	list, err := h.service.GetPertemuanByPengajuan(c.Context(), id)
+	if err != nil {
+		return err
+	}
+	return response.Success(c, fiber.StatusOK, "Berhasil mengambil daftar pertemuan", list)
+}
+
+func (h *KelasHandler) GetAbsensi(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return apperrors.NewBadRequest("ID Pertemuan diperlukan")
+	}
+	list, err := h.service.GetAbsensi(c.Context(), id)
+	if err != nil {
+		return err
+	}
+	return response.Success(c, fiber.StatusOK, "Berhasil mengambil absensi", list)
+}
+
+func (h *KelasHandler) SubmitAbsensi(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return apperrors.NewBadRequest("ID Pertemuan diperlukan")
+	}
+
+	var req domain.BulkAbsensiRequest
+	if err := c.BodyParser(&req); err != nil {
+		return apperrors.NewBadRequest("Format request tidak valid")
+	}
+
+	if err := h.service.SubmitAbsensi(c.Context(), id, req); err != nil {
+		return err
+	}
+	return response.Success(c, fiber.StatusOK, "Berhasil mengupdate absensi", nil)
+}
+
+func (h *KelasHandler) SubmitAbsensiMahasiswa(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return apperrors.NewBadRequest("ID Pertemuan diperlukan")
+	}
+
+	mahasiswaID, ok := c.Locals("userID").(string)
+	if !ok {
+		return apperrors.NewUnauthorized("Unauthorized")
+	}
+
+	var payload struct {
+		Kode string `json:"kode" validate:"required"`
+	}
+	if err := c.BodyParser(&payload); err != nil {
+		return apperrors.NewBadRequest("Format request tidak valid")
+	}
+
+	if err := h.service.SubmitAbsensiMahasiswa(c.Context(), id, mahasiswaID, payload.Kode); err != nil {
+		return err
+	}
+	return response.Success(c, fiber.StatusOK, "Kehadiran Berhasil Dicatat", nil)
+}
+
+func (h *KelasHandler) GetRekapKehadiran(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return apperrors.NewBadRequest("ID Pengajuan diperlukan")
+	}
+
+	dosenID, ok := c.Locals("userID").(string)
+	if !ok {
+		return apperrors.NewUnauthorized("Unauthorized")
+	}
+
+	rekap, err := h.service.GetRekapKehadiran(c.Context(), id, dosenID)
+	if err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusOK, "Berhasil mengambil rekap kehadiran", rekap)
+}
+
+func (h *KelasHandler) GetRekapKehadiranAdmin(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return apperrors.NewBadRequest("ID Pengajuan diperlukan")
+	}
+
+	// For admin, we don't pass the dosenID, which bypasses the access check
+	rekap, err := h.service.GetRekapKehadiran(c.Context(), id, "")
+	if err != nil {
+		return err
+	}
+
+	// We also calculate total kehadiran for Admin
+	type AdminRekapResponse struct {
+		*domain.RekapKehadiranResponse
+		TotalPertemuan int `json:"total_pertemuan"`
+		Summary        []map[string]interface{} `json:"summary"`
+	}
+
+	totalPertemuan := len(rekap.Pertemuan)
+	var summary []map[string]interface{}
+
+	for _, m := range rekap.Mahasiswa {
+		hadirCount := 0
+		for _, status := range m.Kehadiran {
+			if status == domain.AbsensiHadir {
+				hadirCount++
+			}
+		}
+		
+		summary = append(summary, map[string]interface{}{
+			"id": m.ID,
+			"nrp": m.NRP,
+			"name": m.Name,
+			"total_hadir": hadirCount,
+			"total_pertemuan": totalPertemuan,
+		})
+	}
+
+	res := AdminRekapResponse{
+		RekapKehadiranResponse: rekap,
+		TotalPertemuan: totalPertemuan,
+		Summary: summary,
+	}
+
+	return response.Success(c, fiber.StatusOK, "Berhasil mengambil rekap kehadiran", res)
+}

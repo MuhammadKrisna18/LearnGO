@@ -164,3 +164,53 @@ func (r *pgKelasRepository) GetUserByID(ctx context.Context, userID string) (*au
 	err := r.db.WithContext(ctx).Table("users").Where("id = ?", userID).First(&user).Error
 	return &user, err
 }
+
+func (r *pgKelasRepository) CreatePertemuan(ctx context.Context, p *domain.Pertemuan) error {
+	return r.db.WithContext(ctx).Create(p).Error
+}
+
+func (r *pgKelasRepository) GetPertemuanByID(ctx context.Context, id string) (*domain.Pertemuan, error) {
+	var p domain.Pertemuan
+	err := r.db.WithContext(ctx).Preload("Pengajuan").Where("id = ?", id).First(&p).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("pertemuan not found")
+		}
+		return nil, err
+	}
+	return &p, nil
+}
+
+func (r *pgKelasRepository) GetPertemuanByPengajuanID(ctx context.Context, pengajuanID string) ([]*domain.Pertemuan, error) {
+	var list []*domain.Pertemuan
+	err := r.db.WithContext(ctx).Where("pengajuan_id = ?", pengajuanID).Order("created_at asc").Find(&list).Error
+	return list, err
+}
+
+func (r *pgKelasRepository) UpdatePertemuan(ctx context.Context, p *domain.Pertemuan) error {
+	return r.db.WithContext(ctx).Save(p).Error
+}
+
+func (r *pgKelasRepository) CreateAbsensi(ctx context.Context, a *domain.Absensi) error {
+	return r.db.WithContext(ctx).Create(a).Error
+}
+
+func (r *pgKelasRepository) GetAbsensiByPertemuanID(ctx context.Context, pertemuanID string) ([]*domain.Absensi, error) {
+	var list []*domain.Absensi
+	err := r.db.WithContext(ctx).Preload("Mahasiswa").Where("pertemuan_id = ?", pertemuanID).Find(&list).Error
+	return list, err
+}
+
+func (r *pgKelasRepository) UpdateAbsensiBulk(ctx context.Context, pertemuanID string, data []domain.AbsensiUpdate) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		for _, update := range data {
+			err := tx.Model(&domain.Absensi{}).
+				Where("pertemuan_id = ? AND mahasiswa_id = ?", pertemuanID, update.MahasiswaID).
+				Update("status_kehadiran", update.StatusKehadiran).Error
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}

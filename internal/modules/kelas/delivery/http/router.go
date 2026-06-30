@@ -24,4 +24,15 @@ func RegisterRoutes(router fiber.Router, handler *KelasHandler, jwtSecret string
 	kelas.Post("/", middleware.RequireRole("admin"), handler.Create)
 	kelas.Delete("/:id", middleware.RequireRole("admin"), handler.Delete)
 	kelas.Get("/:id", handler.GetByID)
+
+	pertemuan := router.Group("/pertemuan")
+	pertemuan.Use(middleware.Protected(jwtSecret))
+	pertemuan.Post("/", middleware.RequireRole("dosen"), handler.MulaiPertemuan)
+	pertemuan.Put("/:id/end", middleware.RequireRole("dosen"), handler.AkhiriPertemuan)
+	pertemuan.Get("/pengajuan/:id", handler.GetPertemuanByPengajuan)
+	pertemuan.Get("/:id/absensi", handler.GetAbsensi)
+	pertemuan.Put("/:id/absensi", middleware.RequireRole("dosen"), handler.SubmitAbsensi)
+	pertemuan.Post("/:id/attend", middleware.RequireRole("mahasiswa"), handler.SubmitAbsensiMahasiswa)
+	pertemuan.Get("/rekap/:id", middleware.RequireRole("dosen"), handler.GetRekapKehadiran)
+	pertemuan.Get("/admin/rekap/:id", middleware.RequireRole("admin"), handler.GetRekapKehadiranAdmin)
 }

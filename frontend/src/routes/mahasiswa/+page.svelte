@@ -88,10 +88,11 @@
 						<p style="margin: 4px 0; font-size: 0.9rem; color: #475569;">
 							<strong>{jdwl.mata_kuliah?.name}</strong>
 						</p>
-						<div style="display: flex; gap: 12px; font-size: 0.85rem; color: #64748b; margin-top: 12px;">
+						<div style="display: flex; gap: 12px; font-size: 0.85rem; color: #64748b; margin-top: 12px; margin-bottom: 16px;">
 							<span>📅 {jdwl.kelas?.hari}</span>
 							<span>🕐 {jdwl.kelas?.jam_mulai} - {jdwl.kelas?.jam_selesai}</span>
 						</div>
+						<a href={`/mahasiswa/kelas/${jdwl.id}`} class="btn btn-primary" style="width: 100%; display: block; text-align: center; text-decoration: none;">Masuk Kelas</a>
 					</div>
 				</div>
 			{/each}

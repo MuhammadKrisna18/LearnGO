@@ -59,6 +59,15 @@ type KelasRepository interface {
 	GetMahasiswaByProgramStudiID(ctx context.Context, prodiID string) ([]*authDomain.User, error)
 	GetApprovedPengajuanByProdiID(ctx context.Context, prodiID string) ([]*PengajuanKelas, error)
 	GetUserByID(ctx context.Context, userID string) (*authDomain.User, error)
+
+	CreatePertemuan(ctx context.Context, p *Pertemuan) error
+	GetPertemuanByID(ctx context.Context, id string) (*Pertemuan, error)
+	GetPertemuanByPengajuanID(ctx context.Context, pengajuanID string) ([]*Pertemuan, error)
+	UpdatePertemuan(ctx context.Context, p *Pertemuan) error
+
+	CreateAbsensi(ctx context.Context, a *Absensi) error
+	GetAbsensiByPertemuanID(ctx context.Context, pertemuanID string) ([]*Absensi, error)
+	UpdateAbsensiBulk(ctx context.Context, pertemuanID string, data []AbsensiUpdate) error
 }
 
 type KelasService interface {
@@ -74,6 +83,14 @@ type KelasService interface {
 	GetAllPengajuan(ctx context.Context) ([]*PengajuanKelas, error)
 	GetMahasiswaInKelas(ctx context.Context, pengajuanID string, dosenID string) ([]*authDomain.User, error)
 	GetMyJadwal(ctx context.Context, userID string) ([]*PengajuanKelas, error)
+
+	MulaiPertemuan(ctx context.Context, pengajuanID string, judul string) (*Pertemuan, error)
+	AkhiriPertemuan(ctx context.Context, pertemuanID string) error
+	GetPertemuanByPengajuan(ctx context.Context, pengajuanID string) ([]*Pertemuan, error)
+	GetAbsensi(ctx context.Context, pertemuanID string) ([]*Absensi, error)
+	SubmitAbsensi(ctx context.Context, pertemuanID string, data BulkAbsensiRequest) error
+	SubmitAbsensiMahasiswa(ctx context.Context, pertemuanID string, mahasiswaID string, kode string) error
+	GetRekapKehadiran(ctx context.Context, pengajuanID string, dosenID string) (*RekapKehadiranResponse, error)
 }
 
 type PengajuanKelas struct {
@@ -93,4 +110,69 @@ type PengajuanKelas struct {
 type RequestKelasPayload struct {
 	KelasID      string `json:"kelas_id" validate:"required"`
 	MataKuliahID string `json:"mata_kuliah_id" validate:"required"`
+}
+
+const (
+	PertemuanStatusBerlangsung = "berlangsung"
+	PertemuanStatusSelesai     = "selesai"
+)
+
+type Pertemuan struct {
+	ID          string          `json:"id" gorm:"primaryKey;type:varchar(255)"`
+	PengajuanID string          `json:"pengajuan_id" gorm:"type:varchar(255);not null"`
+	Pengajuan   *PengajuanKelas `json:"pengajuan,omitempty" gorm:"foreignKey:PengajuanID"`
+	Judul       string          `json:"judul" gorm:"type:varchar(255);not null"`
+	Tanggal     time.Time       `json:"tanggal" gorm:"not null"`
+	WaktuMulai  time.Time       `json:"waktu_mulai" gorm:"not null"`
+	WaktuSelesai *time.Time     `json:"waktu_selesai"`
+	Status      string          `json:"status" gorm:"type:varchar(50);not null;default:'berlangsung'"`
+	KodeAbsensi string          `json:"kode_absensi" gorm:"type:varchar(10)"`
+	Absensi     []*Absensi      `json:"absensi,omitempty" gorm:"foreignKey:PertemuanID"`
+	CreatedAt   time.Time       `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt   time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
+}
+
+const (
+	AbsensiHadir = "hadir"
+	AbsensiIzin  = "izin"
+	AbsensiSakit = "sakit"
+	AbsensiAlpa  = "alpa"
+)
+
+type Absensi struct {
+	ID              string           `json:"id" gorm:"primaryKey;type:varchar(255)"`
+	PertemuanID     string           `json:"pertemuan_id" gorm:"type:varchar(255);not null"`
+	Pertemuan       *Pertemuan       `json:"pertemuan,omitempty" gorm:"foreignKey:PertemuanID"`
+	MahasiswaID     string           `json:"mahasiswa_id" gorm:"type:varchar(255);not null"`
+	Mahasiswa       *authDomain.User `json:"mahasiswa,omitempty" gorm:"foreignKey:MahasiswaID"`
+	StatusKehadiran string           `json:"status_kehadiran" gorm:"type:varchar(20);not null;default:'alpa'"`
+	CreatedAt       time.Time        `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt       time.Time        `json:"updated_at" gorm:"autoUpdateTime"`
+}
+
+type BulkAbsensiRequest struct {
+	Data []AbsensiUpdate `json:"data" validate:"required,min=1"`
+}
+
+type AbsensiUpdate struct {
+	MahasiswaID     string `json:"mahasiswa_id" validate:"required"`
+	StatusKehadiran string `json:"status_kehadiran" validate:"required,oneof=hadir izin sakit alpa"`
+}
+
+type RekapKehadiranResponse struct {
+	Pertemuan []PertemuanInfo    `json:"pertemuan"`
+	Mahasiswa []MahasiswaRekap   `json:"mahasiswa"`
+}
+
+type PertemuanInfo struct {
+	ID      string    `json:"id"`
+	Judul   string    `json:"judul"`
+	Tanggal time.Time `json:"tanggal"`
+}
+
+type MahasiswaRekap struct {
+	ID        string            `json:"id"`
+	NRP       string            `json:"nrp"`
+	Name      string            `json:"name"`
+	Kehadiran map[string]string `json:"kehadiran"`
 }

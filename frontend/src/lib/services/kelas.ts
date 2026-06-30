@@ -68,5 +68,53 @@ export const kelasService = {
 		return await fetchApi<ApiResponse<PengajuanKelas[]>>('/kelas/mahasiswa/my-jadwal', {
 			method: 'GET'
 		});
+	},
+
+	async getPertemuan(pengajuanId: string): Promise<ApiResponse<any[]>> {
+		return await fetchApi<ApiResponse<any[]>>(`/pertemuan/pengajuan/${pengajuanId}`, {
+			method: 'GET'
+		});
+	},
+
+	async mulaiPertemuan(pengajuanId: string, judul: string): Promise<ApiResponse<any>> {
+		return await fetchApi<ApiResponse<any>>('/pertemuan', {
+			method: 'POST',
+			body: JSON.stringify({ pengajuan_id: pengajuanId, judul })
+		});
+	},
+
+	async akhiriPertemuan(pertemuanId: string): Promise<ApiResponse<null>> {
+		return await fetchApi<ApiResponse<null>>(`/pertemuan/${pertemuanId}/end`, {
+			method: 'PUT'
+		});
+	},
+
+	async getAbsensi(pertemuanId: string): Promise<ApiResponse<any[]>> {
+		return await fetchApi<ApiResponse<any[]>>(`/pertemuan/${pertemuanId}/absensi`, {
+			method: 'GET'
+		});
+	},
+
+	async submitAbsensi(pertemuanId: string, data: any[]): Promise<ApiResponse<null>> {
+		return await fetchApi<ApiResponse<null>>(`/pertemuan/${pertemuanId}/absensi`, {
+			method: 'PUT',
+			body: JSON.stringify({ data })
+		});
+	},
+
+	async getRekapKehadiran(pengajuanId: string): Promise<ApiResponse<any>> {
+		let endpoint = `/pertemuan/rekap/${pengajuanId}`;
+		// Use localStorage or a store to check role, wait, authState can't be imported easily in non-component context due to state?
+		// Actually, authState is a module-level state in $lib/stores/auth.svelte
+		// Let's import authState at the top of the file
+		
+		const role = localStorage.getItem('role');
+		if (role === 'admin') {
+			endpoint = `/pertemuan/admin/rekap/${pengajuanId}`;
+		}
+		
+		return await fetchApi<ApiResponse<any>>(endpoint, {
+			method: 'GET'
+		});
 	}
 };

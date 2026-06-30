@@ -11,8 +11,29 @@
 	let pengajuan = $state<PengajuanKelas | null>(null);
 	let loading = $state(true);
 	let error = $state('');
+	
+	import { authState } from '$lib/stores/auth.svelte';
 
-	let activeTab = $state<'mahasiswa' | 'materi' | 'tugas' | 'pengumuman'>('mahasiswa');
+	let activeTab = $state<'pertemuan' | 'mahasiswa' | 'materi' | 'tugas' | 'pengumuman' | 'rekap'>('pertemuan');
+
+	let rekapData = $state<any>(null);
+	let loadingRekap = $state(false);
+	let errorRekap = $state('');
+
+	async function loadRekap(pengajuanId: string) {
+		loadingRekap = true;
+		errorRekap = '';
+		try {
+			const res = await kelasService.getRekapKehadiran(pengajuanId);
+			if (res.success && res.data) {
+				rekapData = res.data;
+			}
+		} catch (err: any) {
+			errorRekap = err.message || 'Gagal memuat rekap kehadiran';
+		} finally {
+			loadingRekap = false;
+		}
+	}
 	
 	let mahasiswaList = $state<any[]>([]);
 	let loadingMahasiswa = $state(false);
@@ -33,6 +54,90 @@
 		}
 	}
 
+	let pertemuanList = $state<any[]>([]);
+	let loadingPertemuan = $state(false);
+	
+	let absensiList = $state<any[]>([]);
+	let loadingAbsensi = $state(false);
+	let selectedPertemuan = $state<any>(null);
+
+	async function loadPertemuan(pengajuanId: string) {
+		loadingPertemuan = true;
+		try {
+			const res = await kelasService.getPertemuan(pengajuanId);
+			if (res.success && res.data) {
+				pertemuanList = res.data;
+			}
+		} catch (err) {
+			console.error('Failed to load pertemuan:', err);
+		} finally {
+			loadingPertemuan = false;
+		}
+	}
+
+	async function mulaiPertemuan() {
+		if (!pengajuan) {
+			alert("Data pengajuan belum tersedia. Silakan muat ulang halaman.");
+			return;
+		}
+		const judul = prompt("Masukkan Topik/Judul Pertemuan:");
+		if (!judul) return;
+		try {
+			await kelasService.mulaiPertemuan(pengajuan.id, judul);
+			loadPertemuan(pengajuan.id);
+		} catch (err: any) {
+			alert('Gagal memulai pertemuan: ' + (err.message || 'Error tidak diketahui'));
+		}
+	}
+
+	async function akhiriPertemuan(id: string) {
+		if (!confirm('Akhiri pertemuan ini? Absensi akan dikunci.')) return;
+		try {
+			await kelasService.akhiriPertemuan(id);
+			if (pengajuan) loadPertemuan(pengajuan.id);
+			selectedPertemuan = null;
+		} catch (err) {
+			alert('Gagal mengakhiri pertemuan');
+		}
+	}
+
+	async function openAbsensi(pertemuan: any) {
+		selectedPertemuan = pertemuan;
+		loadingAbsensi = true;
+		try {
+			const res = await kelasService.getAbsensi(pertemuan.id);
+			if (res.success && res.data && res.data.length > 0) {
+				absensiList = res.data;
+			} else {
+				// Initialize based on mahasiswaList
+				absensiList = mahasiswaList.map(m => ({
+					mahasiswa_id: m.id,
+					mahasiswa: m,
+					status_kehadiran: 'alpa' // Default
+				}));
+			}
+		} catch (err) {
+			console.error('Failed to load absensi:', err);
+		} finally {
+			loadingAbsensi = false;
+		}
+	}
+
+	async function submitAbsensi() {
+		if (!selectedPertemuan) return;
+		try {
+			const payload = absensiList.map(a => ({
+				mahasiswa_id: a.mahasiswa_id,
+				status_kehadiran: a.status_kehadiran
+			}));
+			await kelasService.submitAbsensi(selectedPertemuan.id, payload);
+			alert('Absensi berhasil disimpan!');
+			openAbsensi(selectedPertemuan); // Reload to get real IDs
+		} catch (err) {
+			alert('Gagal menyimpan absensi');
+		}
+	}
+
 	async function loadKelas() {
 		loading = true;
 		error = '';
@@ -45,7 +150,14 @@
 					const approved = kelasInfo.pengajuan.find(p => p.status === 'approved');
 					if (approved) {
 						pengajuan = approved;
-						loadMahasiswa(approved.id);
+						if (authState.role === 'admin') {
+							activeTab = 'rekap';
+							loadRekap(approved.id);
+						} else {
+							loadPertemuan(approved.id);
+							loadMahasiswa(approved.id);
+							loadRekap(approved.id);
+						}
 					}
 				}
 			} else {
@@ -108,10 +220,20 @@
 			<div class="banner-decoration"></div>
 		</div>
 
+		<!-- Navigation Tabs -->
 		<div class="tabs-container">
+			{#if authState.role === 'dosen'}
+			<button class="tab-btn" class:active={activeTab === 'pertemuan'} onclick={() => activeTab = 'pertemuan'}>
+				Pertemuan
+			</button>
 			<button class="tab-btn" class:active={activeTab === 'mahasiswa'} onclick={() => activeTab = 'mahasiswa'}>
 				Daftar Mahasiswa
 			</button>
+			{/if}
+			<button class="tab-btn" class:active={activeTab === 'rekap'} onclick={() => activeTab = 'rekap'}>
+				Rekap Kehadiran
+			</button>
+			{#if authState.role === 'dosen'}
 			<button class="tab-btn" class:active={activeTab === 'materi'} onclick={() => activeTab = 'materi'}>
 				Materi
 			</button>
@@ -121,11 +243,112 @@
 			<button class="tab-btn" class:active={activeTab === 'pengumuman'} onclick={() => activeTab = 'pengumuman'}>
 				Pengumuman
 			</button>
+			{/if}
 		</div>
 
 		<div class="content-area">
 			<Card style="padding: 24px;">
-				{#if activeTab === 'mahasiswa'}
+				{#if activeTab === 'pertemuan'}
+					<div class="placeholder-section">
+						<div class="section-header">
+							<h3>Sesi Pertemuan</h3>
+							<button class="btn-primary-sm" onclick={mulaiPertemuan}>Mulai Pertemuan Baru</button>
+						</div>
+						
+						{#if loadingPertemuan}
+							<div class="state-container">
+								<div class="spinner"></div>
+								<p>Memuat daftar pertemuan...</p>
+							</div>
+						{:else if pertemuanList.length === 0}
+							<div class="empty-state">
+								<div class="empty-icon">📅</div>
+								<p>Belum ada sesi pertemuan yang dimulai.</p>
+							</div>
+						{:else}
+							<div class="pertemuan-list">
+								{#each pertemuanList as p, i}
+									<div class="pertemuan-card">
+										<div class="pertemuan-info">
+											<h4>{p.judul || `Pertemuan ${i + 1}`}</h4>
+											<div class="pertemuan-meta">
+												<span>{new Date(p.tanggal).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+												<span>{new Date(p.waktu_mulai).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} - {p.waktu_selesai ? new Date(p.waktu_selesai).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : 'Berlangsung'}</span>
+											</div>
+											{#if p.status === 'berlangsung'}
+												<div style="margin-top: 12px;">
+													<span style="font-size: 0.9rem; color: var(--text-muted);">Kode Absensi:</span>
+													<strong style="font-size: 1.5rem; font-family: monospace; background: #f1f5f9; padding: 4px 12px; border-radius: 4px; color: var(--primary-color); letter-spacing: 2px;">{p.kode_absensi}</strong>
+												</div>
+											{/if}
+										</div>
+										<div class="pertemuan-actions">
+											<Badge type={p.status === 'berlangsung' ? 'success' : 'neutral'}>
+												{p.status === 'berlangsung' ? 'Sedang Berlangsung' : 'Selesai'}
+											</Badge>
+											<button class="btn-secondary-sm" onclick={() => openAbsensi(p)}>Lihat Absensi</button>
+											{#if p.status === 'berlangsung'}
+												<button class="btn-danger-sm" onclick={() => akhiriPertemuan(p.id)}>Akhiri Kelas</button>
+											{/if}
+										</div>
+									</div>
+								{/each}
+							</div>
+						{/if}
+
+						<!-- Absensi Section (Inline Modal) -->
+						{#if selectedPertemuan}
+							<div class="modal-backdrop">
+								<div class="modal-content absensi-modal">
+									<div class="modal-header">
+										<h3>Absensi - {selectedPertemuan.judul}</h3>
+										<button class="close-btn" onclick={() => selectedPertemuan = null}>✕</button>
+									</div>
+									<div class="modal-body">
+										{#if loadingAbsensi}
+											<div class="state-container">
+												<div class="spinner"></div>
+												<p>Memuat data absensi...</p>
+											</div>
+										{:else}
+											<table class="data-table">
+												<thead>
+													<tr>
+														<th>NRP</th>
+														<th>Nama</th>
+														<th>Status Kehadiran</th>
+													</tr>
+												</thead>
+												<tbody>
+													{#each absensiList as a}
+														<tr>
+															<td style="font-family: monospace;">{a.mahasiswa?.nrp}</td>
+															<td><strong>{a.mahasiswa?.name}</strong></td>
+															<td>
+																{#if a.status_kehadiran === 'hadir'}
+																	<Badge type="success">Hadir</Badge>
+																{:else if a.status_kehadiran === 'izin'}
+																	<Badge type="warning">Izin</Badge>
+																{:else if a.status_kehadiran === 'sakit'}
+																	<Badge type="info">Sakit</Badge>
+																{:else}
+																	<Badge type="danger">Alpa</Badge>
+																{/if}
+															</td>
+														</tr>
+													{/each}
+												</tbody>
+											</table>
+										{/if}
+									</div>
+									<div class="modal-footer">
+										<button class="btn-secondary" onclick={() => selectedPertemuan = null}>Tutup</button>
+									</div>
+								</div>
+							</div>
+						{/if}
+					</div>
+				{:else if activeTab === 'mahasiswa'}
 					<div class="placeholder-section">
 						<div class="section-header">
 							<h3>Daftar Mahasiswa</h3>
@@ -167,6 +390,89 @@
 												<td>{mhs.email}</td>
 											</tr>
 										{/each}
+									</tbody>
+								</table>
+							</div>
+						{/if}
+					</div>
+				{:else if activeTab === 'rekap'}
+					<div class="placeholder-section">
+						<div class="section-header">
+							<h3>Rekap Kehadiran (16 Pertemuan)</h3>
+							<button class="btn-primary-sm" onclick={() => pengajuan && loadRekap(pengajuan.id)}>Refresh</button>
+						</div>
+						
+						{#if loadingRekap}
+							<div class="state-container">
+								<div class="spinner"></div>
+								<p>Memuat rekap kehadiran...</p>
+							</div>
+						{:else if errorRekap}
+							<div class="state-container state-error">
+								<p>{errorRekap}</p>
+								<button class="btn-primary-sm" onclick={() => pengajuan && loadRekap(pengajuan.id)}>Coba Lagi</button>
+							</div>
+						{:else if !rekapData || !rekapData.mahasiswa || rekapData.mahasiswa.length === 0}
+							<div class="empty-state">
+								<div class="empty-icon">📊</div>
+								<p>Belum ada data rekap kehadiran.</p>
+							</div>
+						{:else}
+							<div class="table-container rekap-container">
+								<table class="data-table rekap-table">
+									<thead>
+										<tr>
+											<th class="sticky-col sticky-col-1">NRP</th>
+											<th class="sticky-col sticky-col-2">Nama Lengkap</th>
+											{#if authState.role === 'admin'}
+												<th class="center-col">Total Kehadiran</th>
+												<th class="center-col">Persentase</th>
+											{:else}
+												{#each Array(16) as _, i}
+													<th class="center-col">P{i + 1}</th>
+												{/each}
+											{/if}
+										</tr>
+									</thead>
+									<tbody>
+										{#if authState.role === 'admin' && rekapData.summary}
+											{#each rekapData.summary as sum}
+												<tr>
+													<td class="sticky-col sticky-col-1" style="font-family: monospace;">{sum.nrp}</td>
+													<td class="sticky-col sticky-col-2"><strong>{sum.name}</strong></td>
+													<td class="center-col">
+														<Badge type={sum.total_hadir >= 12 ? 'success' : 'danger'}>{sum.total_hadir} / {sum.total_pertemuan} Kali</Badge>
+													</td>
+													<td class="center-col">
+														<strong>{sum.total_pertemuan > 0 ? Math.round((sum.total_hadir / sum.total_pertemuan) * 100) : 0}%</strong>
+													</td>
+												</tr>
+											{/each}
+										{:else}
+											{#each rekapData.mahasiswa as mhs}
+												<tr>
+													<td class="sticky-col sticky-col-1" style="font-family: monospace;">{mhs.nrp}</td>
+													<td class="sticky-col sticky-col-2"><strong>{mhs.name}</strong></td>
+													{#each Array(16) as _, i}
+														{@const pId = rekapData.pertemuan[i]?.id}
+														{@const status = pId ? mhs.kehadiran[pId] : null}
+														<td class="center-col">
+															{#if status === 'hadir'}
+																<span title="Hadir" style="color: var(--success-color); font-weight: bold;">H</span>
+															{:else if status === 'alpa'}
+																<span title="Alpa" style="color: var(--danger-color); font-weight: bold;">A</span>
+															{:else if status === 'izin'}
+																<span title="Izin" style="color: var(--warning-color); font-weight: bold;">I</span>
+															{:else if status === 'sakit'}
+																<span title="Sakit" style="color: var(--warning-color); font-weight: bold;">S</span>
+															{:else}
+																<span style="color: var(--text-muted); opacity: 0.5;">-</span>
+															{/if}
+														</td>
+													{/each}
+												</tr>
+											{/each}
+										{/if}
 									</tbody>
 								</table>
 							</div>
@@ -375,11 +681,6 @@
 		font-size: 1.1rem;
 	}
 
-	.empty-hint {
-		font-size: 0.9rem !important;
-		opacity: 0.7;
-	}
-
 	.state-container {
 		padding: 60px;
 		text-align: center;
@@ -444,6 +745,84 @@
 		background: #f8fafc;
 	}
 
+	.pertemuan-list {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+	}
+
+	.pertemuan-card {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 20px;
+		background: white;
+		border: 1px solid rgba(0,0,0,0.05);
+		border-radius: var(--radius-md);
+		box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+	}
+
+	.pertemuan-info h4 {
+		margin: 0 0 8px 0;
+		font-size: 1.1rem;
+		color: var(--text-main);
+	}
+
+	.pertemuan-meta {
+		display: flex;
+		gap: 16px;
+		font-size: 0.9rem;
+		color: var(--text-muted);
+	}
+
+	.pertemuan-actions {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
+
+	.btn-danger-sm {
+		background: #ef4444;
+		color: white;
+		border: none;
+		padding: 8px 16px;
+		border-radius: var(--radius-sm);
+		font-size: 0.85rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: background 0.2s;
+	}
+	.btn-danger-sm:hover {
+		background: #dc2626;
+	}
+
+	.btn-secondary-sm {
+		background: transparent;
+		color: var(--text-main);
+		border: 1px solid rgba(0,0,0,0.1);
+		padding: 8px 16px;
+		border-radius: var(--radius-sm);
+		font-size: 0.85rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+	.btn-secondary-sm:hover {
+		background: rgba(0,0,0,0.05);
+	}
+
+	.absensi-modal {
+		max-width: 700px;
+		width: 90%;
+		max-height: 90vh;
+		display: flex;
+		flex-direction: column;
+	}
+	.absensi-modal .modal-body {
+		overflow-y: auto;
+		padding: 0;
+	}
+
 	@media (max-width: 768px) {
 		.kelas-title {
 			font-size: 2rem;
@@ -452,5 +831,44 @@
 		.kelas-banner {
 			padding: 24px;
 		}
+	}
+
+	.rekap-container {
+		overflow-x: auto;
+		max-width: 100%;
+	}
+
+	.rekap-table {
+		min-width: 1200px;
+	}
+
+	.rekap-table th, .rekap-table td {
+		white-space: nowrap;
+	}
+
+	.sticky-col {
+		position: sticky;
+		background-color: white;
+		z-index: 2;
+	}
+
+	.rekap-table thead .sticky-col {
+		z-index: 3;
+	}
+
+	.sticky-col-1 {
+		left: 0;
+		border-right: 1px solid rgba(0,0,0,0.05);
+	}
+
+	.sticky-col-2 {
+		left: 120px; /* Adjust based on NRP width */
+		border-right: 2px solid rgba(0,0,0,0.1);
+		box-shadow: 2px 0 5px rgba(0,0,0,0.02);
+	}
+
+	.center-col {
+		text-align: center;
+		min-width: 40px;
 	}
 </style>

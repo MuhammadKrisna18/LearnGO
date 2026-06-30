@@ -63,6 +63,8 @@ func NewPostgresConnection(cfg *config.Config) (*gorm.DB, error) {
 		&semDomain.Semester{},
 		&semDomain.SemesterMataKuliah{},
 		&semDomain.Pertemuan{},
+		&kelasDomain.Pertemuan{},
+		&kelasDomain.Absensi{},
 	); err != nil {
 		log.Printf("AutoMigrate failed: %v", err)
 	}
