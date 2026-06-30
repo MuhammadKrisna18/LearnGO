@@ -73,6 +73,22 @@
 
 	<form onsubmit={handleRegisterMataKuliah}>
 		<div class="form-group">
+			<label class="form-label" for="mkProdi">Program Studi</label>
+			<select
+				class="form-select"
+				id="mkProdi"
+				bind:value={mkProdiId}
+				required
+				disabled={registerLoading || loadingProdi}
+			>
+				<option value="" disabled selected>Pilih Program Studi</option>
+				{#each prodiList as prodi}
+					<option value={prodi.id}>{prodi.name}</option>
+				{/each}
+			</select>
+		</div>
+
+		<div class="form-group">
 			<label class="form-label" for="mkName">Nama Mata Kuliah</label>
 			<input
 				class="form-input"
@@ -100,21 +116,7 @@
 			/>
 		</div>
 
-		<div class="form-group">
-			<label class="form-label" for="mkProdi">Program Studi</label>
-			<select 
-				class="form-input" 
-				id="mkProdi" 
-				bind:value={mkProdiId} 
-				required 
-				disabled={registerLoading || loadingProdi}
-			>
-				<option value="" disabled selected>-- Pilih Program Studi --</option>
-				{#each prodiList as prodi}
-					<option value={prodi.id}>{prodi.name}</option>
-				{/each}
-			</select>
-		</div>
+
 
 		{#if registerError}
 			<div class="error-message">

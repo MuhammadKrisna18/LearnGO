@@ -14,8 +14,8 @@
 </script>
 
 <div class="splash-container" class:visible>
-	<div class="icon-container">
-		<span class="dosen-icon">🎓</span>
+	<div class="icon-container" style="font-size: 1.5rem; font-weight: bold; background: none; box-shadow: none;">
+		<span class="dosen-icon">SIAKAD</span>
 	</div>
 	<h2>Selamat Datang, {lecturerName}</h2>
 	<p>Menyiapkan portal kelas Anda...</p>

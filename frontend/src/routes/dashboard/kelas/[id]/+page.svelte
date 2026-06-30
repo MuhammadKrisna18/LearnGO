@@ -133,7 +133,6 @@
 							<button class="btn-primary-sm">Buat Tugas</button>
 						</div>
 						<div class="empty-state">
-							<div class="empty-icon">📝</div>
 							<p>Belum ada tugas yang diberikan.</p>
 						</div>
 					</div>

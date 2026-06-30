@@ -4,7 +4,7 @@
 
 <div class="stats-row">
 	{#each stats as stat}
-		<div class="stat-card glass-panel">
+		<div class="stat-card card hover-lift">
 			<div class="stat-icon" style="background: {stat.color}10; color: {stat.color};">
 				{@html stat.icon}
 			</div>

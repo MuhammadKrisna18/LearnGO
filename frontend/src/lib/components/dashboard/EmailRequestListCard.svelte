@@ -109,11 +109,11 @@
 							<td class="text-muted">{req.user?.email || '-'}</td>
 							<td class="font-medium highlight">{req.new_email}</td>
 							<td class="actions-col">
-								<button class="btn-icon btn-approve" onclick={() => openConfirm(req.id, true)} title="Setujui">
-									✅
+								<button class="btn-icon btn-approve" onclick={() => openConfirm(req.id, true)} title="Setujui" style="font-weight: 500; font-size: 0.8rem; padding: 4px 8px; border-radius: 4px;">
+									Terima
 								</button>
-								<button class="btn-icon btn-reject" onclick={() => openConfirm(req.id, false)} title="Tolak">
-									❌
+								<button class="btn-icon btn-reject" onclick={() => openConfirm(req.id, false)} title="Tolak" style="font-weight: 500; font-size: 0.8rem; padding: 4px 8px; border-radius: 4px;">
+									Tolak
 								</button>
 							</td>
 						</tr>

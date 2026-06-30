@@ -126,9 +126,15 @@ func (s *semesterService) AssignMataKuliah(ctx context.Context, semesterID strin
 
 	_ = totalSKS
 
+	kategori := req.Kategori
+	if kategori == "" {
+		kategori = domain.KategoriWajib
+	}
+
 	sm := &domain.SemesterMataKuliah{
 		SemesterID:   semesterID,
 		MataKuliahID: req.MataKuliahID,
+		Kategori:     kategori,
 	}
 
 	if err := s.repo.AssignMataKuliah(ctx, sm); err != nil {

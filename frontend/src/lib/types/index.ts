@@ -63,6 +63,7 @@ export interface MataKuliah {
 	program_studi?: ProgramStudi;
 	pengajuan?: PengajuanMataKuliah[];
 	created_at: string;
+	updated_at: string;
 }
 
 export interface PengajuanMataKuliah {
@@ -126,6 +127,7 @@ export interface SemesterMataKuliah {
 	semester_id: string;
 	mata_kuliah_id: string;
 	mata_kuliah?: MataKuliah;
+	kategori: string;
 	created_at: string;
 }
 

@@ -51,9 +51,13 @@
 			
 			{#if authState.role === 'admin'}
 				<div class="nav-section-title">MANAJEMEN AKADEMIK</div>
-				<a href="/dashboard/semester" class="nav-item {$page.url.pathname.includes('/dashboard/semester') ? 'active' : ''}">
+				<a href="/dashboard/semester" class="nav-item {$page.url.pathname === '/dashboard/semester' ? 'active' : ''}">
 					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
 					<span>Semester</span>
+				</a>
+				<a href="/dashboard/kurikulum" class="nav-item {$page.url.pathname.includes('/dashboard/kurikulum') ? 'active' : ''}">
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/><polyline points="14 2 14 8 20 8"/><path d="m3 15 2 2 4-4"/></svg>
+					<span>Kurikulum (Fix)</span>
 				</a>
 			{/if}
 
@@ -143,7 +147,7 @@
 		width: 260px;
 		display: flex;
 		flex-direction: column;
-		background: #f9fafb;
+		background: var(--surface-color);
 		border-right: 1px solid var(--surface-border);
 		position: sticky;
 		top: 0;
@@ -159,30 +163,33 @@
 	}
 
 	.brand-logo {
-		width: 32px;
-		height: 32px;
-		background: #000;
-		border-radius: 8px;
+		width: 34px;
+		height: 34px;
+		background: var(--primary-color);
+		border-radius: var(--radius-sm);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		color: white;
+		box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
 	}
 
 	.brand-text h1 {
-		font-size: 1.25rem;
+		font-family: 'Outfit', sans-serif;
+		font-size: 1.35rem;
 		font-weight: 700;
 		color: var(--text-main);
 		line-height: 1.1;
-		letter-spacing: -0.025em;
+		letter-spacing: -0.02em;
 	}
 
 	.brand-text p {
-		font-size: 0.75rem;
+		font-family: 'Outfit', sans-serif;
+		font-size: 0.8rem;
 		color: var(--primary-color);
-		font-weight: 600;
+		font-weight: 700;
 		text-transform: uppercase;
-		letter-spacing: 0.1em;
+		letter-spacing: 0.15em;
 		margin-top: 2px;
 	}
 
@@ -191,39 +198,39 @@
 		padding: 16px;
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: 6px;
 	}
 
 	.nav-section-title {
-		font-size: 0.7rem;
-		font-weight: 600;
+		font-size: 0.75rem;
+		font-weight: 700;
 		color: var(--text-muted);
 		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		padding: 24px 12px 8px 12px;
+		letter-spacing: 0.08em;
+		padding: 24px 12px 10px 12px;
 	}
 
 	.nav-item {
 		display: flex;
 		align-items: center;
 		gap: 12px;
-		padding: 8px 12px;
-		border-radius: var(--radius-sm);
+		padding: 10px 14px;
+		border-radius: var(--radius-md);
 		color: var(--text-muted);
 		text-decoration: none;
 		font-weight: 500;
-		font-size: 0.9rem;
+		font-size: 0.95rem;
 		transition: all 0.2s ease;
 	}
 
 	.nav-item:hover {
-		background: rgba(0, 0, 0, 0.04);
+		background: var(--secondary-hover);
 		color: var(--text-main);
 	}
 
 	.nav-item.active {
-		background: rgba(0, 0, 0, 0.04);
-		color: var(--text-main);
+		background: var(--primary-light);
+		color: var(--primary-color);
 		font-weight: 600;
 	}
 

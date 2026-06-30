@@ -2,6 +2,6 @@
 	let { children, class: className = '', style = '' } = $props();
 </script>
 
-<div class={`glass-panel ${className}`} {style}>
+<div class={`card ${className}`} {style}>
 	{@render children()}
 </div>

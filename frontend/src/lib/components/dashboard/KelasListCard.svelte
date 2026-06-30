@@ -227,7 +227,6 @@
 		</div>
 	{:else if kelases.length === 0}
 		<div class="empty-state">
-			<div class="empty-icon">📝</div>
 			<p>Belum ada data kelas.</p>
 		</div>
 	{:else}
@@ -314,7 +313,6 @@
 				</div>
 			{:else}
 				<div class="empty-state">
-					<div class="empty-icon">🔍</div>
 					<p>Tidak ada data kelas yang sesuai pencarian.</p>
 				</div>
 			{/each}

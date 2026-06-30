@@ -30,10 +30,10 @@ export const semesterService = {
 			method: 'PUT'
 		});
 	},
-	assignMataKuliah: async (id: string, mata_kuliah_id: string) => {
+	assignMataKuliah: async (id: string, mata_kuliah_id: string, kategori: string = 'wajib') => {
 		return fetchApi<ApiResponse<SemesterMataKuliah>>(`/semester/${id}/matakuliah`, {
 			method: 'POST',
-			body: JSON.stringify({ mata_kuliah_id })
+			body: JSON.stringify({ mata_kuliah_id, kategori })
 		});
 	},
 	unassignMataKuliah: async (id: string, mkId: string) => {

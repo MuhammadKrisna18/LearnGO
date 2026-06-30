@@ -3,7 +3,8 @@
 	import { fade } from 'svelte/transition';
 	import { semesterService } from '$lib/services/semester';
 	import { matakuliahService } from '$lib/services/matakuliah';
-	import type { Semester, MataKuliah } from '$lib/types';
+	import { programStudiService } from '$lib/services/programstudi';
+	import type { Semester, MataKuliah, ProgramStudi } from '$lib/types';
 	import { toast } from '$lib/stores/toast.svelte';
 	import { authState } from '$lib/stores/auth.svelte';
 	import Card from '$lib/components/ui/Card.svelte';
@@ -12,6 +13,7 @@
 
 	let semesters = $state<Semester[]>([]);
 	let allMataKuliah = $state<MataKuliah[]>([]);
+	let prodiList = $state<ProgramStudi[]>([]);
 	let loading = $state(true);
 	let submitting = $state(false);
 
@@ -20,17 +22,25 @@
 	
 	let assignModalOpen = $state(false);
 	let assignSemesterId = $state('');
+	let selectedProdiId = $state('');
 	let selectedMkId = $state('');
+	let selectedKategori = $state('wajib');
+
+	let editModalOpen = $state(false);
+	let editSemesterId = $state('');
+	let editSemester = $state({ min_sks: 18, max_sks: 24 });
 	
 	async function fetchData() {
 		loading = true;
 		try {
-			const [semRes, mkRes] = await Promise.all([
+			const [semRes, mkRes, prodiRes] = await Promise.all([
 				semesterService.getAll(),
-				matakuliahService.getList()
+				matakuliahService.getList(),
+				programStudiService.getList()
 			]);
 			if (semRes.success && semRes.data) semesters = semRes.data;
 			if (mkRes.success && mkRes.data) allMataKuliah = mkRes.data;
+			if (prodiRes.success && prodiRes.data) prodiList = prodiRes.data;
 		} catch (err: any) {
 			toast.error(err.message || 'Gagal memuat data');
 		} finally {
@@ -86,7 +96,9 @@
 
 	function openAssignModal(semesterId: string) {
 		assignSemesterId = semesterId;
+		selectedProdiId = '';
 		selectedMkId = '';
+		selectedKategori = 'wajib';
 		assignModalOpen = true;
 	}
 
@@ -94,7 +106,7 @@
 		if (!selectedMkId) return;
 		submitting = true;
 		try {
-			const res = await semesterService.assignMataKuliah(assignSemesterId, selectedMkId);
+			const res = await semesterService.assignMataKuliah(assignSemesterId, selectedMkId, selectedKategori);
 			if (res.success) {
 				toast.success('Mata kuliah berhasil ditambahkan ke semester');
 				assignModalOpen = false;
@@ -119,13 +131,45 @@
 			toast.error(err.message || 'Gagal menghapus mata kuliah');
 		}
 	}
+
+	function openEditModal(sem: Semester) {
+		editSemesterId = sem.id;
+		editSemester = { min_sks: sem.min_sks, max_sks: sem.max_sks };
+		editModalOpen = true;
+	}
+
+	async function handleEdit() {
+		if (editSemester.min_sks >= editSemester.max_sks) {
+			toast.error('Minimal SKS harus lebih kecil dari Maksimal SKS');
+			return;
+		}
+		submitting = true;
+		try {
+			const res = await semesterService.update(editSemesterId, editSemester);
+			if (res.success) {
+				toast.success('Semester berhasil diperbarui');
+				editModalOpen = false;
+				fetchData();
+			}
+		} catch (err: any) {
+			toast.error(err.message || 'Gagal memperbarui semester');
+		} finally {
+			submitting = false;
+		}
+	}
 	
-	// Helper to get MKs not yet in the selected semester
+	// Helper to get MKs not yet in the selected semester, filtered by prodi
 	let availableMataKuliah = $derived(() => {
 		const sem = semesters.find(s => s.id === assignSemesterId);
-		if (!sem) return allMataKuliah;
-		const assignedIds = new Set(sem.mata_kuliah?.map(sm => sm.mata_kuliah_id) || []);
-		return allMataKuliah.filter(mk => !assignedIds.has(mk.id));
+		const assignedIds = new Set(sem?.mata_kuliah?.map(sm => sm.mata_kuliah_id) || []);
+		
+		let available = allMataKuliah.filter(mk => !assignedIds.has(mk.id));
+		
+		if (selectedProdiId) {
+			available = available.filter(mk => mk.program_studi_id === selectedProdiId);
+		}
+		
+		return available;
 	});
 </script>
 
@@ -179,7 +223,12 @@
 				<Card class={`semester-card ${sem.is_active ? 'active-semester' : ''}`}>
 					<div class="semester-header">
 						<div>
-							<h2>Semester {sem.nomor}</h2>
+							<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+								<h2 style="margin: 0;">Semester {sem.nomor}</h2>
+								<button class="btn-icon-tiny" onclick={() => openEditModal(sem)} title="Edit SKS Semester" style="opacity: 1; font-weight: 500; font-size: 0.8rem; padding: 4px 8px; border: 1px solid var(--surface-border); border-radius: 4px;">
+									Edit
+								</button>
+							</div>
 							<div class="sks-badge">
 								SKS: {sem.min_sks} - {sem.max_sks}
 							</div>
@@ -194,8 +243,8 @@
 					<div class="semester-body">
 						<div class="body-header">
 							<h3>Mata Kuliah ({sem.mata_kuliah?.length || 0})</h3>
-							<button class="btn-icon-small" onclick={() => openAssignModal(sem.id)} title="Tambah MK">
-								➕
+							<button class="btn-icon-small" onclick={() => openAssignModal(sem.id)} title="Tambah MK" style="opacity: 1; font-weight: 500; font-size: 0.8rem; padding: 4px 8px; border: 1px solid var(--surface-border); border-radius: 4px;">
+								Tambah
 							</button>
 						</div>
 						
@@ -208,9 +257,14 @@
 										<div class="mk-info">
 											<span class="mk-name">{smk.mata_kuliah?.name}</span>
 											<span class="mk-meta">{smk.mata_kuliah?.sks} SKS • {smk.mata_kuliah?.program_studi?.name}</span>
+											{#if smk.kategori === 'pilihan'}
+												<span class="badge-pilihan">Pilihan</span>
+											{:else}
+												<span class="badge-wajib">Wajib</span>
+											{/if}
 										</div>
-										<button class="btn-icon-tiny btn-reject" onclick={() => handleUnassign(sem.id, smk.mata_kuliah_id)} title="Hapus MK">
-											❌
+										<button class="btn-icon-tiny btn-reject" onclick={() => handleUnassign(sem.id, smk.mata_kuliah_id)} title="Hapus MK" style="opacity: 1; font-weight: 500; font-size: 0.8rem; padding: 4px 8px; border-radius: 4px;">
+											Hapus
 										</button>
 									</li>
 								{/each}
@@ -230,12 +284,30 @@
 			<p class="text-muted" style="margin-bottom: 20px;">Pilih mata kuliah yang tersedia untuk semester ini.</p>
 			
 			<div class="form-group">
+				<label for="prodiSelect">Pilih Program Studi</label>
+				<select id="prodiSelect" bind:value={selectedProdiId} class="input">
+					<option value="">-- Semua Program Studi --</option>
+					{#each prodiList as prodi}
+						<option value={prodi.id}>{prodi.name}</option>
+					{/each}
+				</select>
+			</div>
+
+			<div class="form-group">
 				<label for="mkSelect">Pilih Mata Kuliah</label>
 				<select id="mkSelect" bind:value={selectedMkId} class="input">
 					<option value="">-- Pilih Mata Kuliah --</option>
 					{#each availableMataKuliah() as mk}
 						<option value={mk.id}>{mk.name} ({mk.sks} SKS) - {mk.program_studi?.name}</option>
 					{/each}
+				</select>
+			</div>
+
+			<div class="form-group">
+				<label for="mkKategori">Kategori Mata Kuliah</label>
+				<select id="mkKategori" bind:value={selectedKategori} class="input">
+					<option value="wajib">Wajib / Prodi</option>
+					<option value="pilihan">Pilihan</option>
 				</select>
 			</div>
 			
@@ -245,6 +317,35 @@
 					{submitting ? 'Menambahkan...' : 'Tambahkan'}
 				</button>
 			</div>
+		</div>
+	</div>
+{/if}
+
+{#if editModalOpen}
+	<div class="modal-backdrop" transition:fade={{ duration: 200 }}>
+		<div class="modal-content animate-slide-up">
+			<h2>Edit SKS Semester</h2>
+			<p class="text-muted" style="margin-bottom: 20px;">Sesuaikan batas minimal dan maksimal SKS untuk semester ini.</p>
+			
+			<form onsubmit={(e) => { e.preventDefault(); handleEdit(); }}>
+				<div class="form-group">
+					<label for="edit_min_sks">Minimal SKS</label>
+					<input type="number" id="edit_min_sks" bind:value={editSemester.min_sks} min="1" required class="input" />
+				</div>
+				<div class="form-group">
+					<label for="edit_max_sks">Maksimal SKS</label>
+					<input type="number" id="edit_max_sks" bind:value={editSemester.max_sks} min="1" required class="input" />
+				</div>
+				
+				<div class="form-actions" style="margin-top: 24px;">
+					<button type="button" class="btn btn-secondary" onclick={() => editModalOpen = false} disabled={submitting}>
+						Batal
+					</button>
+					<button type="submit" class="btn btn-primary" disabled={submitting}>
+						{submitting ? 'Menyimpan...' : 'Simpan Perubahan'}
+					</button>
+				</div>
+			</form>
 		</div>
 	</div>
 {/if}
@@ -319,7 +420,7 @@
 
 	.sks-badge {
 		display: inline-block;
-		background: var(--bg-secondary);
+		background: var(--secondary-color);
 		padding: 2px 8px;
 		border-radius: 4px;
 		font-size: 0.8rem;
@@ -332,14 +433,14 @@
 		border-radius: 20px;
 		font-size: 0.75rem;
 		font-weight: 600;
-		background: rgba(16, 185, 129, 0.1);
-		color: #10b981;
+		background: var(--success-bg);
+		color: var(--success-color);
 	}
 
 	.btn-activate {
-		background: var(--bg-secondary);
-		color: var(--text-color);
-		border: 1px solid var(--border-color);
+		background: var(--secondary-color);
+		color: var(--text-main);
+		border: 1px solid var(--surface-border);
 		padding: 4px 12px;
 		border-radius: 6px;
 		font-size: 0.8rem;
@@ -379,7 +480,7 @@
 	}
 
 	.btn-icon-small:hover {
-		background: var(--bg-secondary);
+		background: var(--secondary-hover);
 	}
 
 	.btn-icon-tiny {
@@ -414,7 +515,7 @@
 		justify-content: space-between;
 		align-items: flex-start;
 		padding: 8px;
-		background: var(--bg-secondary);
+		background: var(--secondary-color);
 		border-radius: 6px;
 	}
 
@@ -431,6 +532,7 @@
 	.mk-meta {
 		font-size: 0.75rem;
 		color: var(--text-muted);
+		margin-bottom: 4px;
 	}
 
 	.modal-backdrop {
@@ -439,7 +541,7 @@
 		left: 0;
 		right: 0;
 		bottom: 0;
-		background: rgba(0, 0, 0, 0.5);
+		background: rgba(15, 23, 42, 0.5);
 		backdrop-filter: blur(4px);
 		display: flex;
 		align-items: center;
@@ -448,7 +550,7 @@
 	}
 
 	.modal-content {
-		background: var(--bg-card);
+		background: var(--surface-color);
 		border-radius: var(--radius-lg);
 		padding: 32px;
 		width: 90%;

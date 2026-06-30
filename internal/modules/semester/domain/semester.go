@@ -24,6 +24,7 @@ type SemesterMataKuliah struct {
 	Semester     *Semester           `json:"semester,omitempty" gorm:"foreignKey:SemesterID"`
 	MataKuliahID string              `json:"mata_kuliah_id" gorm:"type:varchar(255);uniqueIndex:idx_sem_mk;not null"`
 	MataKuliah   *mkDomain.MataKuliah `json:"mata_kuliah,omitempty" gorm:"foreignKey:MataKuliahID"`
+	Kategori     string              `json:"kategori" gorm:"type:varchar(50);not null;default:'wajib'"`
 	CreatedAt    time.Time           `json:"created_at" gorm:"autoCreateTime"`
 }
 
@@ -43,7 +44,12 @@ type Pertemuan struct {
 
 const (
 	PertemuanBelum  = "belum"
+	PertemuanMulai  = "mulai"
 	PertemuanSelesai = "selesai"
+
+	KategoriWajib   = "wajib"
+	KategoriPilihan = "pilihan"
+
 	MaxPertemuan     = 16
 	MinSemester      = 1
 	MaxSemester      = 8
@@ -62,6 +68,7 @@ type UpdateSemesterRequest struct {
 
 type AssignMataKuliahRequest struct {
 	MataKuliahID string `json:"mata_kuliah_id" validate:"required"`
+	Kategori     string `json:"kategori" validate:"required"`
 }
 
 type CatatPertemuanRequest struct {

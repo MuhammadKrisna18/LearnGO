@@ -25,7 +25,12 @@
 				if (authState.role === 'admin') {
 					mkList = resMk.data;
 				} else {
-					mkList = resMk.data.filter((mk: MataKuliah) => !mk.pengajuan?.some(p => p.status === 'approved'));
+					const myProdiId = authState.profile?.program_studi_id;
+					mkList = resMk.data.filter((mk: MataKuliah) => {
+						const notApproved = !mk.pengajuan?.some(p => p.status === 'approved');
+						const canTake = mk.program_studi_id === myProdiId;
+						return notApproved && canTake;
+					});
 				}
 			} else {
 				error = resMk.message || 'Gagal mengambil daftar mata kuliah';
@@ -102,7 +107,12 @@
 						if (authState.role === 'admin') {
 							mkList = resMk.data;
 						} else {
-							mkList = resMk.data.filter((mk: MataKuliah) => !mk.pengajuan?.some(p => p.status === 'approved'));
+							const myProdiId = authState.profile?.program_studi_id;
+							mkList = resMk.data.filter((mk: MataKuliah) => {
+								const notApproved = !mk.pengajuan?.some(p => p.status === 'approved');
+								const canTake = mk.program_studi_id === myProdiId;
+								return notApproved && canTake;
+							});
 						}
 					}
 				} else {
@@ -159,7 +169,14 @@
 								<tbody>
 									{#each prodiMks as mk}
 										<tr>
-											<td><span class="font-medium">{mk.name}</span></td>
+											<td>
+												<div style="display: flex; flex-direction: column; gap: 4px;">
+													<span class="font-medium">{mk.name}</span>
+													<span style="font-size: 0.75rem; color: var(--text-muted);">
+														{mk.kategori === 'pilihan' ? 'Pilihan' : 'Wajib'}
+													</span>
+												</div>
+											</td>
 											<td><Badge type="info">{mk.sks} SKS</Badge></td>
 											<td>
 												{#if mk.pengajuan && mk.pengajuan.some(p => p.status === 'approved')}

@@ -26,7 +26,7 @@
 
 <Modal bind:isOpen {title}>
 	<div class="confirm-content">
-		<div class="warning-icon">⚠️</div>
+		<div class="warning-icon" style="font-size: 1rem; font-weight: bold; color: var(--warning-color); background: var(--warning-bg); padding: 4px 12px; border-radius: 4px;">PERINGATAN</div>
 		<p class="confirm-message">
 			Apakah Anda yakin ingin menghapus <strong>{itemName}</strong>?
 		</p>
