@@ -96,6 +96,17 @@ func (s *semesterService) SetActive(ctx context.Context, id string) error {
 		return apperrors.NewNotFound("Semester tidak ditemukan")
 	}
 
+	currentActive, err := s.repo.GetActive(ctx)
+	if err == nil && currentActive != nil && currentActive.ID != id {
+		hasReached, checkErr := s.repo.HasReachedMaxPertemuan(ctx, currentActive.ID)
+		if checkErr != nil {
+			return apperrors.NewInternal("Gagal mengecek status pertemuan semester aktif")
+		}
+		if !hasReached {
+			return apperrors.NewBadRequest("Semester baru tidak bisa diaktifkan karena semester saat ini belum mencapai pertemuan ke-16")
+		}
+	}
+
 	if err := s.repo.DeactivateAll(ctx); err != nil {
 		return apperrors.NewInternal("Gagal menonaktifkan semester sebelumnya")
 	}

@@ -127,3 +127,11 @@ func (r *pgSemesterRepository) MarkPertemuanSelesai(ctx context.Context, id stri
 		"tanggal_selesai":  now,
 	}).Error
 }
+
+func (r *pgSemesterRepository) HasReachedMaxPertemuan(ctx context.Context, semesterID string) (bool, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&domain.Pertemuan{}).
+		Where("semester_id = ? AND nomor_pertemuan >= ?", semesterID, domain.MaxPertemuan).
+		Count(&count).Error
+	return count > 0, err
+}

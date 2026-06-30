@@ -97,6 +97,7 @@ type SemesterRepository interface {
 	GetPertemuanByKelasAndSemester(ctx context.Context, kelasID string, semesterID string) ([]*Pertemuan, error)
 	CountSelesaiPertemuan(ctx context.Context, kelasID string, semesterID string) (int, error)
 	MarkPertemuanSelesai(ctx context.Context, id string) error
+	HasReachedMaxPertemuan(ctx context.Context, semesterID string) (bool, error)
 }
 
 type SemesterService interface {
