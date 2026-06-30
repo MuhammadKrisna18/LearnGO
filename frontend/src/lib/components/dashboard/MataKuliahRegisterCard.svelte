@@ -75,7 +75,7 @@
 		<div class="form-group">
 			<label class="form-label" for="mkProdi">Program Studi</label>
 			<select
-				class="form-select"
+				class="form-input"
 				id="mkProdi"
 				bind:value={mkProdiId}
 				required
