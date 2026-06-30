@@ -146,5 +146,6 @@ func globalErrorHandler(c *fiber.Ctx, err error) error {
 		return response.Error(c, e.Code, e.Message, nil)
 	}
 
+	log.Printf("[GLOBAL ERROR] %v\n", err)
 	return response.Error(c, fiber.StatusInternalServerError, "An unexpected error occurred", err.Error())
 }

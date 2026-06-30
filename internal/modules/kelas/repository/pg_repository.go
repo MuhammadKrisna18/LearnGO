@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"gorm.io/gorm"
+	authDomain "siakad-pro/internal/modules/auth/domain"
 	"siakad-pro/internal/modules/kelas/domain"
 )
 
@@ -32,7 +33,12 @@ func (r *pgKelasRepository) GetAll(ctx context.Context) ([]*domain.Kelas, error)
 
 func (r *pgKelasRepository) GetByID(ctx context.Context, id string) (*domain.Kelas, error) {
 	var kelas domain.Kelas
-	err := r.db.WithContext(ctx).Preload("ProgramStudi").Where("id = ?", id).First(&kelas).Error
+	err := r.db.WithContext(ctx).
+		Preload("ProgramStudi").
+		Preload("Pengajuan", "status IN ?", []string{domain.StatusPending, domain.StatusApproved}).
+		Preload("Pengajuan.Dosen").
+		Preload("Pengajuan.MataKuliah").
+		Where("id = ?", id).First(&kelas).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("kelas not found")
@@ -132,4 +138,29 @@ func (r *pgKelasRepository) UpdatePengajuan(ctx context.Context, p *domain.Penga
 
 func (r *pgKelasRepository) DeletePengajuan(ctx context.Context, id string) error {
 	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&domain.PengajuanKelas{}).Error
+}
+
+func (r *pgKelasRepository) GetMahasiswaByProgramStudiID(ctx context.Context, prodiID string) ([]*authDomain.User, error) {
+	var users []*authDomain.User
+	err := r.db.WithContext(ctx).Table("users").Where("role = ? AND program_studi_id = ?", "mahasiswa", prodiID).Find(&users).Error
+	return users, err
+}
+
+func (r *pgKelasRepository) GetApprovedPengajuanByProdiID(ctx context.Context, prodiID string) ([]*domain.PengajuanKelas, error) {
+	var list []*domain.PengajuanKelas
+	err := r.db.WithContext(ctx).
+		Joins("JOIN kelas ON kelas.id = pengajuan_kelas.kelas_id").
+		Preload("Kelas").
+		Preload("Dosen").
+		Preload("MataKuliah").
+		Where("kelas.program_studi_id = ? AND pengajuan_kelas.status = ?", prodiID, domain.StatusApproved).
+		Order("pengajuan_kelas.created_at desc").
+		Find(&list).Error
+	return list, err
+}
+
+func (r *pgKelasRepository) GetUserByID(ctx context.Context, userID string) (*authDomain.User, error) {
+	var user authDomain.User
+	err := r.db.WithContext(ctx).Table("users").Where("id = ?", userID).First(&user).Error
+	return &user, err
 }

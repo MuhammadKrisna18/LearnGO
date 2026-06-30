@@ -78,7 +78,7 @@
 					</div>
 					<div class="action-row">
 						<a href={`/dashboard/kelas/${req.kelas?.id}`} class="btn-masuk">
-							Masuk Kelas →
+							Masuk Kelas 🚪
 						</a>
 					</div>
 				</div>
@@ -181,26 +181,136 @@
 
 	.action-row {
 		margin-top: 12px;
-		padding-top: 12px;
-		border-top: 1px dashed rgba(0,0,0,0.05);
+		margin-top: auto;
+		text-align: right;
 	}
 
 	.btn-masuk {
-		display: inline-block;
-		width: 100%;
-		text-align: center;
-		background: var(--primary-color);
+		background: var(--primary-color, #4361ee);
 		color: white;
+		border: none;
+		padding: 8px 16px;
+		border-radius: 6px;
+		font-weight: 500;
+		cursor: pointer;
 		text-decoration: none;
-		padding: 10px;
-		border-radius: var(--radius-sm);
-		font-size: 0.9rem;
-		font-weight: 600;
-		transition: background 0.2s, transform 0.1s;
+		display: inline-block;
+		transition: all 0.2s ease;
 	}
 
 	.btn-masuk:hover {
-		background: var(--primary-hover);
-		transform: translateY(-1px);
+		background: var(--primary-hover, #3a56d4);
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+	}
+	
+	/* Modal Styles */
+	.modal-backdrop {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.5);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 1000;
+		backdrop-filter: blur(4px);
+	}
+
+	.modal-content {
+		background: white;
+		width: 90%;
+		max-width: 600px;
+		border-radius: 12px;
+		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		max-height: 85vh;
+	}
+
+	.modal-header {
+		padding: 20px 24px;
+		border-bottom: 1px solid #e2e8f0;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.modal-header h3 {
+		margin: 0;
+		font-size: 1.25rem;
+		color: #1e293b;
+	}
+
+	.close-btn {
+		background: none;
+		border: none;
+		font-size: 1.25rem;
+		color: #64748b;
+		cursor: pointer;
+		padding: 4px;
+		border-radius: 50%;
+		line-height: 1;
+		transition: all 0.2s;
+	}
+
+	.close-btn:hover {
+		background: #f1f5f9;
+		color: #ef4444;
+	}
+
+	.modal-body {
+		padding: 24px;
+		overflow-y: auto;
+	}
+
+	.modal-footer {
+		padding: 16px 24px;
+		border-top: 1px solid #e2e8f0;
+		background: #f8fafc;
+		display: flex;
+		justify-content: flex-end;
+	}
+
+	.table-container {
+		border: 1px solid #e2e8f0;
+		border-radius: 8px;
+		overflow: hidden;
+	}
+
+	.mhs-table {
+		width: 100%;
+		border-collapse: collapse;
+		text-align: left;
+	}
+
+	.mhs-table th, .mhs-table td {
+		padding: 12px 16px;
+		border-bottom: 1px solid #e2e8f0;
+	}
+
+	.mhs-table th {
+		background: #f8fafc;
+		font-weight: 600;
+		color: #475569;
+		font-size: 0.875rem;
+	}
+
+	.mhs-table tr:last-child td {
+		border-bottom: none;
+	}
+
+	.mhs-table tbody tr:hover {
+		background: #f1f5f9;
+	}
+
+	.empty-state, .loading-state {
+		text-align: center;
+		padding: 32px;
+		color: #64748b;
+		font-style: italic;
 	}
 </style>

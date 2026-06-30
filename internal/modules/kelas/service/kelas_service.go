@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	authDomain "siakad-pro/internal/modules/auth/domain"
 	"siakad-pro/internal/modules/kelas/domain"
 	"siakad-pro/internal/shared/apperrors"
 )
@@ -213,6 +214,34 @@ func (s *kelasService) GetMyPengajuan(ctx context.Context, dosenID string) ([]*d
 
 func (s *kelasService) GetAllPengajuan(ctx context.Context) ([]*domain.PengajuanKelas, error) {
 	return s.repo.GetAllPengajuan(ctx)
+}
+
+func (s *kelasService) GetMahasiswaInKelas(ctx context.Context, pengajuanID string, dosenID string) ([]*authDomain.User, error) {
+	p, err := s.repo.GetPengajuanByID(ctx, pengajuanID)
+	if err != nil {
+		return nil, apperrors.NewNotFound("Pengajuan tidak ditemukan")
+	}
+
+	if p.DosenID != dosenID {
+		return nil, apperrors.NewUnauthorized("Anda tidak memiliki akses ke kelas ini", "")
+	}
+
+	if p.Kelas == nil {
+		return nil, apperrors.NewInternal("Data kelas tidak valid", "")
+	}
+
+	return s.repo.GetMahasiswaByProgramStudiID(ctx, p.Kelas.ProgramStudiID)
+}
+
+func (s *kelasService) GetMyJadwal(ctx context.Context, userID string) ([]*domain.PengajuanKelas, error) {
+	user, err := s.repo.GetUserByID(ctx, userID)
+	if err != nil {
+		return nil, apperrors.NewInternal("Gagal mengambil data user", err.Error())
+	}
+	if user == nil || user.ProgramStudiID == nil || *user.ProgramStudiID == "" {
+		return nil, apperrors.NewBadRequest("Program Studi belum diatur")
+	}
+	return s.repo.GetApprovedPengajuanByProdiID(ctx, *user.ProgramStudiID)
 }
 
 func generateRandomCode() string {

@@ -139,3 +139,36 @@ func (h *KelasHandler) RejectPengajuan(c *fiber.Ctx) error {
 
 	return response.Success(c, fiber.StatusOK, "Berhasil menolak kelas", nil)
 }
+
+func (h *KelasHandler) GetMahasiswaInKelas(c *fiber.Ctx) error {
+	dosenID, ok := c.Locals("userID").(string)
+	if !ok {
+		return apperrors.NewUnauthorized("Unauthorized")
+	}
+
+	id := c.Params("id")
+	if id == "" {
+		return apperrors.NewBadRequest("ID pengajuan diperlukan")
+	}
+
+	list, err := h.service.GetMahasiswaInKelas(c.Context(), id, dosenID)
+	if err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusOK, "Berhasil mengambil data mahasiswa di kelas ini", list)
+}
+
+func (h *KelasHandler) GetMyJadwal(c *fiber.Ctx) error {
+	mahasiswaID, ok := c.Locals("userID").(string)
+	if !ok {
+		return apperrors.NewUnauthorized("Unauthorized")
+	}
+	
+	list, err := h.service.GetMyJadwal(c.Context(), mahasiswaID)
+	if err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusOK, "Berhasil mengambil jadwal kelas", list)
+}

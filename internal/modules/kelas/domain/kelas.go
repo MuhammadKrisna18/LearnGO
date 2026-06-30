@@ -55,6 +55,10 @@ type KelasRepository interface {
 	GetAllPengajuan(ctx context.Context) ([]*PengajuanKelas, error)
 	UpdatePengajuan(ctx context.Context, p *PengajuanKelas) error
 	DeletePengajuan(ctx context.Context, id string) error
+
+	GetMahasiswaByProgramStudiID(ctx context.Context, prodiID string) ([]*authDomain.User, error)
+	GetApprovedPengajuanByProdiID(ctx context.Context, prodiID string) ([]*PengajuanKelas, error)
+	GetUserByID(ctx context.Context, userID string) (*authDomain.User, error)
 }
 
 type KelasService interface {
@@ -68,6 +72,8 @@ type KelasService interface {
 	RejectPengajuan(ctx context.Context, id string) error
 	GetMyPengajuan(ctx context.Context, dosenID string) ([]*PengajuanKelas, error)
 	GetAllPengajuan(ctx context.Context) ([]*PengajuanKelas, error)
+	GetMahasiswaInKelas(ctx context.Context, pengajuanID string, dosenID string) ([]*authDomain.User, error)
+	GetMyJadwal(ctx context.Context, userID string) ([]*PengajuanKelas, error)
 }
 
 type PengajuanKelas struct {

@@ -4,17 +4,28 @@
 	import type { MataKuliah } from '$lib/types';
 	import { fade } from 'svelte/transition';
 
+	import { kelasService } from '$lib/services/kelas';
+
 	let mataKuliahList = $state<MataKuliah[]>([]);
+	let jadwalList = $state<any[]>([]);
 	let loading = $state(true);
 	let error = $state('');
 
 	onMount(async () => {
 		try {
-			const res = await matakuliahService.getMahasiswaMataKuliah();
-			if (res.success && res.data) {
-				mataKuliahList = res.data;
+			const [mkRes, jadwalRes] = await Promise.all([
+				matakuliahService.getMahasiswaMataKuliah(),
+				kelasService.getMyJadwal()
+			]);
+			
+			if (mkRes.success && mkRes.data) {
+				mataKuliahList = mkRes.data;
 			} else {
-				error = res.message || 'Gagal memuat daftar mata kuliah';
+				error = mkRes.message || 'Gagal memuat daftar mata kuliah';
+			}
+
+			if (jadwalRes.success && jadwalRes.data) {
+				jadwalList = jadwalRes.data;
 			}
 		} catch (e: any) {
 			error = e.message || 'Terjadi kesalahan saat memuat data';
@@ -27,11 +38,6 @@
 <svelte:head>
 	<title>Mata Kuliah - SIAKAD Pro</title>
 </svelte:head>
-
-<div class="page-header">
-	<h1>Mata Kuliah Anda</h1>
-	<p>Daftar mata kuliah yang sesuai dengan Program Studi Anda.</p>
-</div>
 
 {#if loading}
 	<div class="loading-state">
@@ -46,49 +52,103 @@
 		<p>{error}</p>
 		<button class="btn btn-primary" onclick={() => window.location.reload()}>Coba Lagi</button>
 	</div>
-{:else if mataKuliahList.length === 0}
-	<div class="empty-state glass-panel">
-		<div class="empty-icon">
-			<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-				<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
-			</svg>
-		</div>
-		<h2>Belum Ada Mata Kuliah</h2>
-		<p>Program Studi Anda belum memiliki mata kuliah yang terdaftar.</p>
-	</div>
 {:else}
-	<div class="grid-container">
-		{#each mataKuliahList as mk (mk.id)}
-			<div class="mk-card glass-panel" in:fade>
-				<div class="mk-header">
-					<h3 class="mk-title">{mk.name}</h3>
-					<span class="sks-badge">{mk.sks} SKS</span>
-				</div>
-				<div class="mk-body">
-					{#if mk.pengajuan && mk.pengajuan.length > 0}
-						{@const approved = mk.pengajuan.filter(p => p.status === 'approved')}
-						{#if approved.length > 0}
-							<div class="dosen-list">
-								<p class="section-label">Dosen Pengampu:</p>
-								{#each approved as peng (peng.id)}
-									<div class="dosen-item">
-										<div class="avatar">
-											{peng.dosen?.name?.charAt(0) || 'D'}
-										</div>
-										<span class="dosen-name">{peng.dosen?.name || 'Dosen'}</span>
-									</div>
-								{/each}
-							</div>
-						{:else}
-							<p class="text-muted">Belum ada dosen yang disetujui untuk mata kuliah ini.</p>
-						{/if}
-					{:else}
-						<p class="text-muted">Belum ada dosen pengampu.</p>
-					{/if}
-				</div>
-			</div>
-		{/each}
+	<div class="page-header">
+		<h1>Jadwal Kelas Anda</h1>
+		<p>Kelas yang otomatis Anda masuki sesuai dengan Program Studi.</p>
 	</div>
+
+	{#if jadwalList.length === 0}
+		<div class="empty-state glass-panel">
+			<div class="empty-icon">
+				<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+				</svg>
+			</div>
+			<h2>Belum Ada Jadwal</h2>
+			<p>Belum ada kelas yang disetujui untuk Program Studi Anda.</p>
+		</div>
+	{:else}
+		<div class="grid-container" style="margin-bottom: 3rem;">
+			{#each jadwalList as jdwl (jdwl.id)}
+				<div class="mk-card glass-panel" in:fade>
+					<div class="mk-header">
+						<h3 class="mk-title">{jdwl.kelas?.name}</h3>
+						<span class="sks-badge" style="background: var(--accent-color);">{jdwl.mata_kuliah?.sks} SKS</span>
+					</div>
+					<div class="mk-body">
+						<div class="dosen-list" style="margin-bottom: 12px;">
+							<div class="dosen-item">
+								<div class="avatar" style="background: var(--primary-color);">
+									{jdwl.dosen?.name?.charAt(0) || 'D'}
+								</div>
+								<span class="dosen-name">{jdwl.dosen?.name || 'Dosen'}</span>
+							</div>
+						</div>
+						<p style="margin: 4px 0; font-size: 0.9rem; color: #475569;">
+							<strong>{jdwl.mata_kuliah?.name}</strong>
+						</p>
+						<div style="display: flex; gap: 12px; font-size: 0.85rem; color: #64748b; margin-top: 12px;">
+							<span>📅 {jdwl.kelas?.hari}</span>
+							<span>🕐 {jdwl.kelas?.jam_mulai} - {jdwl.kelas?.jam_selesai}</span>
+						</div>
+					</div>
+				</div>
+			{/each}
+		</div>
+	{/if}
+
+	<hr class="section-divider" style="margin: 3rem 0; border: none; border-top: 1px dashed #cbd5e1;" />
+
+	<div class="page-header">
+		<h1>Mata Kuliah Prodi</h1>
+		<p>Daftar semua mata kuliah yang tersedia di Program Studi Anda.</p>
+	</div>
+
+	{#if mataKuliahList.length === 0}
+		<div class="empty-state glass-panel">
+			<div class="empty-icon">
+				<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+				</svg>
+			</div>
+			<h2>Belum Ada Mata Kuliah</h2>
+			<p>Program Studi Anda belum memiliki mata kuliah yang terdaftar.</p>
+		</div>
+	{:else}
+		<div class="grid-container">
+			{#each mataKuliahList as mk (mk.id)}
+				<div class="mk-card glass-panel" in:fade>
+					<div class="mk-header">
+						<h3 class="mk-title">{mk.name}</h3>
+						<span class="sks-badge">{mk.sks} SKS</span>
+					</div>
+					<div class="mk-body">
+						{#if mk.pengajuan && mk.pengajuan.length > 0}
+							{@const approved = mk.pengajuan.filter(p => p.status === 'approved')}
+							{#if approved.length > 0}
+								<div class="dosen-list">
+									<p class="section-label">Dosen Pengampu:</p>
+									{#each approved as peng (peng.id)}
+										<div class="dosen-item">
+											<div class="avatar">
+												{peng.dosen?.name?.charAt(0) || 'D'}
+											</div>
+											<span class="dosen-name">{peng.dosen?.name || 'Dosen'}</span>
+										</div>
+									{/each}
+								</div>
+							{:else}
+								<p class="text-muted">Belum ada dosen yang disetujui untuk mata kuliah ini.</p>
+							{/if}
+						{:else}
+							<p class="text-muted">Belum ada dosen pengampu.</p>
+						{/if}
+					</div>
+				</div>
+			{/each}
+		</div>
+	{/if}
 {/if}
 
 <style>

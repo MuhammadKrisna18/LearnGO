@@ -13,6 +13,25 @@
 	let error = $state('');
 
 	let activeTab = $state<'mahasiswa' | 'materi' | 'tugas' | 'pengumuman'>('mahasiswa');
+	
+	let mahasiswaList = $state<any[]>([]);
+	let loadingMahasiswa = $state(false);
+	let errorMahasiswa = $state('');
+
+	async function loadMahasiswa(pengajuanId: string) {
+		loadingMahasiswa = true;
+		errorMahasiswa = '';
+		try {
+			const res = await kelasService.getMahasiswaInKelas(pengajuanId);
+			if (res.success && res.data) {
+				mahasiswaList = res.data;
+			}
+		} catch (err: any) {
+			errorMahasiswa = err.message || 'Gagal memuat daftar mahasiswa';
+		} finally {
+			loadingMahasiswa = false;
+		}
+	}
 
 	async function loadKelas() {
 		loading = true;
@@ -23,10 +42,10 @@
 				kelasInfo = res.data;
 				
 				if (kelasInfo.pengajuan) {
-
 					const approved = kelasInfo.pengajuan.find(p => p.status === 'approved');
 					if (approved) {
 						pengajuan = approved;
+						loadMahasiswa(approved.id);
 					}
 				}
 			} else {
@@ -108,12 +127,50 @@
 			<Card style="padding: 24px;">
 				{#if activeTab === 'mahasiswa'}
 					<div class="placeholder-section">
-						<h3>Daftar Mahasiswa</h3>
-						<div class="empty-state">
-							<div class="empty-icon">👥</div>
-							<p>Belum ada mahasiswa yang terdaftar di kelas ini.</p>
-							<p class="empty-hint">Kapasitas maksimal: {kelasInfo.capacity} Mahasiswa</p>
+						<div class="section-header">
+							<h3>Daftar Mahasiswa</h3>
+							<Badge type="info">{mahasiswaList.length} / {kelasInfo.capacity} Mahasiswa</Badge>
 						</div>
+						
+						{#if loadingMahasiswa}
+							<div class="state-container">
+								<div class="spinner"></div>
+								<p>Memuat daftar mahasiswa...</p>
+							</div>
+						{:else if errorMahasiswa}
+							<div class="state-container state-error">
+								<p>{errorMahasiswa}</p>
+								<button class="btn-primary-sm" onclick={() => pengajuan && loadMahasiswa(pengajuan.id)}>Coba Lagi</button>
+							</div>
+						{:else if mahasiswaList.length === 0}
+							<div class="empty-state">
+								<div class="empty-icon">👥</div>
+								<p>Belum ada mahasiswa yang terdaftar di kelas ini.</p>
+							</div>
+						{:else}
+							<div class="table-container">
+								<table class="data-table">
+									<thead>
+										<tr>
+											<th>No</th>
+											<th>NRP</th>
+											<th>Nama Lengkap</th>
+											<th>Email</th>
+										</tr>
+									</thead>
+									<tbody>
+										{#each mahasiswaList as mhs, i}
+											<tr>
+												<td>{i + 1}</td>
+												<td style="font-family: monospace;">{mhs.nrp}</td>
+												<td><strong>{mhs.name}</strong></td>
+												<td>{mhs.email}</td>
+											</tr>
+										{/each}
+									</tbody>
+								</table>
+							</div>
+						{/if}
 					</div>
 				{:else if activeTab === 'materi'}
 					<div class="placeholder-section">
@@ -342,8 +399,49 @@
 		animation: spin 1s linear infinite;
 	}
 
+	.state-error p {
+		color: #ef4444;
+		margin: 0;
+	}
+
 	@keyframes spin {
 		to { transform: rotate(360deg); }
+	}
+
+	.table-container {
+		width: 100%;
+		overflow-x: auto;
+		background: white;
+		border-radius: var(--radius-md);
+		border: 1px solid rgba(0,0,0,0.05);
+	}
+
+	.data-table {
+		width: 100%;
+		border-collapse: collapse;
+		text-align: left;
+	}
+
+	.data-table th, .data-table td {
+		padding: 16px;
+		border-bottom: 1px solid rgba(0,0,0,0.05);
+	}
+
+	.data-table th {
+		background: #f8fafc;
+		font-weight: 600;
+		color: var(--text-muted);
+		font-size: 0.85rem;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+
+	.data-table tr:last-child td {
+		border-bottom: none;
+	}
+
+	.data-table tbody tr:hover {
+		background: #f8fafc;
 	}
 
 	@media (max-width: 768px) {

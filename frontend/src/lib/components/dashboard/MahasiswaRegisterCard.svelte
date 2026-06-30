@@ -17,6 +17,25 @@
 	let registerError = $state('');
 	let registerSuccess = $state('');
 
+	function getNRPPrefix(prodiName: string): string {
+		if (!prodiName) return '';
+		const name = prodiName.toLowerCase();
+		if (name.includes('rpl') || name.includes('perangkat lunak')) return '50532410';
+		if (name.includes('rka') || name.includes('artificial') || name.includes('artifisial') || name.includes('kecerdasan')) return '50542410';
+		if (name.includes('informatika') || name.includes('tc')) return '50252410';
+		return '';
+	}
+
+	let selectedProdi = $derived(prodiList.find(p => p.id === mhsProdiId));
+	let nrpPrefix = $derived(selectedProdi ? getNRPPrefix(selectedProdi.name) : '');
+
+	// When nrpPrefix changes, update the NRP if it's empty or doesn't match the prefix
+	$effect(() => {
+		if (nrpPrefix && !mhsNRP.startsWith(nrpPrefix)) {
+			mhsNRP = nrpPrefix;
+		}
+	});
+
 	onMount(async () => {
 		await loadProdi();
 	});
@@ -39,6 +58,17 @@
 		e.preventDefault();
 		registerError = '';
 		registerSuccess = '';
+		
+		if (!mhsName || !mhsNRP || !mhsPassword || !mhsProdiId) {
+			registerError = 'Mohon lengkapi semua data';
+			return;
+		}
+
+		if (mhsNRP.length !== 10 || !/^\d+$/.test(mhsNRP)) {
+			registerError = 'NRP harus terdiri dari tepat 10 digit angka';
+			return;
+		}
+
 		registerLoading = true;
 
 		try {
@@ -94,6 +124,22 @@
 
 	<form onsubmit={handleRegister} class="card-body">
 		<div class="form-group">
+			<label class="form-label" for="mhsProdi">Program Studi</label>
+			<select 
+				class="form-input" 
+				id="mhsProdi" 
+				bind:value={mhsProdiId} 
+				required 
+				disabled={registerLoading || loadingProdi}
+			>
+				<option value="" disabled selected>-- Pilih Program Studi --</option>
+				{#each prodiList as prodi}
+					<option value={prodi.id}>{prodi.name}</option>
+				{/each}
+			</select>
+		</div>
+
+		<div class="form-group">
 			<label class="form-label" for="mhsName">Nama Lengkap</label>
 			<input
 				class="form-input"
@@ -114,8 +160,9 @@
 					type="text"
 					id="mhsNRP"
 					bind:value={mhsNRP}
-					placeholder="50532410"
+					placeholder={nrpPrefix ? `${nrpPrefix}**` : "50532410**"}
 					required
+					maxlength="10"
 					disabled={registerLoading}
 				/>
 				<span class="email-suffix">@student.its.golang</span>
@@ -135,21 +182,7 @@
 			/>
 		</div>
 
-		<div class="form-group">
-			<label class="form-label" for="mhsProdi">Program Studi</label>
-			<select 
-				class="form-input" 
-				id="mhsProdi" 
-				bind:value={mhsProdiId} 
-				required 
-				disabled={registerLoading || loadingProdi}
-			>
-				<option value="" disabled selected>-- Pilih Program Studi --</option>
-				{#each prodiList as prodi}
-					<option value={prodi.id}>{prodi.name}</option>
-				{/each}
-			</select>
-		</div>
+
 
 		{#if registerError}
 			<div class="error-message">

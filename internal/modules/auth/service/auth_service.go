@@ -272,7 +272,7 @@ func (s *authService) RegisterMahasiswa(ctx context.Context, req domain.Register
 
 	existingUser, err := s.repo.GetByEmail(ctx, email)
 	if err == nil && existingUser != nil {
-		return nil, apperrors.NewConflict("Email sudah terdaftar", "")
+		return nil, apperrors.NewConflict("NRP ini sudah terdaftar untuk mahasiswa lain", "")
 	}
 
 	user := &domain.User{

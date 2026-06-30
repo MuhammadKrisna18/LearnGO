@@ -56,5 +56,17 @@ export const kelasService = {
 		return await fetchApi<ApiResponse<null>>(`/kelas/pengajuan/${id}/reject`, {
 			method: 'POST'
 		});
+	},
+
+	async getMahasiswaInKelas(id: string): Promise<ApiResponse<any[]>> {
+		return await fetchApi<ApiResponse<any[]>>(`/kelas/pengajuan/${id}/mahasiswa`, {
+			method: 'GET'
+		});
+	},
+
+	async getMyJadwal(): Promise<ApiResponse<PengajuanKelas[]>> {
+		return await fetchApi<ApiResponse<PengajuanKelas[]>>('/kelas/mahasiswa/my-jadwal', {
+			method: 'GET'
+		});
 	}
 };
