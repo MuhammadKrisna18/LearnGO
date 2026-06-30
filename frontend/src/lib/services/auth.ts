@@ -40,6 +40,19 @@ export const authService = {
 		});
 	},
 
+	async getMahasiswaList(): Promise<ApiResponse<UserProfile[]>> {
+		return await fetchApi<ApiResponse<UserProfile[]>>('/auth/mahasiswa', {
+			method: 'GET'
+		});
+	},
+
+	async registerMahasiswa(data: any): Promise<ApiResponse<UserProfile>> {
+		return await fetchApi<ApiResponse<UserProfile>>('/auth/mahasiswa', {
+			method: 'POST',
+			body: JSON.stringify(data)
+		});
+	},
+
 	async updateProfile(data: { name: string, nickname?: string, program_studi_id?: string }): Promise<ApiResponse<UserProfile>> {
 		const res = await fetchApi<ApiResponse<UserProfile>>('/auth/me', {
 			method: 'PUT',

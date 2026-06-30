@@ -27,7 +27,11 @@
 				showSplash = true;
 				
 				setTimeout(() => {
-					goto('/dashboard');
+					if (authState.role === 'mahasiswa') {
+						goto('/mahasiswa');
+					} else {
+						goto('/dashboard');
+					}
 				}, 1000);
 			} else {
 				error = res.message || 'Login failed. Please try again.';

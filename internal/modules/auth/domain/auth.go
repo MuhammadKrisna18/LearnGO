@@ -12,6 +12,7 @@ type User struct {
 	Name           string                `json:"name" gorm:"type:varchar(255);not null"`
 	Nickname       *string               `json:"nickname" gorm:"type:varchar(255)"`
 	NID            *string               `json:"nid" gorm:"type:varchar(5);unique"`
+	NRP            *string               `json:"nrp" gorm:"type:varchar(14);unique"`
 	Email          string                `json:"email" gorm:"type:varchar(255);uniqueIndex;not null"`
 	Password       string                `json:"-" gorm:"type:varchar(255);not null"`
 	Role           string                `json:"role" gorm:"type:varchar(50);not null;default:'user'"`
@@ -64,6 +65,7 @@ type UserProfileResponse struct {
 	Name           string                `json:"name"`
 	Nickname       *string               `json:"nickname,omitempty"`
 	NID            *string               `json:"nid,omitempty"`
+	NRP            *string               `json:"nrp,omitempty"`
 	Email          string                `json:"email"`
 	Role           string                `json:"role"`
 	ProgramStudiID *string               `json:"program_studi_id,omitempty"`
@@ -100,4 +102,14 @@ type AuthService interface {
 	RequestEmailChange(ctx context.Context, userID string, req EmailChangeRequestPayload) error
 	GetPendingEmailRequests(ctx context.Context) ([]*EmailChangeRequest, error)
 	ReviewEmailRequest(ctx context.Context, requestID string, approve bool) error
+
+	RegisterMahasiswa(ctx context.Context, req RegisterMahasiswaRequest) (*UserProfileResponse, error)
+	GetMahasiswaList(ctx context.Context) ([]*UserProfileResponse, error)
+}
+
+type RegisterMahasiswaRequest struct {
+	Name           string `json:"name" validate:"required"`
+	NRP            string `json:"nrp" validate:"required"`
+	Password       string `json:"password" validate:"required"`
+	ProgramStudiID string `json:"program_studi_id" validate:"required"`
 }

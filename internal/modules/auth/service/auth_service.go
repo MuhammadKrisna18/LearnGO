@@ -73,6 +73,7 @@ func (s *authService) GetProfile(ctx context.Context, id string) (*domain.UserPr
 		Name:           user.Name,
 		Nickname:       user.Nickname,
 		NID:            user.NID,
+		NRP:            user.NRP,
 		Email:          user.Email,
 		Role:           user.Role,
 		ProgramStudiID: user.ProgramStudiID,
@@ -117,6 +118,7 @@ func (s *authService) RegisterDosen(ctx context.Context, req domain.RegisterDose
 		Name:           newUser.Name,
 		Nickname:       newUser.Nickname,
 		NID:            newUser.NID,
+		NRP:            newUser.NRP,
 		Email:          newUser.Email,
 		Role:           newUser.Role,
 		ProgramStudiID: newUser.ProgramStudiID,
@@ -137,6 +139,7 @@ func (s *authService) GetDosenList(ctx context.Context) ([]*domain.UserProfileRe
 			Name:           u.Name,
 			Nickname:       u.Nickname,
 			NID:            u.NID,
+			NRP:            u.NRP,
 			Email:          u.Email,
 			Role:           u.Role,
 			ProgramStudiID: u.ProgramStudiID,
@@ -257,4 +260,57 @@ func (s *authService) ReviewEmailRequest(ctx context.Context, requestID string, 
 	}
 
 	return s.repo.UpdateEmailChangeRequest(ctx, req)
+}
+
+func (s *authService) RegisterMahasiswa(ctx context.Context, req domain.RegisterMahasiswaRequest) (*domain.UserProfileResponse, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, apperrors.NewInternal("Gagal mengenkripsi password", err.Error())
+	}
+
+	email := req.NRP + "@student.its.golang"
+
+	existingUser, err := s.repo.GetByEmail(ctx, email)
+	if err == nil && existingUser != nil {
+		return nil, apperrors.NewConflict("Email sudah terdaftar", "")
+	}
+
+	user := &domain.User{
+		ID:             uuid.New().String(),
+		Name:           req.Name,
+		NRP:            &req.NRP,
+		Email:          email,
+		Password:       string(hashedPassword),
+		Role:           "mahasiswa",
+		ProgramStudiID: &req.ProgramStudiID,
+	}
+
+	if err := s.repo.Create(ctx, user); err != nil {
+		return nil, apperrors.NewInternal("Gagal mendaftarkan mahasiswa", err.Error())
+	}
+
+	return s.GetProfile(ctx, user.ID)
+}
+
+func (s *authService) GetMahasiswaList(ctx context.Context) ([]*domain.UserProfileResponse, error) {
+	users, err := s.repo.GetUsersByRole(ctx, "mahasiswa")
+	if err != nil {
+		return nil, apperrors.NewInternal("Gagal mengambil data mahasiswa", err.Error())
+	}
+
+	var response []*domain.UserProfileResponse
+	for _, user := range users {
+		response = append(response, &domain.UserProfileResponse{
+			ID:             user.ID,
+			Name:           user.Name,
+			NRP:            user.NRP,
+			Email:          user.Email,
+			Role:           user.Role,
+			ProgramStudiID: user.ProgramStudiID,
+			ProgramStudi:   user.ProgramStudi,
+			PhotoURL:       user.PhotoURL,
+			CreatedAt:      user.CreatedAt,
+		})
+	}
+	return response, nil
 }

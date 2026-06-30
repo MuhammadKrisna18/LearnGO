@@ -36,6 +36,9 @@ func (h *AuthHandler) RegisterRoutes(router fiber.Router, jwtSecret string) {
 	authGroup.Post("/dosen", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.RegisterDosen)
 	authGroup.Get("/dosen", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.GetDosenList)
 	authGroup.Delete("/dosen/:id", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.DeleteDosen)
+
+	authGroup.Post("/mahasiswa", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.RegisterMahasiswa)
+	authGroup.Get("/mahasiswa", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.GetMahasiswaList)
 }
 
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
@@ -231,4 +234,31 @@ func (h *AuthHandler) UploadPhoto(c *fiber.Ctx) error {
 	}
 
 	return response.Success(c, fiber.StatusOK, "Foto profil berhasil diperbarui", res)
+}
+
+func (h *AuthHandler) RegisterMahasiswa(c *fiber.Ctx) error {
+	var req domain.RegisterMahasiswaRequest
+	if err := c.BodyParser(&req); err != nil {
+		return apperrors.NewBadRequest("Format data tidak valid", err.Error())
+	}
+
+	if req.Name == "" || req.NRP == "" || req.Password == "" || req.ProgramStudiID == "" {
+		return apperrors.NewBadRequest("Semua field harus diisi")
+	}
+
+	res, err := h.service.RegisterMahasiswa(c.UserContext(), req)
+	if err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusCreated, "Berhasil mendaftarkan mahasiswa", res)
+}
+
+func (h *AuthHandler) GetMahasiswaList(c *fiber.Ctx) error {
+	res, err := h.service.GetMahasiswaList(c.UserContext())
+	if err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusOK, "Berhasil mengambil data mahasiswa", res)
 }
