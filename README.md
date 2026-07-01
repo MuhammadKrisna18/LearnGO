@@ -13,7 +13,7 @@ Sebuah sistem terintegrasi dengan arsitektur **SIAKAD Pro**, dikembangkan menggu
 - **Manajemen Kelas Dinamis**: Mendukung pembuatan jadwal kelas (*Multi-schedule*) yang fleksibel. Satu ruangan kelas fisik dapat digunakan untuk hari dan jam yang berbeda dengan sistem proteksi *conflict* (jadwal ganda) terintegrasi, serta tabel UI canggih yang secara otomatis dikelompokkan berdasarkan Program Studi, lengkap dengan fitur pencarian dan pengurutan (jam/hari/nama kelas).
 - **Sistem Pengajuan Mata Kuliah**: Dosen dapat mengajukan permintaan untuk mengampu mata kuliah. Admin meninjau dan memberikan keputusan (*approve/reject*).
 - **Sistem Pengajuan Kelas & Validasi Jadwal**: Setelah memiliki mata kuliah, dosen dapat memilih dan mengajukan kelas fisik yang ingin diajar. Sistem memvalidasi kesesuaian Program Studi, mencegah bentrok jadwal kelas bagi dosen yang sama, dan membatasi jumlah kelas sesuai jumlah mata kuliah yang diampu.
-- **Portal Kelas Khusus**: Dosen yang telah disetujui untuk mengajar kelas tertentu mendapatkan akses fitur "Masuk Kelas", sebuah portal kelas khusus (dilengkapi tab Daftar Mahasiswa, Materi, Tugas, dan Pengumuman) untuk mengelola aktivitas belajar mengajar secara mendetail.
+- **Portal Kelas & Sistem Absensi**: Dosen yang telah disetujui untuk mengajar kelas tertentu mendapatkan akses fitur "Masuk Kelas". Di dalamnya, terdapat fitur **Manajemen Pertemuan Terpusat** (termasuk auto-increment nomor pertemuan hingga maksimal 16) yang terintegrasi secara otomatis dengan sistem pembuatan **Kode Absensi 6-digit** dan **Rekap Kehadiran Mahasiswa**. Portal ini juga dilengkapi *placeholder* fitur e-learning: Daftar Mahasiswa, Materi, Tugas, dan Pengumuman.
 - **Manajemen Program Studi**: Modul khusus untuk mengelola data Program Studi yang terintegrasi dengan modul Kelas dan Mata Kuliah.
 - **Sistem Profil & Keamanan**: Halaman profil terdedikasi (`/dashboard/profile`). Data vital seperti Nomor Induk Dosen (NID) bersifat permanen (tidak bisa diubah/dihapus), dan penggantian email memerlukan _approval_ Admin. Pengguna juga dapat mengunggah **Foto Profil** yang otomatis di-_crop_ (rasio 1:1) dan akan ditampilkan pada *Navbar* serta tabel antarmuka lintas-role secara publik (misal pada Daftar Akun Dosen).
 - **Laporan & Evaluasi Akademik**: Halaman khusus Admin (`/dashboard/evaluasi`) yang merangkum data krusial: Mata Kuliah yang belum memiliki dosen pengampu, Dosen yang belum mengampu mata kuliah sama sekali, serta Kelas yang belum terutilisasi.
@@ -241,6 +241,7 @@ Proses pengembangan dan perancangan aplikasi **SIAKAD Pro** ini mematuhi standar
 ### 3. Otomatisasi & Pengelolaan Basis Data (Data Integrity)
 - **Auto Migration & Seeding**: Saat aplikasi backend pertama kali berjalan, GORM bertugas memeriksa struktur tabel di PostgreSQL dan menyesuaikannya (*Auto-migrate*). Skema *database* tidak memerlukan modifikasi manual di terminal SQL, melainkan cukup mendefinisikan *struct* `domain` di Golang.
 - **Transaksional (ACID Compliance)**: Aksi krusial yang melibatkan perubahan berlapis dalam satu waktu dijaga secara transaksional di level *repository* (misal: pendaftaran mata kuliah ke kelas) untuk mencegah anomali data jika terjadi kendala putus koneksi di tengah-tengah pemrosesan.
+- **Single Source of Truth**: Menghilangkan redudansi data (*data duplication*) dengan memusatkan kendali tabel yang saling terkait ke dalam modul dominannya (misal: penggabungan entitas Pertemuan dan Absensi secara eksklusif ke dalam modul Kelas), sehingga riwayat *database* tetap konsisten dan akurat.
 
 ---
 
@@ -321,7 +322,9 @@ npm run dev
     - Setiap perubahan status pengajuan dikomunikasikan melalui **Toast Notification**.
 11. **Portal Kelas (Masuk Kelas)**:
     - Kelas yang berhasil didapatkan akan muncul di bagian "Kelas Saya" milik Dosen. Dosen dapat menekan tombol "Masuk Kelas" untuk memasuki portal kelas.
-    - Portal dilengkapi *placeholder* fitur e-learning: Daftar Mahasiswa, Materi, Tugas, dan Pengumuman.
+    - Dosen dapat mengklik "Mulai Pertemuan Baru". Sistem akan **otomatis menghitung urutan pertemuan (1-16)** dan mengunci fitur ini jika pertemuan sudah mencapai batas maksimal.
+    - Setiap pertemuan yang dimulai akan otomatis menghasilkan **Kode Absensi 6-digit** untuk dibagikan kepada Mahasiswa. Data ini tersambung langsung dengan tab **Rekap Kehadiran**.
+    - Portal dilengkapi *placeholder* fitur e-learning tambahan: Daftar Mahasiswa, Materi, Tugas, dan Pengumuman.
 12. **Clean UI**: Semua instruksi di dalam file program bersifat bersih (telah di-*strip* dari semua komentar developer) sehingga *codebase* sangat *clean*.
 
 ---
