@@ -23,8 +23,8 @@
 		loading = true;
 		error = '';
 		try {
-			// Because mahasiswas don't have a direct "get pengajuan by ID" endpoint, 
-			// we can use getMyJadwal and filter by ID.
+			
+			
 			const res = await kelasService.getMyJadwal();
 			if (res.success && res.data) {
 				const myClass = res.data.find(p => p.id === id);
@@ -102,7 +102,7 @@
 			<button class="btn-primary" onclick={loadKelas}>Coba Lagi</button>
 		</div>
 	{:else if kelasInfo}
-		<!-- Header Info -->
+		
 		<div class="kelas-header">
 			<div class="header-content">
 				<h1 class="kelas-title">{kelasInfo.kelas?.name}</h1>
@@ -123,7 +123,7 @@
 			</div>
 		</div>
 
-		<!-- Navigation Tabs -->
+		
 		<div class="tabs-container">
 			<button class="tab-btn" class:active={activeTab === 'pertemuan'} onclick={() => activeTab = 'pertemuan'}>
 				Pertemuan
@@ -139,7 +139,7 @@
 			</button>
 		</div>
 
-		<!-- Content Area -->
+		
 		<div class="content-area">
 			<Card style="padding: 24px;">
 				{#if activeTab === 'pertemuan'}

@@ -12,11 +12,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/redis/go-redis/v9"
 	"github.com/gofiber/swagger"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 	"siakad-pro/config"
 	_ "siakad-pro/docs"
+	"siakad-pro/internal/middleware"
 	"siakad-pro/internal/modules/auth"
 	"siakad-pro/internal/modules/kelas"
 	"siakad-pro/internal/modules/matakuliah"
@@ -26,7 +27,6 @@ import (
 	"siakad-pro/internal/shared/cache"
 	"siakad-pro/internal/shared/database"
 	"siakad-pro/internal/shared/response"
-	"siakad-pro/internal/middleware"
 )
 
 type App struct {
@@ -62,7 +62,7 @@ func (a *App) Start() error {
 
 	a.fiber.Use(recover.New())
 	a.fiber.Use(cors.New())
-	
+
 	a.fiber.Use(middleware.PerformanceLogger())
 
 	a.fiber.Static("/uploads", "./uploads")

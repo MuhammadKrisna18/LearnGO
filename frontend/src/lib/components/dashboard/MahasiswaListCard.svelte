@@ -15,7 +15,7 @@
 	onMount(async () => {
 		await fetchData();
 		
-		// Listen for the custom event to refresh data
+		
 		window.addEventListener('mahasiswa-added', fetchData as EventListener);
 		
 		return () => {

@@ -9,9 +9,9 @@ import (
 )
 
 type MataKuliah struct {
-	ID             string                `json:"id" gorm:"primaryKey;type:varchar(255)"`
-	Name           string                `json:"name" gorm:"type:varchar(255);uniqueIndex:idx_name_prodi;not null"`
-	SKS            int                   `json:"sks" gorm:"not null"`
+	ID             string                 `json:"id" gorm:"primaryKey;type:varchar(255)"`
+	Name           string                 `json:"name" gorm:"type:varchar(255);uniqueIndex:idx_name_prodi;not null"`
+	SKS            int                    `json:"sks" gorm:"not null"`
 	ProgramStudiID string                 `json:"program_studi_id" gorm:"type:varchar(255);uniqueIndex:idx_name_prodi;not null"`
 	ProgramStudi   *psDomain.ProgramStudi `json:"program_studi,omitempty" gorm:"foreignKey:ProgramStudiID"`
 	Pengajuan      []*PengajuanMataKuliah `json:"pengajuan,omitempty" gorm:"foreignKey:MataKuliahID"`

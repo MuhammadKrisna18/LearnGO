@@ -158,7 +158,7 @@
 		}
 	}
 	
-	// Helper to get MKs not yet in the selected semester, filtered by prodi
+	
 	let availableMataKuliah = $derived(() => {
 		const sem = semesters.find(s => s.id === assignSemesterId);
 		const assignedIds = new Set(sem?.mata_kuliah?.map(sm => sm.mata_kuliah_id) || []);

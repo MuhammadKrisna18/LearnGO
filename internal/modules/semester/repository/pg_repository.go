@@ -123,8 +123,8 @@ func (r *pgSemesterRepository) CountSelesaiPertemuan(ctx context.Context, kelasI
 func (r *pgSemesterRepository) MarkPertemuanSelesai(ctx context.Context, id string) error {
 	now := time.Now()
 	return r.db.WithContext(ctx).Model(&domain.Pertemuan{}).Where("id = ?", id).Updates(map[string]interface{}{
-		"status":           domain.PertemuanSelesai,
-		"tanggal_selesai":  now,
+		"status":          domain.PertemuanSelesai,
+		"tanggal_selesai": now,
 	}).Error
 }
 

@@ -228,8 +228,8 @@
 		display: inline-block;
 		margin-left: 8px;
 		padding: 2px 6px;
-		background-color: #f3e8ff; /* purple-100 */
-		color: #7e22ce; /* purple-700 */
+		background-color: #f3e8ff; 
+		color: #7e22ce; 
 		font-size: 0.7rem;
 		font-weight: 600;
 		border-radius: 4px;

@@ -328,7 +328,7 @@
 		background: var(--surface-color);
 	}
 
-	/* Top Header */
+	
 	.top-header {
 		height: 64px;
 		padding: 0 40px;

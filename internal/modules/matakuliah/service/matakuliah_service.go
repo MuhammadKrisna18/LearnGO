@@ -3,12 +3,12 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 	"math/rand"
 	"net/http"
-	"time"
-	"github.com/google/uuid"
 	"siakad-pro/internal/modules/matakuliah/domain"
 	"siakad-pro/internal/shared/apperrors"
+	"time"
 )
 
 type matakuliahService struct {
@@ -30,7 +30,7 @@ func (s *matakuliahService) CreateMataKuliah(ctx context.Context, req domain.Cre
 	if err != nil {
 		return nil, apperrors.NewInternal("Gagal mengecek mata kuliah", err.Error())
 	}
-	
+
 	if existing != nil {
 		return nil, &apperrors.AppError{Code: http.StatusConflict, Message: "Mata kuliah sudah terdaftar di Program Studi ini"}
 	}
@@ -68,7 +68,7 @@ func (s *matakuliahService) GetMataKuliahList(ctx context.Context) ([]*domain.Ma
 	if err != nil {
 		return nil, apperrors.NewInternal("Gagal mengambil daftar mata kuliah", err.Error())
 	}
-	
+
 	if mkList == nil {
 		mkList = []*domain.MataKuliah{}
 	}
@@ -113,7 +113,7 @@ func (s *matakuliahService) LepasMataKuliah(ctx context.Context, mkID string) er
 	if err != nil {
 		return apperrors.NewInternal("Gagal mengecek status mata kuliah", err.Error())
 	}
-	
+
 	for _, req := range activeReqs {
 		if err := s.repo.DeletePengajuan(ctx, req.ID); err != nil {
 			return apperrors.NewInternal("Gagal melepas mata kuliah", err.Error())

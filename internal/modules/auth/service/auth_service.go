@@ -245,12 +245,12 @@ func (s *authService) ReviewEmailRequest(ctx context.Context, requestID string, 
 
 	if approve {
 		req.Status = "approved"
-		
+
 		user, err := s.repo.GetByID(ctx, req.UserID)
 		if err != nil {
 			return apperrors.NewNotFound("User tidak ditemukan", err.Error())
 		}
-		
+
 		user.Email = req.NewEmail
 		if err := s.repo.Update(ctx, user); err != nil {
 			return apperrors.NewInternal("Gagal mengupdate email user", err.Error())

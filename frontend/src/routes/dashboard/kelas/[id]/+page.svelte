@@ -109,11 +109,11 @@
 			if (res.success && res.data && res.data.length > 0) {
 				absensiList = res.data;
 			} else {
-				// Initialize based on mahasiswaList
+				
 				absensiList = mahasiswaList.map(m => ({
 					mahasiswa_id: m.id,
 					mahasiswa: m,
-					status_kehadiran: 'alpa' // Default
+					status_kehadiran: 'alpa' 
 				}));
 			}
 		} catch (err) {
@@ -132,7 +132,7 @@
 			}));
 			await kelasService.submitAbsensi(selectedPertemuan.id, payload);
 			alert('Absensi berhasil disimpan!');
-			openAbsensi(selectedPertemuan); // Reload to get real IDs
+			openAbsensi(selectedPertemuan); 
 		} catch (err) {
 			alert('Gagal menyimpan absensi');
 		}
@@ -220,7 +220,7 @@
 			<div class="banner-decoration"></div>
 		</div>
 
-		<!-- Navigation Tabs -->
+		
 		<div class="tabs-container">
 			{#if authState.role === 'dosen'}
 			<button class="tab-btn" class:active={activeTab === 'pertemuan'} onclick={() => activeTab = 'pertemuan'}>
@@ -296,7 +296,7 @@
 							</div>
 						{/if}
 
-						<!-- Absensi Section (Inline Modal) -->
+						
 						{#if selectedPertemuan}
 							<div class="modal-backdrop">
 								<div class="modal-content absensi-modal">
@@ -862,7 +862,7 @@
 	}
 
 	.sticky-col-2 {
-		left: 120px; /* Adjust based on NRP width */
+		left: 120px; 
 		border-right: 2px solid rgba(0,0,0,0.1);
 		box-shadow: 2px 0 5px rgba(0,0,0,0.02);
 	}

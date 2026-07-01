@@ -94,17 +94,17 @@ type KelasService interface {
 }
 
 type PengajuanKelas struct {
-	ID        string           `json:"id" gorm:"primaryKey;type:varchar(255)"`
-	DosenID   string           `json:"dosen_id" gorm:"type:varchar(255);not null"`
-	Dosen     *authDomain.User `json:"dosen,omitempty" gorm:"foreignKey:DosenID"`
+	ID           string               `json:"id" gorm:"primaryKey;type:varchar(255)"`
+	DosenID      string               `json:"dosen_id" gorm:"type:varchar(255);not null"`
+	Dosen        *authDomain.User     `json:"dosen,omitempty" gorm:"foreignKey:DosenID"`
 	KelasID      string               `json:"kelas_id" gorm:"type:varchar(255);not null"`
 	Kelas        *Kelas               `json:"kelas,omitempty" gorm:"foreignKey:KelasID"`
 	MataKuliahID string               `json:"mata_kuliah_id" gorm:"type:varchar(255);not null"`
 	MataKuliah   *mkDomain.MataKuliah `json:"mata_kuliah,omitempty" gorm:"foreignKey:MataKuliahID"`
 	Status       string               `json:"status" gorm:"type:varchar(50);not null;default:'pending'"`
 	Code         string               `json:"code" gorm:"type:varchar(6);not null"`
-	CreatedAt time.Time        `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt time.Time        `json:"updated_at" gorm:"autoUpdateTime"`
+	CreatedAt    time.Time            `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt    time.Time            `json:"updated_at" gorm:"autoUpdateTime"`
 }
 
 type RequestKelasPayload struct {
@@ -118,18 +118,18 @@ const (
 )
 
 type Pertemuan struct {
-	ID          string          `json:"id" gorm:"primaryKey;type:varchar(255)"`
-	PengajuanID string          `json:"pengajuan_id" gorm:"type:varchar(255);not null"`
-	Pengajuan   *PengajuanKelas `json:"pengajuan,omitempty" gorm:"foreignKey:PengajuanID"`
-	Judul       string          `json:"judul" gorm:"type:varchar(255);not null"`
-	Tanggal     time.Time       `json:"tanggal" gorm:"not null"`
-	WaktuMulai  time.Time       `json:"waktu_mulai" gorm:"not null"`
-	WaktuSelesai *time.Time     `json:"waktu_selesai"`
-	Status      string          `json:"status" gorm:"type:varchar(50);not null;default:'berlangsung'"`
-	KodeAbsensi string          `json:"kode_absensi" gorm:"type:varchar(10)"`
-	Absensi     []*Absensi      `json:"absensi,omitempty" gorm:"foreignKey:PertemuanID"`
-	CreatedAt   time.Time       `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt   time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
+	ID           string          `json:"id" gorm:"primaryKey;type:varchar(255)"`
+	PengajuanID  string          `json:"pengajuan_id" gorm:"type:varchar(255);not null"`
+	Pengajuan    *PengajuanKelas `json:"pengajuan,omitempty" gorm:"foreignKey:PengajuanID"`
+	Judul        string          `json:"judul" gorm:"type:varchar(255);not null"`
+	Tanggal      time.Time       `json:"tanggal" gorm:"not null"`
+	WaktuMulai   time.Time       `json:"waktu_mulai" gorm:"not null"`
+	WaktuSelesai *time.Time      `json:"waktu_selesai"`
+	Status       string          `json:"status" gorm:"type:varchar(50);not null;default:'berlangsung'"`
+	KodeAbsensi  string          `json:"kode_absensi" gorm:"type:varchar(10)"`
+	Absensi      []*Absensi      `json:"absensi,omitempty" gorm:"foreignKey:PertemuanID"`
+	CreatedAt    time.Time       `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt    time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
 }
 
 const (
@@ -160,8 +160,8 @@ type AbsensiUpdate struct {
 }
 
 type RekapKehadiranResponse struct {
-	Pertemuan []PertemuanInfo    `json:"pertemuan"`
-	Mahasiswa []MahasiswaRekap   `json:"mahasiswa"`
+	Pertemuan []PertemuanInfo  `json:"pertemuan"`
+	Mahasiswa []MahasiswaRekap `json:"mahasiswa"`
 }
 
 type PertemuanInfo struct {

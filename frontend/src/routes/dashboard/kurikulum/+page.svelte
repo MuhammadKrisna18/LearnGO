@@ -24,7 +24,7 @@
 	}
 
 	onMount(() => {
-		// Just a read-only view, but we can restrict to logged in users
+		
 		if (!authState.token) {
 			window.location.href = '/login';
 			return;

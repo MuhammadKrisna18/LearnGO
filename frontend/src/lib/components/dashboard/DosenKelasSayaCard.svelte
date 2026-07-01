@@ -204,7 +204,7 @@
 		box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
 	}
 	
-	/* Modal Styles */
+	
 	.modal-backdrop {
 		position: fixed;
 		top: 0;

@@ -8,19 +8,19 @@ import (
 )
 
 type User struct {
-	ID             string                `json:"id" gorm:"primaryKey;type:varchar(255)"`
-	Name           string                `json:"name" gorm:"type:varchar(255);not null"`
-	Nickname       *string               `json:"nickname" gorm:"type:varchar(255)"`
-	NID            *string               `json:"nid" gorm:"type:varchar(5);unique"`
-	NRP            *string               `json:"nrp" gorm:"type:varchar(14);unique"`
-	Email          string                `json:"email" gorm:"type:varchar(255);uniqueIndex;not null"`
-	Password       string                `json:"-" gorm:"type:varchar(255);not null"`
-	Role           string                `json:"role" gorm:"type:varchar(50);not null;default:'user'"`
-	ProgramStudiID *string               `json:"program_studi_id" gorm:"type:varchar(255)"`
+	ID             string                 `json:"id" gorm:"primaryKey;type:varchar(255)"`
+	Name           string                 `json:"name" gorm:"type:varchar(255);not null"`
+	Nickname       *string                `json:"nickname" gorm:"type:varchar(255)"`
+	NID            *string                `json:"nid" gorm:"type:varchar(5);unique"`
+	NRP            *string                `json:"nrp" gorm:"type:varchar(14);unique"`
+	Email          string                 `json:"email" gorm:"type:varchar(255);uniqueIndex;not null"`
+	Password       string                 `json:"-" gorm:"type:varchar(255);not null"`
+	Role           string                 `json:"role" gorm:"type:varchar(50);not null;default:'user'"`
+	ProgramStudiID *string                `json:"program_studi_id" gorm:"type:varchar(255)"`
 	ProgramStudi   *psDomain.ProgramStudi `json:"program_studi,omitempty" gorm:"foreignKey:ProgramStudiID"`
-	PhotoURL       *string               `json:"photo_url" gorm:"type:varchar(255)"`
-	CreatedAt      time.Time             `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt      time.Time             `json:"updated_at" gorm:"autoUpdateTime"`
+	PhotoURL       *string                `json:"photo_url" gorm:"type:varchar(255)"`
+	CreatedAt      time.Time              `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt      time.Time              `json:"updated_at" gorm:"autoUpdateTime"`
 }
 
 type EmailChangeRequest struct {
@@ -61,18 +61,18 @@ type LoginResponse struct {
 }
 
 type UserProfileResponse struct {
-	ID             string                `json:"id"`
-	Name           string                `json:"name"`
-	Nickname       *string               `json:"nickname,omitempty"`
-	NID            *string               `json:"nid,omitempty"`
-	NRP            *string               `json:"nrp,omitempty"`
-	Email          string                `json:"email"`
-	Role           string                `json:"role"`
-	ProgramStudiID *string               `json:"program_studi_id,omitempty"`
+	ID             string                 `json:"id"`
+	Name           string                 `json:"name"`
+	Nickname       *string                `json:"nickname,omitempty"`
+	NID            *string                `json:"nid,omitempty"`
+	NRP            *string                `json:"nrp,omitempty"`
+	Email          string                 `json:"email"`
+	Role           string                 `json:"role"`
+	ProgramStudiID *string                `json:"program_studi_id,omitempty"`
 	ProgramStudi   *psDomain.ProgramStudi `json:"program_studi,omitempty"`
-	PendingEmail   *string               `json:"pending_email,omitempty"`
-	PhotoURL       *string               `json:"photo_url,omitempty"`
-	CreatedAt      time.Time             `json:"created_at"`
+	PendingEmail   *string                `json:"pending_email,omitempty"`
+	PhotoURL       *string                `json:"photo_url,omitempty"`
+	CreatedAt      time.Time              `json:"created_at"`
 }
 
 type AuthRepository interface {

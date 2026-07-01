@@ -107,7 +107,7 @@
 				error = err.message || 'Gagal terhubung ke server';
 			} finally {
 				uploading = false;
-				target.value = ''; // Reset input
+				target.value = ''; 
 			}
 		}
 	}

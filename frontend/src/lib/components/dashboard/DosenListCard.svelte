@@ -325,7 +325,7 @@
 		aspect-ratio: 1/1;
 	}
 
-	/* Modal Styles */
+	
 	.detail-avatar {
 		width: 64px;
 		height: 64px;

@@ -164,7 +164,7 @@ func (h *KelasHandler) GetMyJadwal(c *fiber.Ctx) error {
 	if !ok {
 		return apperrors.NewUnauthorized("Unauthorized")
 	}
-	
+
 	list, err := h.service.GetMyJadwal(c.Context(), mahasiswaID)
 	if err != nil {
 		return err
@@ -291,16 +291,14 @@ func (h *KelasHandler) GetRekapKehadiranAdmin(c *fiber.Ctx) error {
 		return apperrors.NewBadRequest("ID Pengajuan diperlukan")
 	}
 
-	// For admin, we don't pass the dosenID, which bypasses the access check
 	rekap, err := h.service.GetRekapKehadiran(c.Context(), id, "")
 	if err != nil {
 		return err
 	}
 
-	// We also calculate total kehadiran for Admin
 	type AdminRekapResponse struct {
 		*domain.RekapKehadiranResponse
-		TotalPertemuan int `json:"total_pertemuan"`
+		TotalPertemuan int                      `json:"total_pertemuan"`
 		Summary        []map[string]interface{} `json:"summary"`
 	}
 
@@ -314,20 +312,20 @@ func (h *KelasHandler) GetRekapKehadiranAdmin(c *fiber.Ctx) error {
 				hadirCount++
 			}
 		}
-		
+
 		summary = append(summary, map[string]interface{}{
-			"id": m.ID,
-			"nrp": m.NRP,
-			"name": m.Name,
-			"total_hadir": hadirCount,
+			"id":              m.ID,
+			"nrp":             m.NRP,
+			"name":            m.Name,
+			"total_hadir":     hadirCount,
 			"total_pertemuan": totalPertemuan,
 		})
 	}
 
 	res := AdminRekapResponse{
 		RekapKehadiranResponse: rekap,
-		TotalPertemuan: totalPertemuan,
-		Summary: summary,
+		TotalPertemuan:         totalPertemuan,
+		Summary:                summary,
 	}
 
 	return response.Success(c, fiber.StatusOK, "Berhasil mengambil rekap kehadiran", res)

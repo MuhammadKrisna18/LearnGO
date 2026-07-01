@@ -104,9 +104,9 @@ export const kelasService = {
 
 	async getRekapKehadiran(pengajuanId: string): Promise<ApiResponse<any>> {
 		let endpoint = `/pertemuan/rekap/${pengajuanId}`;
-		// Use localStorage or a store to check role, wait, authState can't be imported easily in non-component context due to state?
-		// Actually, authState is a module-level state in $lib/stores/auth.svelte
-		// Let's import authState at the top of the file
+		
+		
+		
 		
 		const role = localStorage.getItem('role');
 		if (role === 'admin') {

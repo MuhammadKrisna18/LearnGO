@@ -34,7 +34,7 @@
 </div>
 
 <style>
-	/* Custom widths for specific layout, overriding standard 1fr 1fr if needed */
+	
 	@media (min-width: 1024px) {
 		.page-grid.two-cols {
 			grid-template-columns: 2fr 1fr;

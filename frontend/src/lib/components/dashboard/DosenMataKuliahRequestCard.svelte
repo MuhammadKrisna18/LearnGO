@@ -97,7 +97,7 @@
 					await loadData();
 				} else {
 					toast.error(res.message);
-					await loadData(); // Reload to remove stale offer
+					await loadData(); 
 				}
 			} catch (err: any) {
 				toast.error(err.message || 'Gagal menerima penawaran');

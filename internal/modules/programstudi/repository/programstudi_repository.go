@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 	"errors"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"siakad-pro/internal/modules/programstudi/domain"
-	"github.com/google/uuid"
 )
 
 type pgProgramStudiRepository struct {

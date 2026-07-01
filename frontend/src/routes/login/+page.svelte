@@ -21,7 +21,7 @@
 			const res = await authService.login(email, password);
 
 			if (res.success) {
-				// Fetch profile so that the splash screen can display the user's name
+				
 				await authService.getProfile();
 
 				showSplash = true;

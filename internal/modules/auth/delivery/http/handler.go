@@ -28,7 +28,7 @@ func (h *AuthHandler) RegisterRoutes(router fiber.Router, jwtSecret string) {
 	authGroup.Get("/me", middleware.Protected(jwtSecret), h.Me)
 	authGroup.Put("/me", middleware.Protected(jwtSecret), h.UpdateProfile)
 	authGroup.Post("/profile/photo", middleware.Protected(jwtSecret), h.UploadPhoto)
-	
+
 	authGroup.Post("/email-request", middleware.Protected(jwtSecret), h.RequestEmailChange)
 	authGroup.Get("/email-request", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.GetEmailRequests)
 	authGroup.Put("/email-request/:id", middleware.Protected(jwtSecret), middleware.RequireRole("admin"), h.ReviewEmailRequest)
@@ -150,7 +150,7 @@ func (h *AuthHandler) ReviewEmailRequest(c *fiber.Ctx) error {
 	if req.Approve {
 		statusStr = "disetujui"
 	}
-	return response.Success(c, fiber.StatusOK, "Permintaan ganti email " + statusStr, nil)
+	return response.Success(c, fiber.StatusOK, "Permintaan ganti email "+statusStr, nil)
 }
 
 func (h *AuthHandler) RegisterDosen(c *fiber.Ctx) error {

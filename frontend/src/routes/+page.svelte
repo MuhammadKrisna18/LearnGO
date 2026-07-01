@@ -6,7 +6,7 @@
 	let visible = true;
 
 	onMount(() => {
-		// Wait 2.5 seconds for the splash screen effect
+		
 		setTimeout(() => {
 			visible = false;
 			setTimeout(() => {
@@ -20,7 +20,7 @@
 				} else {
 					goto('/login');
 				}
-			}, 500); // 500ms fade out duration
+			}, 500); 
 		}, 2500);
 	});
 </script>

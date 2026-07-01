@@ -7,11 +7,11 @@ import (
 	"regexp"
 	"time"
 
+	"fmt"
 	"github.com/google/uuid"
 	authDomain "siakad-pro/internal/modules/auth/domain"
 	"siakad-pro/internal/modules/kelas/domain"
 	"siakad-pro/internal/shared/apperrors"
-	"fmt"
 )
 
 type kelasService struct {
@@ -224,7 +224,7 @@ func (s *kelasService) GetMahasiswaInKelas(ctx context.Context, pengajuanID stri
 		return nil, apperrors.NewNotFound("Pengajuan tidak ditemukan")
 	}
 
-	if p.DosenID != dosenID {
+	if dosenID != "" && p.DosenID != dosenID {
 		return nil, apperrors.NewUnauthorized("Anda tidak memiliki akses ke kelas ini", "")
 	}
 
@@ -247,7 +247,7 @@ func (s *kelasService) GetMyJadwal(ctx context.Context, userID string) ([]*domai
 }
 
 func (s *kelasService) MulaiPertemuan(ctx context.Context, pengajuanID string, judul string) (*domain.Pertemuan, error) {
-	// Generate 6 digit random number
+
 	randBytes := make([]byte, 6)
 	const charset = "0123456789"
 	for i := range randBytes {
@@ -334,7 +334,6 @@ func (s *kelasService) SubmitAbsensiMahasiswa(ctx context.Context, pertemuanID s
 		return apperrors.NewBadRequest("Kode absensi tidak valid")
 	}
 
-	// Check if already present
 	existing, err := s.repo.GetAbsensiByPertemuanID(ctx, pertemuanID)
 	if err != nil {
 		return apperrors.NewInternal("Gagal memeriksa absensi", err.Error())
@@ -343,9 +342,9 @@ func (s *kelasService) SubmitAbsensiMahasiswa(ctx context.Context, pertemuanID s
 	for _, a := range existing {
 		if a.MahasiswaID == mahasiswaID {
 			if a.StatusKehadiran == "hadir" {
-				return nil // Already absent
+				return nil
 			}
-			// Update single record
+
 			a.StatusKehadiran = "hadir"
 			if err := s.repo.UpdateAbsensiBulk(ctx, pertemuanID, []domain.AbsensiUpdate{{MahasiswaID: mahasiswaID, StatusKehadiran: "hadir"}}); err != nil {
 				return apperrors.NewInternal("Gagal update absensi", err.Error())
@@ -354,7 +353,6 @@ func (s *kelasService) SubmitAbsensiMahasiswa(ctx context.Context, pertemuanID s
 		}
 	}
 
-	// If not present, create
 	a := &domain.Absensi{
 		ID:              uuid.NewString(),
 		PertemuanID:     pertemuanID,
@@ -369,7 +367,7 @@ func (s *kelasService) SubmitAbsensiMahasiswa(ctx context.Context, pertemuanID s
 }
 
 func (s *kelasService) GetRekapKehadiran(ctx context.Context, pengajuanID string, dosenID string) (*domain.RekapKehadiranResponse, error) {
-	// Verify pengajuan and dosen access
+
 	p, err := s.repo.GetPengajuanByID(ctx, pengajuanID)
 	if err != nil {
 		return nil, apperrors.NewNotFound("Pengajuan tidak ditemukan")
@@ -378,14 +376,11 @@ func (s *kelasService) GetRekapKehadiran(ctx context.Context, pengajuanID string
 		return nil, apperrors.NewForbidden("Anda tidak memiliki akses ke kelas ini")
 	}
 
-	// Get all meetings for this class
 	pertemuanList, err := s.repo.GetPertemuanByPengajuanID(ctx, pengajuanID)
 	if err != nil {
 		return nil, apperrors.NewInternal("Gagal mengambil daftar pertemuan", err.Error())
 	}
 
-	// Get all students registered in the class (by ProgramStudi)
-	// Alternatively we can use GetMahasiswaInKelas
 	students, err := s.GetMahasiswaInKelas(ctx, pengajuanID, dosenID)
 	if err != nil {
 		return nil, err
@@ -418,19 +413,17 @@ func (s *kelasService) GetRekapKehadiran(ctx context.Context, pengajuanID string
 		res.Mahasiswa = append(res.Mahasiswa, rekap)
 	}
 
-	// Map to O(1) lookup
 	studentMap := make(map[string]*domain.MahasiswaRekap)
 	for i := range res.Mahasiswa {
 		studentMap[res.Mahasiswa[i].ID] = &res.Mahasiswa[i]
 	}
 
-	// For each meeting, fetch absensi and populate matrix
 	for _, p := range pertemuanList {
 		absensiList, err := s.repo.GetAbsensiByPertemuanID(ctx, p.ID)
 		if err != nil {
-			continue // Skip errors on individual meetings for now
+			continue
 		}
-		// Populate known absences
+
 		fmt.Println("Absensi count for meeting", p.ID, ":", len(absensiList))
 		for _, a := range absensiList {
 			fmt.Println("Found absensi for", a.MahasiswaID, "with status", a.StatusKehadiran)
@@ -441,7 +434,7 @@ func (s *kelasService) GetRekapKehadiran(ctx context.Context, pengajuanID string
 				fmt.Println("Student not found in map!")
 			}
 		}
-		// Fill defaults (alpa/empty) for those who didn't submit
+
 		for _, m := range res.Mahasiswa {
 			if _, ok := m.Kehadiran[p.ID]; !ok {
 				studentMap[m.ID].Kehadiran[p.ID] = domain.AbsensiAlpa

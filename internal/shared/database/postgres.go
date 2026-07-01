@@ -86,7 +86,7 @@ func seedSemesters(db *gorm.DB) {
 				Nomor:    i,
 				MinSKS:   18,
 				MaxSKS:   24,
-				IsActive: i == 1, // Semester 1 is active by default
+				IsActive: i == 1,
 			}
 			if err := db.Create(&sem).Error; err != nil {
 				log.Printf("Failed to seed semester %d: %v", i, err)

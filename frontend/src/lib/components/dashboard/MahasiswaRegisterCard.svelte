@@ -29,7 +29,7 @@
 	let selectedProdi = $derived(prodiList.find(p => p.id === mhsProdiId));
 	let nrpPrefix = $derived(selectedProdi ? getNRPPrefix(selectedProdi.name) : '');
 
-	// When nrpPrefix changes, update the NRP if it's empty or doesn't match the prefix
+	
 	$effect(() => {
 		if (nrpPrefix && !mhsNRP.startsWith(nrpPrefix)) {
 			mhsNRP = nrpPrefix;
@@ -87,7 +87,7 @@
 				mhsProdiId = '';
 				toast.success('Akun Mahasiswa berhasil dibuat!');
 				
-				// Dispatch custom event to refresh list
+				
 				window.dispatchEvent(new CustomEvent('mahasiswa-added'));
 			} else {
 				registerError = res.message || 'Gagal mendaftarkan mahasiswa';

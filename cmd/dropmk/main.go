@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
 	"siakad-pro/config"
 	mkDomain "siakad-pro/internal/modules/matakuliah/domain"
 )

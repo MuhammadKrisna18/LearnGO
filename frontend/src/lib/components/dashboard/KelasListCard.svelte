@@ -280,9 +280,16 @@
 										</td>
 										{#if authState.role === 'admin'}
 											<td>
-												<button class="btn-delete" aria-label="Hapus Kelas" onclick={() => promptDelete(k)}>
-													Hapus
-												</button>
+												<div class="controls" style="gap: 8px;">
+													{#if k.pengajuan && k.pengajuan.some(p => p.status === 'approved')}
+														<a href="/dashboard/kelas/{k.id}" class="btn-request" style="text-decoration: none;">
+															Detail
+														</a>
+													{/if}
+													<button class="btn-delete" aria-label="Hapus Kelas" onclick={() => promptDelete(k)}>
+														Hapus
+													</button>
+												</div>
 											</td>
 										{:else if authState.role === 'dosen'}
 											<td>
