@@ -62,7 +62,7 @@ func NewPostgresConnection(cfg *config.Config) (*gorm.DB, error) {
 		&mkDomain.PengajuanMataKuliah{},
 		&semDomain.Semester{},
 		&semDomain.SemesterMataKuliah{},
-		&semDomain.Pertemuan{},
+
 		&kelasDomain.Pertemuan{},
 		&kelasDomain.Absensi{},
 	); err != nil {

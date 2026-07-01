@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -57,9 +56,7 @@ func (r *pgSemesterRepository) Delete(ctx context.Context, id string) error {
 		if err := tx.Where("semester_id = ?", id).Delete(&domain.SemesterMataKuliah{}).Error; err != nil {
 			return err
 		}
-		if err := tx.Where("semester_id = ?", id).Delete(&domain.Pertemuan{}).Error; err != nil {
-			return err
-		}
+
 		return tx.Delete(&domain.Semester{}, "id = ?", id).Error
 	})
 }
@@ -101,37 +98,4 @@ func (r *pgSemesterRepository) GetTotalSKS(ctx context.Context, semesterID strin
 	return total, err
 }
 
-func (r *pgSemesterRepository) CreatePertemuan(ctx context.Context, p *domain.Pertemuan) error {
-	if p.ID == "" {
-		p.ID = uuid.New().String()
-	}
-	return r.db.WithContext(ctx).Create(p).Error
-}
 
-func (r *pgSemesterRepository) GetPertemuanByKelasAndSemester(ctx context.Context, kelasID string, semesterID string) ([]*domain.Pertemuan, error) {
-	var items []*domain.Pertemuan
-	err := r.db.WithContext(ctx).Where("kelas_id = ? AND semester_id = ?", kelasID, semesterID).Order("nomor_pertemuan ASC").Find(&items).Error
-	return items, err
-}
-
-func (r *pgSemesterRepository) CountSelesaiPertemuan(ctx context.Context, kelasID string, semesterID string) (int, error) {
-	var count int64
-	err := r.db.WithContext(ctx).Model(&domain.Pertemuan{}).Where("kelas_id = ? AND semester_id = ? AND status = ?", kelasID, semesterID, domain.PertemuanSelesai).Count(&count).Error
-	return int(count), err
-}
-
-func (r *pgSemesterRepository) MarkPertemuanSelesai(ctx context.Context, id string) error {
-	now := time.Now()
-	return r.db.WithContext(ctx).Model(&domain.Pertemuan{}).Where("id = ?", id).Updates(map[string]interface{}{
-		"status":          domain.PertemuanSelesai,
-		"tanggal_selesai": now,
-	}).Error
-}
-
-func (r *pgSemesterRepository) HasReachedMaxPertemuan(ctx context.Context, semesterID string) (bool, error) {
-	var count int64
-	err := r.db.WithContext(ctx).Model(&domain.Pertemuan{}).
-		Where("semester_id = ? AND nomor_pertemuan >= ?", semesterID, domain.MaxPertemuan).
-		Count(&count).Error
-	return count > 0, err
-}

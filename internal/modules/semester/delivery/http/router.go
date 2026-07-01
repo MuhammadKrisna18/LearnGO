@@ -10,7 +10,7 @@ func RegisterRoutes(router fiber.Router, handler *SemesterHandler, jwtSecret str
 
 	sem.Use(middleware.Protected(jwtSecret))
 	sem.Get("/", handler.GetAll)
-	sem.Get("/pertemuan", handler.GetPertemuan)
+
 	sem.Get("/:id", handler.GetByID)
 
 	sem.Post("/", middleware.RequireRole("admin"), handler.Create)
@@ -21,5 +21,4 @@ func RegisterRoutes(router fiber.Router, handler *SemesterHandler, jwtSecret str
 	sem.Post("/:id/matakuliah", middleware.RequireRole("admin"), handler.AssignMataKuliah)
 	sem.Delete("/:id/matakuliah/:mkId", middleware.RequireRole("admin"), handler.UnassignMataKuliah)
 
-	sem.Post("/pertemuan", middleware.RequireRole("dosen"), handler.CatatPertemuan)
 }

@@ -183,7 +183,7 @@ func (r *pgKelasRepository) GetPertemuanByID(ctx context.Context, id string) (*d
 
 func (r *pgKelasRepository) GetPertemuanByPengajuanID(ctx context.Context, pengajuanID string) ([]*domain.Pertemuan, error) {
 	var list []*domain.Pertemuan
-	err := r.db.WithContext(ctx).Where("pengajuan_id = ?", pengajuanID).Order("created_at asc").Find(&list).Error
+	err := r.db.WithContext(ctx).Where("pengajuan_id = ?", pengajuanID).Order("nomor_pertemuan asc").Find(&list).Error
 	return list, err
 }
 

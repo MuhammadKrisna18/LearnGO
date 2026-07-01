@@ -122,36 +122,3 @@ func (h *SemesterHandler) UnassignMataKuliah(c *fiber.Ctx) error {
 	return response.Success(c, fiber.StatusOK, "Mata kuliah berhasil dihapus dari semester", nil)
 }
 
-func (h *SemesterHandler) CatatPertemuan(c *fiber.Ctx) error {
-	dosenID := c.Locals("userID").(string)
-	var req domain.CatatPertemuanRequest
-	if err := c.BodyParser(&req); err != nil {
-		return response.Error(c, fiber.StatusBadRequest, "Invalid request body", nil)
-	}
-
-	p, err := h.service.CatatPertemuan(c.Context(), dosenID, req)
-	if err != nil {
-		if e, ok := err.(*apperrors.AppError); ok {
-			return response.Error(c, e.Code, e.Message, nil)
-		}
-		return response.Error(c, fiber.StatusInternalServerError, err.Error(), nil)
-	}
-
-	return response.Success(c, fiber.StatusCreated, "Pertemuan berhasil dicatat", p)
-}
-
-func (h *SemesterHandler) GetPertemuan(c *fiber.Ctx) error {
-	kelasID := c.Query("kelas_id")
-	semesterID := c.Query("semester_id")
-
-	if kelasID == "" || semesterID == "" {
-		return response.Error(c, fiber.StatusBadRequest, "Parameter kelas_id dan semester_id diperlukan", nil)
-	}
-
-	items, err := h.service.GetPertemuan(c.Context(), kelasID, semesterID)
-	if err != nil {
-		return response.Error(c, fiber.StatusInternalServerError, err.Error(), nil)
-	}
-
-	return response.Success(c, fiber.StatusOK, "Daftar pertemuan", items)
-}

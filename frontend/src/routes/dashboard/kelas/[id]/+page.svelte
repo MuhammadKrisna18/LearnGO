@@ -270,7 +270,7 @@
 								{#each pertemuanList as p, i}
 									<div class="pertemuan-card">
 										<div class="pertemuan-info">
-											<h4>{p.judul || `Pertemuan ${i + 1}`}</h4>
+											<h4>{p.judul || `Pertemuan ${p.nomor_pertemuan}`}</h4>
 											<div class="pertemuan-meta">
 												<span>{new Date(p.tanggal).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
 												<span>{new Date(p.waktu_mulai).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} - {p.waktu_selesai ? new Date(p.waktu_selesai).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : 'Berlangsung'}</span>

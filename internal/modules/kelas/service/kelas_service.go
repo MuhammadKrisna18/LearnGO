@@ -247,6 +247,15 @@ func (s *kelasService) GetMyJadwal(ctx context.Context, userID string) ([]*domai
 }
 
 func (s *kelasService) MulaiPertemuan(ctx context.Context, pengajuanID string, judul string) (*domain.Pertemuan, error) {
+	existing, err := s.repo.GetPertemuanByPengajuanID(ctx, pengajuanID)
+	if err != nil {
+		return nil, apperrors.NewInternal("Gagal mengambil data pertemuan", err.Error())
+	}
+
+	nomorNext := len(existing) + 1
+	if nomorNext > domain.MaxPertemuan {
+		return nil, apperrors.NewBadRequest("Semua 16 pertemuan sudah tercatat untuk kelas ini")
+	}
 
 	randBytes := make([]byte, 6)
 	const charset = "0123456789"
@@ -256,13 +265,14 @@ func (s *kelasService) MulaiPertemuan(ctx context.Context, pengajuanID string, j
 	kodeAbsensi := string(randBytes)
 
 	p := &domain.Pertemuan{
-		ID:          uuid.NewString(),
-		PengajuanID: pengajuanID,
-		Judul:       judul,
-		Tanggal:     time.Now(),
-		WaktuMulai:  time.Now(),
-		Status:      domain.PertemuanStatusBerlangsung,
-		KodeAbsensi: kodeAbsensi,
+		ID:             uuid.NewString(),
+		PengajuanID:    pengajuanID,
+		Judul:          judul,
+		Tanggal:        time.Now(),
+		WaktuMulai:     time.Now(),
+		Status:         domain.PertemuanStatusBerlangsung,
+		KodeAbsensi:    kodeAbsensi,
+		NomorPertemuan: nomorNext,
 	}
 	if err := s.repo.CreatePertemuan(ctx, p); err != nil {
 		return nil, apperrors.NewInternal("Gagal memulai pertemuan", err.Error())

@@ -28,25 +28,7 @@ type SemesterMataKuliah struct {
 	CreatedAt    time.Time            `json:"created_at" gorm:"autoCreateTime"`
 }
 
-type Pertemuan struct {
-	ID             string     `json:"id" gorm:"primaryKey;type:varchar(255)"`
-	SemesterID     string     `json:"semester_id" gorm:"type:varchar(255);not null"`
-	Semester       *Semester  `json:"semester,omitempty" gorm:"foreignKey:SemesterID"`
-	KelasID        string     `json:"kelas_id" gorm:"type:varchar(255);not null"`
-	DosenID        string     `json:"dosen_id" gorm:"type:varchar(255);not null"`
-	NomorPertemuan int        `json:"nomor_pertemuan" gorm:"not null"`
-	Topik          string     `json:"topik" gorm:"type:varchar(500)"`
-	Status         string     `json:"status" gorm:"type:varchar(20);not null;default:'belum'"`
-	TanggalSelesai *time.Time `json:"tanggal_selesai"`
-	CreatedAt      time.Time  `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt      time.Time  `json:"updated_at" gorm:"autoUpdateTime"`
-}
-
 const (
-	PertemuanBelum   = "belum"
-	PertemuanMulai   = "mulai"
-	PertemuanSelesai = "selesai"
-
 	KategoriWajib   = "wajib"
 	KategoriPilihan = "pilihan"
 
@@ -71,11 +53,6 @@ type AssignMataKuliahRequest struct {
 	Kategori     string `json:"kategori" validate:"required"`
 }
 
-type CatatPertemuanRequest struct {
-	KelasID    string `json:"kelas_id" validate:"required"`
-	SemesterID string `json:"semester_id" validate:"required"`
-	Topik      string `json:"topik"`
-}
 
 type SemesterRepository interface {
 	Create(ctx context.Context, s *Semester) error
@@ -93,11 +70,7 @@ type SemesterRepository interface {
 	GetSemesterMataKuliah(ctx context.Context, semesterID string) ([]*SemesterMataKuliah, error)
 	GetTotalSKS(ctx context.Context, semesterID string) (int, error)
 
-	CreatePertemuan(ctx context.Context, p *Pertemuan) error
-	GetPertemuanByKelasAndSemester(ctx context.Context, kelasID string, semesterID string) ([]*Pertemuan, error)
-	CountSelesaiPertemuan(ctx context.Context, kelasID string, semesterID string) (int, error)
-	MarkPertemuanSelesai(ctx context.Context, id string) error
-	HasReachedMaxPertemuan(ctx context.Context, semesterID string) (bool, error)
+
 }
 
 type SemesterService interface {
@@ -111,6 +84,5 @@ type SemesterService interface {
 	AssignMataKuliah(ctx context.Context, semesterID string, req AssignMataKuliahRequest) (*SemesterMataKuliah, error)
 	UnassignMataKuliah(ctx context.Context, semesterID string, mkID string) error
 
-	CatatPertemuan(ctx context.Context, dosenID string, req CatatPertemuanRequest) (*Pertemuan, error)
-	GetPertemuan(ctx context.Context, kelasID string, semesterID string) ([]*Pertemuan, error)
+
 }

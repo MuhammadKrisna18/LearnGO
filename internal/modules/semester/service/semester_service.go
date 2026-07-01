@@ -96,16 +96,7 @@ func (s *semesterService) SetActive(ctx context.Context, id string) error {
 		return apperrors.NewNotFound("Semester tidak ditemukan")
 	}
 
-	currentActive, err := s.repo.GetActive(ctx)
-	if err == nil && currentActive != nil && currentActive.ID != id {
-		hasReached, checkErr := s.repo.HasReachedMaxPertemuan(ctx, currentActive.ID)
-		if checkErr != nil {
-			return apperrors.NewInternal("Gagal mengecek status pertemuan semester aktif")
-		}
-		if !hasReached {
-			return apperrors.NewBadRequest("Semester baru tidak bisa diaktifkan karena semester saat ini belum mencapai pertemuan ke-16")
-		}
-	}
+
 
 	if err := s.repo.DeactivateAll(ctx); err != nil {
 		return apperrors.NewInternal("Gagal menonaktifkan semester sebelumnya")
@@ -159,44 +150,3 @@ func (s *semesterService) UnassignMataKuliah(ctx context.Context, semesterID str
 	return s.repo.UnassignMataKuliah(ctx, semesterID, mkID)
 }
 
-func (s *semesterService) CatatPertemuan(ctx context.Context, dosenID string, req domain.CatatPertemuanRequest) (*domain.Pertemuan, error) {
-	existing, err := s.repo.GetPertemuanByKelasAndSemester(ctx, req.KelasID, req.SemesterID)
-	if err != nil {
-		return nil, apperrors.NewInternal("Gagal mengambil data pertemuan")
-	}
-
-	nomorNext := len(existing) + 1
-	if nomorNext > domain.MaxPertemuan {
-		return nil, apperrors.NewBadRequest("Semua 16 pertemuan sudah tercatat untuk kelas ini")
-	}
-
-	p := &domain.Pertemuan{
-		SemesterID:     req.SemesterID,
-		KelasID:        req.KelasID,
-		DosenID:        dosenID,
-		NomorPertemuan: nomorNext,
-		Topik:          req.Topik,
-		Status:         domain.PertemuanSelesai,
-	}
-
-	if err := s.repo.CreatePertemuan(ctx, p); err != nil {
-		return nil, apperrors.NewInternal("Gagal mencatat pertemuan")
-	}
-
-	if nomorNext == domain.MaxPertemuan {
-		sem, _ := s.repo.GetByID(ctx, req.SemesterID)
-		if sem != nil && sem.IsActive && sem.Nomor < domain.MaxSemester {
-			nextSem, _ := s.repo.GetByNomor(ctx, sem.Nomor+1)
-			if nextSem != nil {
-				_ = s.repo.DeactivateAll(ctx)
-				_ = s.repo.SetActive(ctx, nextSem.ID)
-			}
-		}
-	}
-
-	return p, nil
-}
-
-func (s *semesterService) GetPertemuan(ctx context.Context, kelasID string, semesterID string) ([]*domain.Pertemuan, error) {
-	return s.repo.GetPertemuanByKelasAndSemester(ctx, kelasID, semesterID)
-}
